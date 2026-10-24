@@ -8,7 +8,9 @@ const cache = new Map<string, Promise<unknown>>();
 function load<T>(path: string): Promise<T> {
   let request = cache.get(path);
   if (!request) {
-    request = fetch(`${BASE}/${path}`).then((response) => {
+    // "no-cache" still uses the browser's copy, but checks with the server first (a cheap 304 when unchanged), so a
+    // new deploy shows up straight away instead of after the host's cache lifetime (10 minutes on GitHub Pages).
+    request = fetch(`${BASE}/${path}`, { cache: "no-cache" }).then((response) => {
       if (!response.ok) throw new Error(`${response.status} loading ${path}`);
       return response.json();
     });
