@@ -24,7 +24,17 @@ export function parse(hash: string): Route {
   return { name: "latest" };
 }
 
+// Where links point. Empty on the site itself; the extension's side panel sets the site's address.
+let linkBase = "";
+export const setLinkBase = (base: string) => {
+  linkBase = base;
+};
+
 export function href(route: Route): string {
+  return linkBase + hashOf(route);
+}
+
+function hashOf(route: Route): string {
   switch (route.name) {
     case "game":
       return `#/game/${route.id}${route.ply !== null ? `/${route.ply}` : ""}`;
@@ -51,6 +61,6 @@ export function useRoute(): Route {
 
 /** Update the ply in the URL without adding a history entry for every arrow-key press. */
 export function replacePly(id: string, ply: number) {
-  const next = href({ name: "game", id, ply });
+  const next = hashOf({ name: "game", id, ply });
   if (window.location.hash !== next) window.history.replaceState(null, "", next);
 }

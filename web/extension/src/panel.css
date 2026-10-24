@@ -1,0 +1,112 @@
+/* Side panel chrome around the shared review screen. */
+.xp {
+  min-height: 100dvh;
+}
+
+.xp-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--c-bg);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.xp-brand {
+  color: var(--c-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.xp-link {
+  border: 0;
+  background: none;
+  color: var(--c-ink-3);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.xp-link:hover {
+  color: var(--c-ink);
+}
+
+.xp-empty {
+  margin: 0;
+  padding: 32px 18px;
+  color: var(--c-ink-2);
+}
+
+.xp-bar {
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--c-panel-2);
+  overflow: hidden;
+}
+
+.xp-bar span {
+  display: block;
+  height: 100%;
+  background: var(--c-accent);
+  transform-origin: left;
+  transition: transform 300ms var(--c-ease);
+}
+
+.xp-settings {
+  display: grid;
+  gap: 16px;
+  padding: 20px 16px;
+}
+
+.xp-settings label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.xp-settings small {
+  color: var(--c-ink-3);
+  font-weight: 400;
+}
+
+.xp-settings input {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 6px;
+  background: var(--c-panel);
+  color: var(--c-ink);
+  font: inherit;
+}
+
+.xp-btn {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.xp-btn--primary {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+/* The panel is narrow: the shared review uses its stacked layout, with tighter edges. */
+.xp .rv {
+  padding: 10px 12px 24px;
+}
+
+.xp .rv {
+  --board: calc(100vw - 24px);
+}

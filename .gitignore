@@ -13,3 +13,4 @@ web/dist/
 .impeccable/decision/
 *.tsbuildinfo
 .impeccable/questions/
+web/dist-extension/

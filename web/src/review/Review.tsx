@@ -125,15 +125,33 @@ export function Review({ id, ply }: { id: string | null; ply: number | null }) {
   const position = list.findIndex((g) => g.id === review.data.game.id);
   const newer = position > 0 ? list[position - 1].id : null;
   const older = position >= 0 && position < list.length - 1 ? list[position + 1].id : null;
-  return <Loaded key={review.data.game.id} review={review.data} initialPly={ply} newer={newer} older={older} />;
+  return <ReviewView key={review.data.game.id} review={review.data} initialPly={ply} newer={newer} older={older} />;
 }
 
-function Loaded({ review, initialPly, newer, older }: { review: ReviewData; initialPly: number | null; newer: string | null; older: string | null }) {
+/** The review for one game's data. Also used by the Chrome extension's side panel. */
+export function ReviewView({
+  review,
+  initialPly = null,
+  newer = null,
+  older = null,
+  startMode = "summary",
+}: {
+  review: ReviewData;
+  initialPly?: number | null;
+  newer?: string | null;
+  older?: string | null;
+  startMode?: "summary" | "moments";
+}) {
   const g = review.game;
   const n = review.moves.length;
   const moments = review.key_moments;
-  const [mode, setMode] = useState<Mode>(initialPly !== null ? { kind: "moves" } : { kind: "summary" });
-  const [index, setIndex] = useState(initialPly !== null ? Math.min(n - 1, Math.max(-1, initialPly - 1)) : -1);
+  const openOnMoments = startMode === "moments" && initialPly === null && moments.length > 0;
+  const [mode, setMode] = useState<Mode>(
+    initialPly !== null ? { kind: "moves" } : openOnMoments ? { kind: "moments", step: 0 } : { kind: "summary" },
+  );
+  const [index, setIndex] = useState(
+    initialPly !== null ? Math.min(n - 1, Math.max(-1, initialPly - 1)) : openOnMoments ? moments[0] - 1 : -1,
+  );
   const [attempts, setAttempts] = useState<Record<number, Attempt>>({});
   const [threat, setThreat] = useState(false);
 

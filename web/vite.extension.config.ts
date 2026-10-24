@@ -1,0 +1,26 @@
+import react from "@vitejs/plugin-react";
+import { resolve } from "node:path";
+import { defineConfig } from "vite";
+
+// The extension's pages and service worker. The content script is a classic script, built separately
+// (vite.content.config.ts) because content scripts can't load ES module chunks.
+export default defineConfig({
+  root: resolve(import.meta.dirname, "extension"),
+  base: "./",
+  publicDir: resolve(import.meta.dirname, "extension/public"),
+  plugins: [react()],
+  build: {
+    outDir: resolve(import.meta.dirname, "dist-extension"),
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        panel: resolve(import.meta.dirname, "extension/panel.html"),
+        offscreen: resolve(import.meta.dirname, "extension/offscreen.html"),
+        background: resolve(import.meta.dirname, "extension/src/background.ts"),
+      },
+      output: {
+        entryFileNames: (chunk) => (chunk.name === "background" ? "background.js" : "assets/[name]-[hash].js"),
+      },
+    },
+  },
+});

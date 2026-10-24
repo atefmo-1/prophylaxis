@@ -335,7 +335,9 @@ chess-coach/
 
 Each phase ends with something usable.
 
-**Status (2026-10-24):** phases 0–3 are built. Sync, engine analysis, grading, rule-based tactic tags, stats with intervals, static export, and the dashboard (game review, patterns, all games) all work. The dashboard reads exported JSON, so it deploys as a static site. Engine-backed explanations are templated from engine facts; LLM wording (phase 4) is next.
+**Status (2026-10-24):** phases 0–3, drills (7) and the Chrome extension (8) are built; see README. Remaining: LLM wording (4), the coach chat agent (6) and the ML tactic classifier (5).
+
+Earlier status: phases 0–3 are built. Sync, engine analysis, grading, rule-based tactic tags, stats with intervals, static export, and the dashboard (game review, patterns, all games) all work. The dashboard reads exported JSON, so it deploys as a static site. Engine-backed explanations are templated from engine facts; LLM wording (phase 4) is next.
 
 | # | Phase | Deliverable | Done when |
 |---|---|---|---|
