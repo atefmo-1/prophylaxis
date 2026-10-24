@@ -48,7 +48,11 @@ Another player: `COACH_USERNAME=<username> uv run coach sync` (use a separate `C
 
 ## Deploying
 
-Live: **[atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Every push to `main` rebuilds it with GitHub Actions (`.github/workflows/pages.yml`) from the game data committed in `web/public/data/`. To publish new games: `uv run coach sync && uv run coach analyze && uv run coach export`, then commit and push.
+Live: **[atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. It keeps itself up to date:
+
+- **Every hour**, `.github/workflows/update.yml` downloads new games from chess.com, analyses them with Stockfish 19 (same settings as locally, so the grades match), commits `web/public/data/` and redeploys. Hours with no new games change nothing. Run it now from the repo's **Actions → Update games → Run workflow**, or `gh workflow run update.yml`.
+- The pipeline's database lives on the one-file `pipeline-db` branch, so each run only analyses games it hasn't seen. To work on it locally, fetch it first: `git fetch origin pipeline-db && git show FETCH_HEAD:chess.db > data/chess.db`.
+- Every push to `main` also rebuilds the site (`.github/workflows/pages.yml`). GitHub pauses scheduled workflows after 60 days without any commits; re-enable it from the Actions tab.
 
 `npm --prefix web run build` produces the same static site in `web/dist/`, which runs from any path (Vercel, Netlify, a sub-folder of a portfolio site). No server needed.
 
