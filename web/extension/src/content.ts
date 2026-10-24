@@ -201,7 +201,7 @@ async function watch(id: string) {
       if (reply.panelOpen) dismissed.add(id);
       return refresh(id);
     }
-    if ("result" in reply && reply.result === "not-mine") return;
+    if ("result" in reply && (reply.result === "not-mine" || reply.result === "no-player")) return;
     await new Promise((r) => setTimeout(r, Date.now() - started < FAST_FOR_MS ? POLL_MS : SLOW_POLL_MS));
   }
 }

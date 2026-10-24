@@ -1,15 +1,15 @@
 // Loads the built extension into Chrome and checks the post-game flow on a real finished chess.com game:
 // the open panel follows the game and replays the analysis live, the card appears, and an unpublished game shows nothing.
-// Usage: node scripts/check-extension.mjs <gameId> [outDir]
+// Usage: node scripts/check-extension.mjs <username> <gameId> [outDir]
 import { resolve } from "node:path";
 import puppeteer from "puppeteer-core";
 
-const gameId = process.argv[2];
-if (!gameId) {
-  console.error("Give the id of a finished chess.com game played by the extension's username.");
+const [username, gameId] = process.argv.slice(2);
+if (!username || !gameId) {
+  console.error("Give a chess.com username and the id of a finished game they played.");
   process.exit(1);
 }
-const out = process.argv[3] ?? ".";
+const out = process.argv[4] ?? ".";
 const ext = resolve(import.meta.dirname, "../dist-extension");
 const browser = await puppeteer.launch({
   executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -30,6 +30,9 @@ panel.on("pageerror", (e) => errors.push(`panel: ${e.message}`));
 panel.on("console", (m) => m.type() === "error" && errors.push(`panel console: ${m.text()}`));
 await panel.setViewport({ width: 400, height: 900 });
 await panel.goto(`chrome-extension://${extId}/panel.html`);
+// The panel asks for a username on first open; set it directly for the check.
+await panel.evaluate((u) => chrome.storage.sync.set({ username: u }), username);
+await panel.reload();
 await wait(500);
 console.log("PANEL BEFORE:", (await panel.evaluate(() => document.body.innerText)).replace(/\n+/g, " | ").slice(0, 140));
 

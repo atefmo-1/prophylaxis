@@ -185,55 +185,30 @@
   accent-color: var(--c-accent);
 }
 
-/* ---------- Site status line ---------- */
+/* ---------- First open ---------- */
 
-.xp-site {
+.xp-welcome h1 {
   margin: 0;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--c-line);
-  background: var(--c-panel);
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.xp-welcome p {
+  margin: -8px 0 0;
   color: var(--c-ink-2);
-  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
-.xp-site--live {
-  color: var(--c-ink);
+.xp-error {
+  color: var(--c-loss) !important;
 }
 
-.xp-site--failed {
-  background: rgb(239 122 108 / 0.12);
-  color: var(--c-ink);
-}
-
-.xp-site a,
-.xp-site button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--c-accent-ink);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.xp-github {
-  display: grid;
-  gap: 12px;
-  margin: 4px 0 0;
-  padding: 14px 0 0;
-  border: 0;
-  border-top: 1px solid var(--c-line);
-}
-
-.xp-github legend {
-  padding: 0;
-  font-weight: 650;
-}
-
-.xp-forget {
-  justify-self: start;
-  padding: 0;
+.xp-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .xp-settings small {

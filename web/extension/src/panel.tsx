@@ -7,7 +7,8 @@ import { Board } from "../../src/components/Board";
 import { ReviewView } from "../../src/review/Review";
 import { href, setLinkBase } from "../../src/router";
 import type { GameReview } from "../../src/types";
-import { DEFAULTS, getSettings, getToken, reviewKey, siteKey, stateKey, type GameState, type Live, type Message, type Settings, type SiteSync } from "./shared";
+import { findPlayer, PlayerNotFound } from "../../src/library/chesscom";
+import { DEFAULTS, getSettings, reviewKey, SITE_PLAYER, stateKey, type GameState, type Live, type Message, type Settings } from "./shared";
 import "./panel.css";
 
 type Request = { id: string; mode: "summary" | "moments"; at: number };
@@ -134,105 +135,107 @@ function Waiting({ since }: { since: number }) {
   );
 }
 
-const SITE_POLL_MS = 20000;
-const SITE_GIVE_UP_MS = 15 * 60 * 1000;
+/** Checks a username with chess.com: its own spelling, or why not. */
+async function confirmPlayer(name: string): Promise<{ name: string } | { error: string }> {
+  try {
+    return { name: await findPlayer(name) };
+  } catch (e) {
+    return { error: e instanceof PlayerNotFound ? e.message : `Couldn't reach chess.com: ${(e as Error).message}` };
+  }
+}
 
-/** One line under the header: is this game on your site yet? Watches the site's game list until it appears. */
-function SiteStatus({ id, siteBase, onSettings }: { id: string; siteBase: string; onSettings: () => void }) {
-  const [sync, setSync] = useState<SiteSync | null | undefined>(undefined);
-  const [hasToken, setHasToken] = useState(true);
-
+/** First open: who are you on chess.com? Offers the player the site was last opened for. */
+function Welcome({ onDone }: { onDone: () => void }) {
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    const read = async () => {
-      const data = await chrome.storage.local.get(siteKey(id));
-      setSync((data[siteKey(id)] as SiteSync) ?? null);
-      setHasToken(!!(await getToken()));
-    };
-    read();
-    const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
-      if (area === "local" && (changes[siteKey(id)] || changes.githubToken)) read();
-    };
-    chrome.storage.onChanged.addListener(onChange);
-    return () => chrome.storage.onChanged.removeListener(onChange);
-  }, [id]);
-
-  const waiting = sync?.status === "sent" ? sync.at : null;
-  useEffect(() => {
-    if (waiting === null) return;
-    const look = async () => {
-      if (Date.now() - waiting > SITE_GIVE_UP_MS) return;
-      try {
-        const res = await fetch(new URL("data/games.json", siteBase), { cache: "no-store" });
-        const games = (await res.json()) as { id: string }[];
-        if (games.some((g) => g.id === id)) await chrome.storage.local.set({ [siteKey(id)]: { status: "live" } satisfies SiteSync });
-      } catch {
-        // The site may be mid-deploy; look again next time.
-      }
-    };
-    look();
-    const timer = setInterval(look, SITE_POLL_MS);
-    return () => clearInterval(timer);
-  }, [waiting, id, siteBase]);
-
-  if (sync === undefined) return null;
-  if (sync?.status === "live")
-    return (
-      <p className="xp-site xp-site--live">
-        On your site. <a href={href({ name: "game", id, ply: null })}>Open it</a>
+    chrome.storage.local.get(SITE_PLAYER).then((d) => {
+      const fromSite = d[SITE_PLAYER] as string | undefined;
+      if (fromSite && fromSite !== "sample-player") setName((n) => n || fromSite);
+    });
+  }, []);
+  return (
+    <form
+      className="xp-settings xp-welcome"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+        setBusy(true);
+        setError(null);
+        const result = await confirmPlayer(name);
+        if ("error" in result) {
+          setError(result.error);
+          setBusy(false);
+          return;
+        }
+        await chrome.storage.sync.set({ username: result.name });
+        onDone();
+      }}
+    >
+      <h1>Your chess.com username</h1>
+      <p>
+        After each game you finish on chess.com, this panel reviews it beside the board. The review runs on this computer, and
+        nothing is uploaded.
       </p>
-    );
-  if (sync?.status === "sent")
-    return (
-      <p className="xp-site">
-        {Date.now() - sync.at > SITE_GIVE_UP_MS
-          ? "Your site is taking longer than usual to update. Check the repo's Actions tab."
-          : "Adding this game to your site. Usually about 3 minutes."}
-      </p>
-    );
-  if (sync?.status === "failed")
-    return (
-      <p className="xp-site xp-site--failed">
-        Couldn't add this game to your site: {sync.message}{" "}
-        <button type="button" onClick={() => send({ type: "update-site", id })}>
-          Try again
-        </button>
-      </p>
-    );
-  if (!hasToken)
-    return (
-      <p className="xp-site">
-        Your site picks this game up within the hour.{" "}
-        <button type="button" onClick={onSettings}>
-          Add it right away
-        </button>
-      </p>
-    );
-  return null;
+      <label>
+        Username
+        <input
+          value={name}
+          autoFocus
+          autoCapitalize="none"
+          spellCheck={false}
+          aria-invalid={!!error}
+          onChange={(e) => setName(e.target.value.trim())}
+        />
+        {error && (
+          <small className="xp-error" role="alert">
+            {error}
+          </small>
+        )}
+      </label>
+      <button type="submit" className="xp-btn xp-btn--primary" disabled={busy || !name}>
+        {busy ? "Checking…" : "Start"}
+      </button>
+    </form>
+  );
 }
 
 function SettingsForm({ onDone }: { onDone: () => void }) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
   const [saved, setSaved] = useState(false);
-  const [token, setToken] = useState("");
-  const [hasToken, setHasToken] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     getSettings().then(setSettings);
-    getToken().then((t) => setHasToken(!!t));
   }, []);
   return (
     <form
       className="xp-settings"
       onSubmit={async (e) => {
         e.preventDefault();
-        await chrome.storage.sync.set({ ...settings });
-        if (token) await chrome.storage.local.set({ githubToken: token });
+        const result = await confirmPlayer(settings.username);
+        if ("error" in result) return setError(result.error);
+        await chrome.storage.sync.set({ ...settings, username: result.name });
         setSaved(true);
         setTimeout(onDone, 600);
       }}
     >
       <label>
         Your chess.com username
-        <input value={settings.username} required onChange={(e) => setSettings({ ...settings, username: e.target.value.trim() })} />
+        <input
+          value={settings.username}
+          required
+          aria-invalid={!!error}
+          onChange={(e) => {
+            setError(null);
+            setSettings({ ...settings, username: e.target.value.trim() });
+          }}
+        />
+        {error && (
+          <small className="xp-error" role="alert">
+            {error}
+          </small>
+        )}
       </label>
       <label className="xp-check">
         <input type="checkbox" checked={settings.autoOpen} onChange={(e) => setSettings({ ...settings, autoOpen: e.target.checked })} />
@@ -241,45 +244,8 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
       <label>
         Your Prophylaxis site
         <input value={settings.siteUrl} type="url" required onChange={(e) => setSettings({ ...settings, siteUrl: e.target.value.trim() })} />
-        <small>Used for your habit history and the "see the pattern" links.</small>
+        <small>Where Habits, Practice and All games open. Games reviewed here show up there too.</small>
       </label>
-      <fieldset className="xp-github">
-        <legend>Add each game to your site right away</legend>
-        <small>
-          Without this, the site picks up new games within the hour. With a GitHub token, the extension asks GitHub to update
-          the site as soon as a game ends.
-        </small>
-        <label>
-          GitHub repository
-          <input value={settings.repo} required placeholder="owner/name" onChange={(e) => setSettings({ ...settings, repo: e.target.value.trim() })} />
-        </label>
-        <label>
-          GitHub token
-          <input
-            type="password"
-            value={token}
-            autoComplete="off"
-            spellCheck={false}
-            placeholder={hasToken ? "Saved. Paste a new one to replace it." : "github_pat_…"}
-            onChange={(e) => setToken(e.target.value.trim())}
-          />
-          <small>
-            A fine-grained token for this repository only, with "Actions: Read and write". It stays on this computer.
-          </small>
-        </label>
-        {hasToken && (
-          <button
-            type="button"
-            className="xp-link xp-forget"
-            onClick={async () => {
-              await chrome.storage.local.remove("githubToken");
-              setHasToken(false);
-            }}
-          >
-            Remove the saved token
-          </button>
-        )}
-      </fieldset>
       <button type="submit" className="xp-btn xp-btn--primary">
         {saved ? "Saved" : "Save"}
       </button>
@@ -292,17 +258,21 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Links to the site need its address first, so nothing renders until the settings are read.
   const [siteBase, setSiteBase] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
 
   useEffect(() => {
     getSettings().then((s) => {
       const base = s.siteUrl.replace(/\/?$/, "/");
       setLinkBase(base);
       setSiteBase(base);
+      setUsername(s.username);
     });
-  }, [settingsOpen]);
+  }, [settingsOpen, round]);
 
   let body: React.ReactNode;
-  if (!siteBase) body = null;
+  if (!siteBase || username === null) body = null;
+  else if (!username) body = <Welcome onDone={() => setRound((r) => r + 1)} />;
   else if (settingsOpen) body = <SettingsForm onDone={() => setSettingsOpen(false)} />;
   else if (!request)
     body = (
@@ -310,7 +280,7 @@ function App() {
         Finish a game on chess.com and its review appears here. Keep this panel open: it follows each game you finish.
       </p>
     );
-  else if (review) body = <ReviewView key={`${request.id}-${request.at}`} review={review} startMode={request.mode} />;
+  else if (review) body = <ReviewView key={`${request.id}-${request.at}`} review={review} player={username} startMode={request.mode} />;
   else if (state?.status === "analysing") body = <Analysing percent={state.percent} live={state.live} />;
   else if (state?.status === "waiting") body = <Waiting since={state.since} />;
   else if (state?.status === "error" || state?.status === "unlisted")
@@ -343,11 +313,12 @@ function App() {
             </a>
           </nav>
         )}
-        <button type="button" className="xp-link" onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen}>
-          {settingsOpen ? "Close settings" : "Settings"}
-        </button>
+        {username && (
+          <button type="button" className="xp-link" onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen}>
+            {settingsOpen ? "Close settings" : "Settings"}
+          </button>
+        )}
       </header>
-      {siteBase && request && !settingsOpen && <SiteStatus key={request.id} id={request.id} siteBase={siteBase} onSettings={() => setSettingsOpen(true)} />}
       {body}
     </div>
   );

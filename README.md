@@ -33,8 +33,9 @@ Your name in the top bar opens a menu to switch to another player or to delete y
 It reviews each game the moment it ends, beside the board on chess.com.
 
 1. **Install it.** Build it with `npm --prefix web install && npm --prefix web run build:extension`, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick `web/dist-extension`. Pin it to the toolbar.
-2. **Set it up.** Click the toolbar icon to open the side panel, then **Settings**, and enter your chess.com username.
+2. **Set it up.** Click the toolbar icon to open the side panel. The first time, it asks for your chess.com username (and suggests the one you use on the site, if you've opened it).
 3. **Play.** When a game ends, the side panel opens and replays the game while Stockfish reads it (about 20 to 30 seconds), then shows the review. If Chrome doesn't open it by itself, click anywhere on the chess.com page. Keep the panel open and it follows every game you finish.
+4. **The site and the extension share.** Games the extension reviewed appear on the site straight away, without being analysed again, and the site tells the extension your habits, so a review in the panel says which habit a mistake belongs to. If you open the site with the extension installed, it offers to continue as the extension's player.
 
 ## How it works
 
@@ -81,6 +82,7 @@ Every push to `main` deploys the site to GitHub Pages (`.github/workflows/pages.
 - **Opening by itself:** the panel opens when chess.com shows its game-over card. Chrome only lets an extension open the panel within about 5 seconds of a click on the page. That usually holds when your own move ends the game. When it doesn't (your opponent resigned, a premove, a slow card), your next click anywhere on the page opens it, and the toolbar popup offers a one-click "Open review". Turn auto-open off in Settings.
 - **Waiting for chess.com:** chess.com takes a few seconds, sometimes a couple of minutes, to list a finished game in its public archive. The background worker waits for it, so you can leave the game page, and the panel shows how long it has been waiting.
 - **Fair play:** the extension never reads the live board. It acts only after chess.com's public archive lists the game, which happens once the game is over.
+- **Sharing with the site:** a small script on the site's pages (`extension/public/site-bridge.js`) passes messages between the page and the extension, all inside the browser. The site asks for the reviews the extension made (in the site's own format, with the facts its statistics need) and sends back the player's habits. Without the extension, the site's questions simply go unanswered after a moment.
 
 Stockfish is GPLv3; its licence ships with the site and the extension in `engine/COPYING.txt`.
 
@@ -89,8 +91,9 @@ Stockfish is GPLv3; its licence ships with the site and the extension in `engine
 ```bash
 uv run pytest                                      # grading, openings, intervals, tactic rules
 npm --prefix web run typecheck
-node web/scripts/check-start.mjs <username>        # the site end to end in Chrome, for any player
-node web/scripts/check-extension.mjs <gameId>      # the extension's post-game review
+node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
+node web/scripts/check-extension.mjs <username> <gameId>     # the extension's post-game review
+node web/scripts/check-bridge.mjs <username>                 # extension and site together (dev server running)
 ```
 
 ## Roadmap

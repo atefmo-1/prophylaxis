@@ -5,10 +5,15 @@
   "description": "After a chess.com game ends: your biggest moment, the habit behind it, and a chance to retry it. Never runs during play.",
   "minimum_chrome_version": "116",
   "permissions": ["storage", "sidePanel", "offscreen"],
-  "host_permissions": ["https://api.chess.com/*", "https://api.github.com/*", "http://localhost:5173/*"],
+  "host_permissions": ["https://api.chess.com/*"],
   "background": { "service_worker": "background.js", "type": "module" },
   "content_scripts": [
-    { "matches": ["https://www.chess.com/*"], "js": ["content.js"], "run_at": "document_idle" }
+    { "matches": ["https://www.chess.com/*"], "js": ["content.js"], "run_at": "document_idle" },
+    {
+      "matches": ["https://atefmo-1.github.io/prophylaxis/*", "http://localhost:5173/*"],
+      "js": ["site-bridge.js"],
+      "run_at": "document_start"
+    }
   ],
   "side_panel": { "default_path": "panel.html" },
   "action": {

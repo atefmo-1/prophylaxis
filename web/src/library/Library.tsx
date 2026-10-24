@@ -5,6 +5,7 @@ import { Engine, workerTransport } from "../analysis/engine";
 import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
+import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
 import { fetchGames, findPlayer, gameId } from "./chesscom";
 import { forget, loadGames, saveGame } from "./store";
 
@@ -114,6 +115,17 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setStatus({ kind: "checking" });
     let todo: ChessComGame[];
     try {
+      // Games the Chrome extension already reviewed come over as they are, instead of being analysed again.
+      if (who !== SAMPLE) {
+        const known = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
+        const imported = (await reviewsFromExtension(who)).filter((s) => s.version === ANALYSIS_VERSION && !known.has(s.review.game.id));
+        for (const entry of imported) await saveGame(who.toLowerCase(), entry);
+        if (imported.length && live()) {
+          const ids = new Set(imported.map((s) => s.review.game.id));
+          setStored((s) => [...s.filter((x) => !ids.has(x.review.game.id)), ...imported]);
+        }
+        have = [...have, ...imported];
+      }
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
       const all = who === SAMPLE ? await sampleGames() : await fetchGames(who, MONTHS, MAX_GAMES);
       todo = all.slice(0, MAX_GAMES).filter((g) => !done.has(gameId(g)));
@@ -223,6 +235,16 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     const method = { engine: "Stockfish 19 Lite", nodes: NODES, analysis_version: ANALYSIS_VERSION };
     return { overview: buildOverview(stored, player ?? "", method), games: gameList(stored), practice: practicePositions(stored) };
   }, [stored, player]);
+
+  // Tell the extension, if it's installed, which player this is and their habits, for its own reviews.
+  useEffect(() => {
+    if (!player || player === SAMPLE) return;
+    helloExtension(player);
+  }, [player]);
+  useEffect(() => {
+    if (!player || player === SAMPLE || derived.overview.empty || !derived.overview.weaknesses.length) return;
+    habitsToExtension(player, derived.overview.weaknesses);
+  }, [player, derived.overview]);
 
   const value = useMemo<LibraryValue>(
     () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, start, startSample, leave, forgetPlayer }),

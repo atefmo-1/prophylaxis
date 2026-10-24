@@ -1,6 +1,7 @@
 // The first screen: one question, your chess.com username. Everything after it runs in this browser.
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Board } from "../components/Board";
+import { helloExtension } from "../library/bridge";
 import { PlayerNotFound } from "../library/chesscom";
 import { useLibrary } from "../library/Library";
 import "./start.css";
@@ -14,18 +15,27 @@ export function Start() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The Chrome extension, when installed, already knows the player: offer to continue as them.
+  const [known, setKnown] = useState<string | null>(null);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+  useEffect(() => {
+    helloExtension(null).then((hello) => setKnown(hello?.username ?? null));
+  }, []);
+
+  const go = async (username: string) => {
     setBusy(true);
     setError(null);
     try {
-      await start(name);
+      await start(username);
     } catch (err) {
       setError(err instanceof PlayerNotFound ? err.message : `Couldn't reach chess.com: ${(err as Error).message}`);
       setBusy(false);
     }
+  };
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) go(name);
   };
 
   return (
@@ -37,6 +47,14 @@ export function Start() {
             Stockfish reviews every game, finds the habits that cost you the most, and turns your own mistakes into
             practice. It runs in your browser: no account, nothing uploaded.
           </p>
+          {known && (
+            <div className="start-known">
+              <p>Your Prophylaxis extension knows you as {known}.</p>
+              <button type="button" className="start-go" disabled={busy} onClick={() => go(known)}>
+                Continue as {known}
+              </button>
+            </div>
+          )}
           <form className="start-form" onSubmit={submit}>
             <label htmlFor="username">Your chess.com username</label>
             <div className="start-row">

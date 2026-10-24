@@ -1,13 +1,13 @@
 // Checks that the side panel opens by itself when chess.com shows its game-over card.
 // Runs a visible Chrome (side panels don't exist in headless). The card is simulated on a real finished game page
 // without any DevTools user gesture, so the result reflects what a player gets.
-// Usage: node scripts/check-autoopen.mjs <gameId>
+// Usage: node scripts/check-autoopen.mjs <username> <gameId>
 import { resolve } from "node:path";
 import puppeteer from "puppeteer-core";
 
-const gameId = process.argv[2];
-if (!gameId) {
-  console.error("Give the id of a finished chess.com game played by the extension's username.");
+const [username, gameId] = process.argv.slice(2);
+if (!username || !gameId) {
+  console.error("Give a chess.com username and the id of a finished game they played.");
   process.exit(1);
 }
 const ext = resolve(import.meta.dirname, "../dist-extension");
@@ -24,6 +24,12 @@ async function trial(label, { clickFirst, addRematch, clickAfter = false }) {
   });
   const swTarget = await browser.waitForTarget((t) => t.type() === "service_worker" && t.url().endsWith("background.js"));
   const sw = await swTarget.worker();
+  // The panel asks for a username on first open; set it directly (the worker's APIs can take a moment to appear).
+  for (let i = 0; i < 20; i++) {
+    const ok = await sw.evaluate((u) => (globalThis.chrome?.storage ? chrome.storage.sync.set({ username: u }).then(() => true) : false), username).catch(() => false);
+    if (ok) break;
+    await wait(250);
+  }
   const page = await (await browser.waitForTarget((t) => t.type() === "page" && t.url().includes("chess.com"))).page();
   const cdp = await page.createCDPSession();
   // Wait for chess.com's card without puppeteer's evaluate helpers, which would count as a user gesture.

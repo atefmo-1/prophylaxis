@@ -1,5 +1,24 @@
-// Service worker: confirms a game is finished, runs analysis in the offscreen page, stores results, opens the panel.
-import { findGame, getSettings, getToken, isPlayer, reviewKey, siteKey, stateKey, type CheckReply, type CheckResult, type GameState, type Live, type Message, type SiteSync } from "./shared";
+// Service worker: confirms a game is finished, runs analysis in the offscreen page, stores results, opens the panel,
+// and shares reviews with the Prophylaxis site through the bridge script on its page.
+import { ANALYSIS_VERSION, type StoredGame } from "../../src/analysis/stats";
+import type { GameReview } from "../../src/types";
+import {
+  factsKey,
+  findGame,
+  getSettings,
+  habitsKey,
+  isPlayer,
+  reviewKey,
+  SITE_PLAYER,
+  stateKey,
+  type CheckReply,
+  type CheckResult,
+  type GameState,
+  type Live,
+  type Message,
+  type ReviewFacts,
+  type SiteHabits,
+} from "./shared";
 
 const KEEP = 15; // reviews kept in storage
 
@@ -16,6 +35,8 @@ async function panelOpen(windowId?: number): Promise<boolean> {
 
 async function check(id: string): Promise<CheckReply> {
   const { username } = await getSettings();
+  // Nothing to look up until the player has told the panel who they are.
+  if (!username) return { result: "no-player", panelOpen: await panelOpen() };
   const game = await findGame(username, id);
   const result: CheckResult = !game ? "not-found" : isPlayer(game, username) ? "finished" : "not-mine";
   return { result, panelOpen: await panelOpen() };
@@ -52,11 +73,11 @@ async function analyse(id: string) {
   await chrome.storage.session.set({ panelRequest: { id, mode: "summary", at: Date.now() } });
   if (stored[reviewKey(id)] || running.has(id)) return;
   running.add(id);
-  updateSite(id);
   await setState(id, { status: "analysing", percent: 0 });
-  const { username, siteUrl } = await getSettings();
+  const { username } = await getSettings();
+  const habits = ((await chrome.storage.local.get(habitsKey(username)))[habitsKey(username)] as SiteHabits | undefined) ?? null;
   await ensureOffscreen();
-  const message: Message = { target: "offscreen", type: "analyse", id, username, siteUrl };
+  const message: Message = { target: "offscreen", type: "analyse", id, username, habits };
   await chrome.runtime.sendMessage(message);
 }
 
@@ -80,6 +101,7 @@ async function awaitGame(id: string) {
       const { result } = await check(id).catch(() => ({ result: "not-found" as const }));
       if (result === "finished") return await analyse(id);
       if (result === "not-mine") return await setState(id, { status: "error", message: "it isn't one of your games. Check your username in Settings." });
+      if (result === "no-player") return await setState(id, { status: "error", message: "the panel doesn't know your chess.com username yet." });
       await new Promise((r) => setTimeout(r, WAIT_POLL_MS));
     }
     await setState(id, { status: "unlisted" });
@@ -88,42 +110,49 @@ async function awaitGame(id: string) {
   }
 }
 
-// The site rebuilds from GitHub. With a token, ask its "Update games" workflow to run now instead of at the next
-// hourly run, so the game is on the site a few minutes after it ends. Once per game.
-async function updateSite(id: string) {
-  const token = await getToken();
-  if (!token) return;
-  const { [siteKey(id)]: done } = await chrome.storage.local.get(siteKey(id));
-  if (done) return;
-  const { repo } = await getSettings();
-  let sync: SiteSync;
-  try {
-    const res = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/update.yml/dispatches`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
-      body: JSON.stringify({ ref: "main" }),
-    });
-    if (res.status === 204) sync = { status: "sent", at: Date.now() };
-    else if (res.status === 401) sync = { status: "failed", message: "GitHub didn't accept the token. It may have expired." };
-    else if (res.status === 403 || res.status === 404)
-      sync = { status: "failed", message: `the token can't run workflows on ${repo}. It needs "Actions: Read and write" for that repository.` };
-    else sync = { status: "failed", message: `GitHub answered ${res.status}.` };
-  } catch {
-    sync = { status: "failed", message: "couldn't reach GitHub." };
-  }
-  await chrome.storage.local.set({ [siteKey(id)]: sync });
-}
-
-async function remember(id: string, review: unknown) {
+async function remember(id: string, review: unknown, facts: ReviewFacts) {
   const { recent = [] } = (await chrome.storage.local.get("recent")) as { recent?: string[] };
   const next = [id, ...recent.filter((r) => r !== id)];
   const drop = next.slice(KEEP);
-  await chrome.storage.local.set({ [reviewKey(id)]: review, recent: next.slice(0, KEEP), last: id });
-  if (drop.length) await chrome.storage.local.remove(drop.flatMap((d) => [reviewKey(d), stateKey(d), siteKey(d)]));
+  await chrome.storage.local.set({ [reviewKey(id)]: review, [factsKey(id)]: facts, recent: next.slice(0, KEEP), last: id });
+  if (drop.length) await chrome.storage.local.remove(drop.flatMap((d) => [reviewKey(d), stateKey(d), factsKey(d)]));
+}
+
+/** This player's reviews, in the site's own format, so the site can show them without analysing the games again. */
+async function reviewsFor(player: string): Promise<StoredGame[]> {
+  const { recent = [] } = (await chrome.storage.local.get("recent")) as { recent?: string[] };
+  const data = await chrome.storage.local.get(recent.flatMap((id) => [reviewKey(id), factsKey(id)]));
+  return recent.flatMap((id) => {
+    const review = data[reviewKey(id)] as GameReview | undefined;
+    const facts = data[factsKey(id)] as ReviewFacts | undefined;
+    if (!review || !facts || facts.player.toLowerCase() !== player.toLowerCase()) return [];
+    // Habits depend on all of a player's games, so the site works them out again.
+    return [{ review: { ...review, habits: {} }, facts: facts.facts, version: facts.version }];
+  });
+}
+
+/** Messages from the Prophylaxis site's page (public/site-bridge.js). */
+async function fromSite(msg: Extract<Message, { type: `site:${string}` }>): Promise<unknown> {
+  switch (msg.type) {
+    case "site:hello": {
+      if (msg.player) await chrome.storage.local.set({ [SITE_PLAYER]: msg.player });
+      const { username } = await getSettings();
+      return { username: username || null, version: ANALYSIS_VERSION };
+    }
+    case "site:reviews":
+      return reviewsFor(msg.player);
+    case "site:habits":
+      await chrome.storage.local.set({ [habitsKey(msg.player)]: msg.habits });
+      return { ok: true };
+  }
 }
 
 chrome.runtime.onMessage.addListener((msg: Message, sender, reply) => {
   if ("target" in msg) return; // meant for the offscreen page
+  if (msg.type.startsWith("site:")) {
+    fromSite(msg as Extract<Message, { type: `site:${string}` }>).then(reply, () => reply(null));
+    return true;
+  }
   switch (msg.type) {
     case "check":
       check(msg.id).then(reply, (e: Error) => reply({ error: e.message }));
@@ -149,9 +178,6 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, reply) => {
     case "await":
       awaitGame(msg.id);
       break;
-    case "update-site":
-      chrome.storage.local.remove(siteKey(msg.id)).then(() => updateSite(msg.id));
-      break;
     case "open-panel":
       // sidePanel.open needs the user's click, so call it before any await.
       if (sender.tab?.id !== undefined) chrome.sidePanel.open({ tabId: sender.tab.id }).catch(() => undefined);
@@ -171,7 +197,7 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, reply) => {
     case "done":
       running.delete(msg.id);
       live.delete(msg.id);
-      remember(msg.id, msg.review).then(() => setState(msg.id, { status: "ready" }));
+      remember(msg.id, msg.review, msg.facts).then(() => setState(msg.id, { status: "ready" }));
       break;
     case "failed":
       running.delete(msg.id);

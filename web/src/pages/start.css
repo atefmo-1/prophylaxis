@@ -35,6 +35,29 @@
   margin-top: 32px;
 }
 
+.start-known {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  max-width: 520px;
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.start-known p {
+  flex: 1 1 200px;
+  margin: 0;
+  color: var(--c-ink-2);
+}
+
+.start-known + .start-form {
+  margin-top: 20px;
+}
+
 .start-form label {
   display: block;
   margin-bottom: 8px;
