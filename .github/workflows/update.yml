@@ -37,7 +37,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0 # this action publishes no major-version tag
 
       - name: Install Stockfish 19
         run: |
@@ -88,7 +88,7 @@ jobs:
           blob=$(git hash-object -w data/chess.db)
           tree=$(printf '100644 blob %s\tchess.db\n' "$blob" | git mktree)
           commit=$(git commit-tree "$tree" -m "Pipeline database")
-          git push --force origin "$commit:refs/heads/pipeline-db"
+          git push --force origin "${commit}:refs/heads/pipeline-db"
 
   # Pushes made with the workflow's own token don't start other workflows, so deploy from here.
   deploy:
