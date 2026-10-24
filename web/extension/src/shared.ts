@@ -6,9 +6,15 @@ export interface Settings {
   username: string;
   siteUrl: string;
   autoOpen: boolean;
+  repo: string; // owner/name of the GitHub repo whose "Update games" workflow rebuilds the site
 }
 
-export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "https://atefmo-1.github.io/prophylaxis/", autoOpen: true };
+export const DEFAULTS: Settings = {
+  username: "atefmo-1",
+  siteUrl: "https://atefmo-1.github.io/prophylaxis/",
+  autoOpen: true,
+  repo: "atefmo-1/prophylaxis",
+};
 
 // The old default, from before the site was deployed. Saving Settings stored it, so treat it as "not set".
 const OLD_DEFAULT_SITE = "http://localhost:5173/";
@@ -19,8 +25,19 @@ export async function getSettings(): Promise<Settings> {
     username: String(stored.username || DEFAULTS.username),
     siteUrl: String(stored.siteUrl && stored.siteUrl !== OLD_DEFAULT_SITE ? stored.siteUrl : DEFAULTS.siteUrl),
     autoOpen: stored.autoOpen !== false,
+    repo: String(stored.repo || DEFAULTS.repo),
   };
 }
+
+// The GitHub token stays in local storage: on this computer only, never synced to the Chrome account.
+export async function getToken(): Promise<string> {
+  const { githubToken } = (await chrome.storage.local.get("githubToken")) as { githubToken?: string };
+  return githubToken ?? "";
+}
+
+/** Whether the game has reached the site: asked GitHub to update it, on the site, or GitHub refused. */
+export type SiteSync = { status: "sent"; at: number } | { status: "live" } | { status: "failed"; message: string };
+export const siteKey = (id: string) => `site:${id}`;
 
 export interface Live {
   color: Color;
@@ -45,6 +62,7 @@ export type Message =
   | { type: "analyse"; id: string }
   | { type: "open-panel"; id: string; mode: "summary" | "moments" }
   | { type: "await"; id: string }
+  | { type: "update-site"; id: string }
   | { type: "game-over"; id: string; open: boolean; gesture: boolean }
   | { type: "progress"; id: string; percent: number; frame?: Frame; meta?: { color: Color; opponent: string; plies: number } }
   | { type: "done"; id: string; review: unknown }

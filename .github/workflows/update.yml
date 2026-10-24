@@ -32,10 +32,12 @@ jobs:
         with:
           fetch-depth: 0 # full history, so the push below can rebase onto a newer main
 
-      - name: Commit as the Actions bot
+      # Game updates are the owner's own data, so they're committed under the owner's GitHub noreply address
+      # rather than as github-actions[bot] (which would show up as a second contributor).
+      - name: Commit as the repo owner
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner_id }}+${{ github.repository_owner }}@users.noreply.github.com"
 
       - uses: astral-sh/setup-uv@v10.2.0 # this action publishes no major-version tag
 

@@ -185,6 +185,57 @@
   accent-color: var(--c-accent);
 }
 
+/* ---------- Site status line ---------- */
+
+.xp-site {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-panel);
+  color: var(--c-ink-2);
+  font-size: 13px;
+}
+
+.xp-site--live {
+  color: var(--c-ink);
+}
+
+.xp-site--failed {
+  background: rgb(239 122 108 / 0.12);
+  color: var(--c-ink);
+}
+
+.xp-site a,
+.xp-site button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.xp-github {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--c-line);
+}
+
+.xp-github legend {
+  padding: 0;
+  font-weight: 650;
+}
+
+.xp-forget {
+  justify-self: start;
+  padding: 0;
+}
+
 .xp-settings small {
   color: var(--c-ink-3);
   font-weight: 400;

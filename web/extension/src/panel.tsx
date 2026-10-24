@@ -7,7 +7,7 @@ import { Board } from "../../src/components/Board";
 import { ReviewView } from "../../src/review/Review";
 import { href, setLinkBase } from "../../src/router";
 import type { GameReview } from "../../src/types";
-import { DEFAULTS, getSettings, reviewKey, stateKey, type GameState, type Live, type Message, type Settings } from "./shared";
+import { DEFAULTS, getSettings, getToken, reviewKey, siteKey, stateKey, type GameState, type Live, type Message, type Settings, type SiteSync } from "./shared";
 import "./panel.css";
 
 type Request = { id: string; mode: "summary" | "moments"; at: number };
@@ -134,11 +134,90 @@ function Waiting({ since }: { since: number }) {
   );
 }
 
+const SITE_POLL_MS = 20000;
+const SITE_GIVE_UP_MS = 15 * 60 * 1000;
+
+/** One line under the header: is this game on your site yet? Watches the site's game list until it appears. */
+function SiteStatus({ id, siteBase, onSettings }: { id: string; siteBase: string; onSettings: () => void }) {
+  const [sync, setSync] = useState<SiteSync | null | undefined>(undefined);
+  const [hasToken, setHasToken] = useState(true);
+
+  useEffect(() => {
+    const read = async () => {
+      const data = await chrome.storage.local.get(siteKey(id));
+      setSync((data[siteKey(id)] as SiteSync) ?? null);
+      setHasToken(!!(await getToken()));
+    };
+    read();
+    const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && (changes[siteKey(id)] || changes.githubToken)) read();
+    };
+    chrome.storage.onChanged.addListener(onChange);
+    return () => chrome.storage.onChanged.removeListener(onChange);
+  }, [id]);
+
+  const waiting = sync?.status === "sent" ? sync.at : null;
+  useEffect(() => {
+    if (waiting === null) return;
+    const look = async () => {
+      if (Date.now() - waiting > SITE_GIVE_UP_MS) return;
+      try {
+        const res = await fetch(new URL("data/games.json", siteBase), { cache: "no-store" });
+        const games = (await res.json()) as { id: string }[];
+        if (games.some((g) => g.id === id)) await chrome.storage.local.set({ [siteKey(id)]: { status: "live" } satisfies SiteSync });
+      } catch {
+        // The site may be mid-deploy; look again next time.
+      }
+    };
+    look();
+    const timer = setInterval(look, SITE_POLL_MS);
+    return () => clearInterval(timer);
+  }, [waiting, id, siteBase]);
+
+  if (sync === undefined) return null;
+  if (sync?.status === "live")
+    return (
+      <p className="xp-site xp-site--live">
+        On your site. <a href={href({ name: "game", id, ply: null })}>Open it</a>
+      </p>
+    );
+  if (sync?.status === "sent")
+    return (
+      <p className="xp-site">
+        {Date.now() - sync.at > SITE_GIVE_UP_MS
+          ? "Your site is taking longer than usual to update. Check the repo's Actions tab."
+          : "Adding this game to your site. Usually about 3 minutes."}
+      </p>
+    );
+  if (sync?.status === "failed")
+    return (
+      <p className="xp-site xp-site--failed">
+        Couldn't add this game to your site: {sync.message}{" "}
+        <button type="button" onClick={() => send({ type: "update-site", id })}>
+          Try again
+        </button>
+      </p>
+    );
+  if (!hasToken)
+    return (
+      <p className="xp-site">
+        Your site picks this game up within the hour.{" "}
+        <button type="button" onClick={onSettings}>
+          Add it right away
+        </button>
+      </p>
+    );
+  return null;
+}
+
 function SettingsForm({ onDone }: { onDone: () => void }) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
   const [saved, setSaved] = useState(false);
+  const [token, setToken] = useState("");
+  const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
     getSettings().then(setSettings);
+    getToken().then((t) => setHasToken(!!t));
   }, []);
   return (
     <form
@@ -146,6 +225,7 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
       onSubmit={async (e) => {
         e.preventDefault();
         await chrome.storage.sync.set({ ...settings });
+        if (token) await chrome.storage.local.set({ githubToken: token });
         setSaved(true);
         setTimeout(onDone, 600);
       }}
@@ -163,6 +243,43 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
         <input value={settings.siteUrl} type="url" required onChange={(e) => setSettings({ ...settings, siteUrl: e.target.value.trim() })} />
         <small>Used for your habit history and the "see the pattern" links.</small>
       </label>
+      <fieldset className="xp-github">
+        <legend>Add each game to your site right away</legend>
+        <small>
+          Without this, the site picks up new games within the hour. With a GitHub token, the extension asks GitHub to update
+          the site as soon as a game ends.
+        </small>
+        <label>
+          GitHub repository
+          <input value={settings.repo} required placeholder="owner/name" onChange={(e) => setSettings({ ...settings, repo: e.target.value.trim() })} />
+        </label>
+        <label>
+          GitHub token
+          <input
+            type="password"
+            value={token}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={hasToken ? "Saved. Paste a new one to replace it." : "github_pat_…"}
+            onChange={(e) => setToken(e.target.value.trim())}
+          />
+          <small>
+            A fine-grained token for this repository only, with "Actions: Read and write". It stays on this computer.
+          </small>
+        </label>
+        {hasToken && (
+          <button
+            type="button"
+            className="xp-link xp-forget"
+            onClick={async () => {
+              await chrome.storage.local.remove("githubToken");
+              setHasToken(false);
+            }}
+          >
+            Remove the saved token
+          </button>
+        )}
+      </fieldset>
       <button type="submit" className="xp-btn xp-btn--primary">
         {saved ? "Saved" : "Save"}
       </button>
@@ -230,6 +347,7 @@ function App() {
           {settingsOpen ? "Close settings" : "Settings"}
         </button>
       </header>
+      {siteBase && request && !settingsOpen && <SiteStatus key={request.id} id={request.id} siteBase={siteBase} onSettings={() => setSettingsOpen(true)} />}
       {body}
     </div>
   );
