@@ -1,12 +1,10 @@
-# Builds the static site (web/) with the committed game data and publishes it to GitHub Pages.
-# New games arrive by themselves through update.yml, which calls this workflow after committing them.
+# Builds the static site (web/) and publishes it to GitHub Pages.
 name: Deploy site
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  workflow_call: # from update.yml, after it commits new games
 
 permissions:
   contents: read
@@ -22,9 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          # When called after a data commit, build that commit (main), not the one the run started from.
-          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

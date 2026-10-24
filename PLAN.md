@@ -1,17 +1,17 @@
 # Prophylaxis: Plan & Architecture
 
-A personal chess coach for chess.com user **atefmo-1**. It covers what chess.com puts behind its paywall (Game Review, Move Explanations, Advanced Stats) and adds something chess.com doesn't do: it analyzes **all** of your games together to find recurring weaknesses and turn them into training.
+A personal chess coach for chess.com players. It covers what chess.com puts behind its paywall (Game Review, Move Explanations, Advanced Stats) and adds something chess.com doesn't do: it analyzes **all** of your games together to find recurring weaknesses and turn them into training.
 
 ---
 
-## 1. Starting point (checked 2026-10-24)
+## 1. Starting point
 
 | Fact | Implication |
 |---|---|
-| 84 games, all **rapid** (71× 10+0, 7× 15+10, 6× 10+5), all in Oct 2026 | Small dataset. Stats need confidence intervals, and there's too little data to train a model on these games alone. |
-| Rating 225 now, best 399. Record 38W / 40L / 6D. Puzzle rating 640 | At this level games are decided by hung pieces and missed 1–2 move tactics. Coaching should focus there, not on opening theory. |
+| A new player has a few dozen games, mostly **rapid** | Small dataset. Stats need confidence intervals, and there's too little data to train a model on one player's games alone. |
+| Beginners (rated a few hundred) lose mostly to hung pieces and missed 1–2 move tactics | Coaching should focus there, not on opening theory. |
 | PGN includes **per-move clock times** (`[%clk 0:09:56.2]`) | Time-management analysis is possible: time spent per move, blunders under time pressure. |
-| chess.com `accuracies` exist on only **15/84** games | We compute our own accuracy for every game. The 15 games become a **validation set** for our numbers. |
+| chess.com `accuracies` exist on only a small share of games | We compute our own accuracy for every game. The games that have one become a **validation set** for our numbers. |
 | Stockfish not installed; system Python is 3.9 | Setup step: Homebrew Stockfish and Python 3.12 via `uv`. |
 | Public API, no auth: `api.chess.com/pub/player/{user}/games/archives` → monthly archives | Ingestion is easy and legal. Requests must be made one at a time (no parallel calls) with a descriptive User-Agent. |
 
@@ -154,13 +154,13 @@ coach_notes(id PK, created_at, scope, body)    -- agent memory: weekly summaries
 ## 5. Analysis pipeline (core logic)
 
 ### 5.1 Ingest
-- `GET /pub/player/atefmo-1/games/archives`, then fetch each monthly archive **one at a time**, sending `If-Modified-Since`/ETag so unchanged months are skipped.
+- `GET /pub/player/{username}/games/archives`, then fetch each monthly archive **one at a time**, sending `If-Modified-Since`/ETag so unchanged months are skipped.
 - Parse PGN with `python-chess`: moves, `%clk` tags giving clock times, ECO and opening name, termination.
 - Derive `my_color`, `result`, `time_spent_s` (clock difference plus increment), and `session_id`.
 
 ### 5.2 Engine analysis
 - A pool of Stockfish processes (one per CPU core minus one). Each position is searched to a fixed **node budget** (e.g. 1M nodes), which gives reproducible results, with **MultiPV=3**.
-- Rough cost: 84 games × ~70 plies ≈ 6k positions, so a few minutes on an M-series Mac. Cached by FEN, so repeated positions such as common openings are free.
+- Rough cost: 100 games × ~70 plies ≈ 7k positions, so a few minutes on an M-series Mac. Cached by FEN, so repeated positions such as common openings are free.
 
 ### 5.3 Move classification (Lichess-style, public formulas)
 - Win %: `50 + 50 * (2 / (1 + exp(-0.00368208 * cp)) - 1)`
@@ -185,7 +185,7 @@ Rule-based detectors written with `python-chess` (version 1), with each rule cov
 Version 2 replaces or augments these rules with the trained **motif classifier** (§7.1). Each tag records its `source` so the two can be compared.
 
 ### 5.5 Stats & weakness model
-With only 84 games, raw percentages are noisy. Rates use a **Beta-Binomial** model with credible intervals, so the dashboard says "hangs a piece in 37% (28–46%) of games" instead of reporting a single exact figure.
+With a few dozen games, raw percentages are noisy. Rates use a **Beta-Binomial** model with credible intervals, so the dashboard says "hangs a piece in 37% (28–46%) of games" instead of reporting a single exact figure.
 
 Breakdowns:
 - **Phase**: accuracy and blunders per 10 moves for opening / middlegame / endgame
@@ -242,7 +242,7 @@ A chat agent (Sonnet 5.5) using tool calling. The tools are typed (not raw SQL b
 
 ## 7. ML components (the AI/ML core)
 
-Your 84 games are the **test** data. Training data comes from Lichess's open datasets (CC0).
+A player's own games are the **test** data. Training data comes from Lichess's open datasets (CC0).
 
 ### 7.1 Tactical motif classifier ★ main ML project
 - **Data:** the Lichess puzzle database (millions of puzzles, each with a FEN, the solution moves, a rating, and **theme labels** such as `fork`, `pin`, `hangingPiece`, `mateIn1`, `backRankMate`, `discoveredAttack`). The labels are free.
@@ -342,7 +342,7 @@ Earlier status: phases 0–3 are built. Sync, engine analysis, grading, rule-bas
 | # | Phase | Deliverable | Done when |
 |---|---|---|---|
 | 0 | **Setup** | git, `uv`, Python 3.12, Stockfish, skeleton package, pytest | `coach --help` runs, `stockfish` responds |
-| 1 | **Ingest + engine** | `coach sync`, `coach analyze` | All 84 games in DB, every move has an eval and class; accuracy correlates with chess.com's on the 15 validation games |
+| 1 | **Ingest + engine** | `coach sync`, `coach analyze` | All games in DB, every move has an eval and class; accuracy correlates with chess.com's on the validation games |
 | 2 | **Rule-based motifs + report** | `coach report` | Report lists top weaknesses with counts, intervals, and example positions; motif rules pass unit tests |
 | 3 | **API + dashboard** | FastAPI + React overview, game review, stats | You can click through any game with an eval graph and move classes |
 | 4 | **Grounded explanations** | Explanations in game review | Hallucination check passes on ≥95% of golden-set positions |

@@ -5,7 +5,11 @@
 import { resolve } from "node:path";
 import puppeteer from "puppeteer-core";
 
-const gameId = process.argv[2] ?? "185851852898";
+const gameId = process.argv[2];
+if (!gameId) {
+  console.error("Give the id of a finished chess.com game played by the extension's username.");
+  process.exit(1);
+}
 const ext = resolve(import.meta.dirname, "../dist-extension");
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 

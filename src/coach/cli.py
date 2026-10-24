@@ -12,6 +12,8 @@ app = typer.Typer(no_args_is_help=True, add_completion=False, help="Your persona
 @app.command()
 def sync(username: str = typer.Option(config.USERNAME, help="chess.com username")) -> None:
     """Download new games from chess.com."""
+    if not username:
+        raise typer.BadParameter("give a chess.com username with --username or COACH_USERNAME", param_hint="--username")
     with db.connect() as conn:
         added = chesscom.sync(conn, username)
         total = conn.execute("SELECT COUNT(*) FROM games").fetchone()[0]

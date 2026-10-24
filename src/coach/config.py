@@ -9,7 +9,7 @@ DATA_DIR = Path(os.environ.get("COACH_DATA_DIR", ROOT / "data"))
 DB_PATH = DATA_DIR / "chess.db"
 EXPORT_DIR = Path(os.environ.get("COACH_EXPORT_DIR", ROOT / "web" / "public" / "data"))
 
-USERNAME = os.environ.get("COACH_USERNAME", "atefmo-1")
+USERNAME = os.environ.get("COACH_USERNAME", "")
 USER_AGENT = "prophylaxis/0.1 (personal game-analysis tool)"
 
 ENGINE_NODES = int(os.environ.get("COACH_ENGINE_NODES", "1000000"))

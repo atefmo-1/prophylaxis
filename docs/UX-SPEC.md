@@ -2,7 +2,7 @@
 
 Written 2026-10-24 after the first two designs missed. Both invented their own layouts instead of starting from what chess players already know. This spec starts from the conventions of chess.com and Lichess, keeps everything players expect, and puts our own effort only where we can do better than they do.
 
-**How it was researched:** chess.com help-centre and news posts; Lichess's own pages and open-source code (`lila`), which gives exact UI wording and thresholds; Aimchess, Noctie, DecodeChess, Chessigma and existing Chrome extensions; coach articles on reviewing games. Atefmo-1's latest game was also loaded on Lichess's analysis board and on its chess.com game page and studied directly. Sources are linked inline.
+**How it was researched:** chess.com help-centre and news posts; Lichess's own pages and open-source code (`lila`), which gives exact UI wording and thresholds; Aimchess, Noctie, DecodeChess, Chessigma and existing Chrome extensions; coach articles on reviewing games. A real beginner's game was also loaded on Lichess's analysis board and on its chess.com game page and studied directly.com game page and studied directly. Sources are linked inline.
 
 ---
 
@@ -24,7 +24,7 @@ Written 2026-10-24 after the first two designs missed. Both invented their own l
 
 1. **Board first, always visible.** On desktop the review never scrolls; the board, the panel and the controls fit in one viewport.
 2. **Familiar where it matters:** scoresheet, classification names and colours, eval bar, arrow keys. A chess.com user should know where everything is in two seconds.
-3. **One lesson per game.** A 225 player learns more from one critical position than from a full report ([Belenkaya: find "the first mistake that started the slide"](https://www.chess.com/article/view/how-to-analyze-your-chess-games)).
+3. **One lesson per game.** A beginner learns more from one critical position than from a full report ([Belenkaya: find "the first mistake that started the slide"](https://www.chess.com/article/view/how-to-analyze-your-chess-games)).
 4. **Try before you're told.** Every key mistake is a retry puzzle first and an explanation second.
 5. **Facts, not prose.** Each explanation sentence comes from the engine and our tactic rules, names the piece and square, and lights up an arrow. chess.com loses trust when its text is wrong ([forum](https://www.chess.com/forum/view/general/chesscoms-new-game-review-what-the-heck-happened?lc=1)).
 6. **Connect every game to the habits.** This is the one thing chess.com doesn't do, and it's our reason to exist.
@@ -37,18 +37,18 @@ Written 2026-10-24 after the first two designs missed. Both invented their own l
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Prophylaxis   Review · Habits · Practice · Games              atefmo-1 · 225 │
+│ Prophylaxis   Review · Habits · Practice · Games              you · 312      │
 ├───┬───────────────────────────────────────────┬──────────────────────────────┤
-│ E │ ▢ cooldude44445  180          47.5 acc     │ ┌ COACH ────────────────────┐ │
-│ V │ ┌─────────────────────────────────────┐   │ │ 8… f6  ?? Blunder          │ │
-│ A │ │                                     │   │ │ Your chances 86% → 12%.    │ │
+│ E │ ▢ opponent       298          61.2 acc     │ ┌ COACH ────────────────────┐ │
+│ V │ ┌─────────────────────────────────────┐   │ │ 9… g5  ?? Blunder          │ │
+│ A │ │                                     │   │ │ Your chances 71% → 18%.    │ │
 │ L │ │                                     │   │ │ It opened the e8–h5 diag-  │ │
 │   │ │               BOARD                 │   │ │ onal: Qh5+ wins.           │ │
 │ B │ │   (height = viewport − 2 strips)    │   │ │ ↳ 3rd time in your last 10 │ │
 │ A │ │   class badge on the moved piece    │   │ │   games  [Habits →]        │ │
 │ R │ │   arrows: green best, red threat    │   │ │ [Retry move] [Show best]   │ │
 │   │ └─────────────────────────────────────┘   │ └───────────────────────────┘ │
-│   │ ▢ atefmo-1 (you)  225 +8       48.6 acc    │  1  e4      e5             │
+│   │ ▢ you             312 +8       58.4 acc    │  1  e4      e5             │
 │   │                                           │  2  f4 ?!   exf4           │
 │   │                                           │  …  (two-column scoresheet,│
 │   │                                           │      scrolls inside panel) │
@@ -68,7 +68,7 @@ Written 2026-10-24 after the first two designs missed. Both invented their own l
 ### 3.2 States of the panel
 
 1. **Summary (on open)**, the way chess.com Game Review opens on its highlights:
-   - One coach sentence: *"Won by checkmate. It turned on 8… f6 (86% → 12%); your opponent didn't punish it."*
+   - One coach sentence: *"Won by checkmate. It turned on 9… g5 (71% → 18%); your opponent didn't punish it."*
    - **You vs them:** accuracy side by side, then a **class-count table** with one icon row per class and two aligned number columns. This is chess.com's report card, which players recognise.
    - **Phases:** Opening / Middlegame / Endgame, each with its accuracy and the class icon of its worst move.
    - Primary button **"Review the 3 key moments"**; secondary: "Step through every move".

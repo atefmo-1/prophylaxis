@@ -14,3 +14,6 @@ web/dist/
 *.tsbuildinfo
 .impeccable/questions/
 web/dist-extension/
+
+# A player's exported analysis stays on their machine; the site analyses games in the browser.
+web/public/data/

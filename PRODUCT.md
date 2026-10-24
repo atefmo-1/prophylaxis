@@ -12,7 +12,7 @@ React + Vite + TypeScript static site, hosted standalone (e.g. Vercel or GitHub 
 
 ## Users
 
-1. **The player (owner), atefmo-1.** Started playing chess on chess.com in October 2026; rapid rating ~225 (peak 399). Plays sessions of 10-minute rapid games, then opens the coach to understand what just happened and what to fix. The first question after a session is "how did my last game go?"
+1. **A chess.com player learning the game.** Rated a few hundred, plays sessions of 10-minute rapid games, then opens the coach to understand what just happened and what to fix. The first question after a session is "how did my last game go?"
 2. **Visitors to the owner's website.** Recruiters and curious visitors who see the project as a portfolio piece. They need to understand within seconds what the tool does with real games, and see the engineering behind it.
 
 ## Product Purpose
@@ -33,7 +33,7 @@ It is built around one specific player's real games. Every insight links to a re
 
 - Analyzes finished games only. It must never offer help during a live game (chess.com Fair Play policy).
 - Move classes follow chess.com's scale: great, best, excellent, good, inaccuracy, mistake, blunder.
-- Small sample (84 games as of 2026-10-24): stats are shown with 90% intervals, never as falsely exact numbers.
+- Small samples (a player may have only a few dozen games): stats are shown with 90% intervals, never as falsely exact numbers.
 - Not yet built: LLM move explanations, coach chat agent, drills, ML tactic classifier, Chrome extension (see PLAN.md).
 
 ## Brand Commitments
@@ -42,8 +42,8 @@ None yet. No existing name, logo or visual identity.
 
 ## Evidence on Hand
 
-- Real data: 84 rapid games (Oct 2026), per-move clocks, engine evaluations, tags (`data/chess.db`, exported to `web/public/data/`).
-- Validation: chess.com's accuracy exists for 15 games; our accuracy is compared against it.
+- Real data: any player's public chess.com games, with per-move clocks, engine evaluations and tags. A player's analysis stays on their own machine (`data/chess.db` locally, the browser's storage on the site).
+- Validation: where chess.com computed an accuracy, ours is compared against it.
 - No testimonials, users, or press. Do not invent any.
 
 ## Product Principles
