@@ -24,6 +24,13 @@ const KEEP = 15; // reviews kept in storage
 
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => undefined);
 
+// Earlier versions kept a GitHub token and repository for updating the site. Nothing uses them now; don't keep a
+// secret lying around.
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.remove(["githubToken"]).catch(() => undefined);
+  chrome.storage.sync.remove(["repo"]).catch(() => undefined);
+});
+
 async function setState(id: string, state: GameState) {
   await chrome.storage.local.set({ [stateKey(id)]: state });
 }
