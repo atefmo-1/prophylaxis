@@ -1,0 +1,716 @@
+/* Habits, Practice and Games: the same quiet system as the review. */
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+}
+
+.page-top {
+  margin-bottom: 24px;
+}
+
+.page-top h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-top p {
+  margin: 6px 0 0;
+  color: var(--c-ink-2);
+}
+
+.pstate {
+  padding: 48px 24px;
+  color: var(--c-ink-2);
+  text-align: center;
+}
+
+/* Buttons and links styled as buttons */
+.pbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms var(--c-ease), transform 100ms var(--c-ease);
+}
+
+.pbtn:hover { background: var(--c-hover); }
+.pbtn:active { transform: translateY(1px); }
+.pbtn--primary { background: var(--c-accent); color: #fff; }
+.pbtn--primary:hover { background: var(--c-accent-hover); }
+
+/* ---------- #1 habit ---------- */
+
+.focus {
+  display: grid;
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  padding: 20px;
+  border-radius: 10px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.focus-board {
+  display: block;
+  border-radius: 4px;
+  transition: box-shadow 150ms var(--c-ease);
+}
+
+.focus-board:hover {
+  box-shadow: 0 0 0 2px var(--c-accent-ink);
+}
+
+.focus .board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--sq-dark);
+  box-shadow: none;
+}
+
+.focus .board-ground {
+  width: 100%;
+  height: 100%;
+}
+
+.focus .board cg-board {
+  background-color: var(--sq-light);
+  background-image: repeating-conic-gradient(var(--sq-dark) 0 25%, var(--sq-light) 0 50%);
+  background-size: 25% 25%;
+  border-radius: 0;
+}
+
+.focus-text h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.focus-text p {
+  margin: 0 0 10px;
+  max-width: 60ch;
+  color: var(--c-ink-2);
+}
+
+.focus-rate b {
+  color: var(--c-ink);
+  font-weight: 650;
+}
+
+.focus-fix {
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink) !important;
+}
+
+.focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.focus-caption {
+  font-size: 13px;
+  color: var(--c-ink-3) !important;
+}
+
+.focus-caption b {
+  color: var(--c-ink-2);
+}
+
+.focus-caption a,
+.ptable a,
+.games small a {
+  color: var(--c-accent-ink);
+}
+
+/* ---------- Sections ---------- */
+
+.block {
+  margin-top: 44px;
+}
+
+.block > h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.block-lede {
+  margin: 4px 0 16px;
+  color: var(--c-ink-3);
+}
+
+/* ---------- Skills ---------- */
+
+.skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--c-line);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.skill {
+  padding: 16px 18px;
+  background: var(--c-panel);
+}
+
+.skill h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.skill-q {
+  margin: 2px 0 12px;
+  min-height: 2.6em;
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.skill-value {
+  margin: 0;
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.skill-value b {
+  margin-right: 4px;
+  color: var(--c-ink);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: normal;
+}
+
+.skill-was {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 6px 0 0;
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 650;
+}
+
+.trend--good { color: var(--c-win); }
+.trend--bad { color: var(--c-loss); }
+.trend--flat { color: var(--c-ink-3); }
+
+/* ---------- Habit list ---------- */
+
+.habit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.habit-list li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 150px 130px auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.habit-list li + li {
+  border-top: 1px solid var(--c-line);
+}
+
+.habit-rank {
+  color: var(--c-ink-3);
+  font-weight: 650;
+}
+
+.habit-main,
+.habit-rate,
+.habit-cost {
+  display: grid;
+  min-width: 0;
+}
+
+.habit-main b,
+.habit-rate b,
+.habit-cost b {
+  font-weight: 650;
+}
+
+.habit-main span,
+.habit-rate span,
+.habit-cost span {
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+/* ---------- Tables ---------- */
+
+.ptable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ptable th,
+.ptable td {
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 500;
+}
+
+.ptable thead th {
+  color: var(--c-ink-3);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ptable .num {
+  text-align: right;
+}
+
+.ptable th small,
+.ptable td small {
+  display: block;
+  color: var(--c-ink-3);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ptable td.num small {
+  display: inline;
+}
+
+.ptable--grid tbody tr:hover {
+  background: var(--c-row-hover);
+}
+
+.ci-cell {
+  width: 45%;
+}
+
+.ci {
+  position: relative;
+  display: block;
+  height: 18px;
+}
+
+.ci::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--c-line);
+}
+
+.ci-range {
+  position: absolute;
+  top: 50%;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 4px;
+  background: var(--c-band);
+}
+
+.ci-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  box-shadow: 0 0 0 2px var(--c-panel);
+}
+
+.method-list {
+  display: grid;
+  gap: 8px;
+  max-width: 72ch;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--c-ink-2);
+}
+
+
+/* ---------- Analysis cards and charts ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cards--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  margin: 0;
+  padding: 16px 18px 14px;
+  border-radius: 10px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+  min-width: 0;
+}
+
+.card figcaption {
+  margin-bottom: 12px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.card figcaption p {
+  margin: 3px 0 0;
+  color: var(--c-ink-3);
+  font-size: 13px;
+  text-wrap: pretty;
+}
+
+.chart {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.ch-grid { stroke: var(--c-line); stroke-width: 1; }
+.ch-tick { fill: var(--c-ink-3); font-size: 11px; font-family: var(--c-font); font-variant-numeric: tabular-nums; }
+.ch-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ch-line--rating { stroke: var(--c-ink); }
+.ch-line--avg { stroke: var(--c-accent); }
+.ch-dots--game circle { fill: var(--c-ink-3); fill-opacity: 0.55; stroke: var(--c-panel); stroke-width: 1.5; }
+.ch-cursor { stroke: var(--c-accent-ink); stroke-width: 1.5; }
+.ch-equal { stroke: var(--c-line-strong); stroke-width: 1; }
+.ch-point { fill: var(--c-accent); stroke: var(--c-panel); stroke-width: 2; }
+
+.ch-tip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  transform: translate(-50%, -100%);
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #111214;
+  color: #c9c8c3;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ch-tip b {
+  color: #fff;
+}
+
+.ch-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: -4px 0 10px;
+  padding: 0;
+  list-style: none;
+  color: var(--c-ink-2);
+  font-size: 12px;
+}
+
+.ch-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ch-key { display: inline-block; }
+.ch-key--line { width: 14px; height: 2px; border-radius: 1px; }
+.ch-key--dot { width: 9px; height: 9px; border-radius: 50%; }
+.ch-key--game { background: var(--c-ink-3); opacity: 0.7; }
+.ch-key--avg, .ch-key--a { background: var(--c-accent); }
+.ch-key--b { background: var(--c-ink-3); }
+
+.rates th,
+.rates td {
+  padding: 8px 10px 8px 0;
+}
+
+.rates td.num b {
+  display: block;
+}
+
+.rates .ci-cell {
+  width: 40%;
+}
+
+.pairs th {
+  width: 36%;
+  padding: 7px 10px 7px 0;
+}
+
+.pairs td {
+  padding: 6px 0;
+}
+
+.pairs-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 12px;
+  font-size: 12px;
+  color: var(--c-ink-3);
+}
+
+.pair + .pair {
+  margin-top: 3px;
+}
+
+.pair-bar {
+  height: 8px;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+}
+
+.pair-bar--a { background: var(--c-accent); }
+.pair-bar--b { background: var(--c-ink-3); opacity: 0.6; }
+
+.bars {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.bars li {
+  display: grid;
+  grid-template-columns: minmax(120px, 42%) minmax(0, 1fr) 28px;
+  gap: 10px;
+  align-items: center;
+}
+
+.bars-track {
+  display: block;
+}
+
+.bars-bar {
+  display: block;
+  height: 10px;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+}
+
+.bars-bar--win { background: var(--c-win); }
+.bars-bar--loss { background: var(--c-loss); }
+.bars-bar--draw { background: var(--c-ink-3); }
+
+.bars li .num {
+  text-align: right;
+  color: var(--c-ink-2);
+}
+
+.bars-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.bars-note {
+  margin: 0;
+  color: var(--c-ink-3);
+  font-size: 12px;
+}
+
+.method {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 24px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+/* ---------- Games ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.filters-count {
+  margin-left: auto;
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--c-panel);
+}
+
+.seg button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--c-ink-3);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg button:hover { color: var(--c-ink); }
+.seg button[aria-pressed="true"] { background: var(--c-panel-2); color: var(--c-ink); }
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.row-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--c-ink);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.row-link:hover {
+  text-decoration: underline;
+}
+
+.piece-dot {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  border-radius: 3px;
+}
+
+.piece-dot--white { background: #f2f1ed; box-shadow: inset 0 0 0 1px var(--c-line-strong); }
+.piece-dot--black { background: #2c2b29; box-shadow: inset 0 0 0 1px #5b5955; }
+
+.result {
+  font-weight: 650;
+}
+
+.result--win { color: var(--c-win); }
+.result--loss { color: var(--c-loss); }
+.result--draw { color: var(--c-ink-2); }
+
+@media (max-width: 960px) {
+  .cards--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .cards,
+  .method {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .focus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .focus-board {
+    max-width: 420px;
+  }
+
+  .skills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .habit-list li {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+  }
+
+  .habit-rate,
+  .habit-cost {
+    grid-column: 2;
+  }
+
+  .habit-list .pbtn {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .hide-md {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 22px 16px 56px;
+  }
+
+  .skills {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hide-sm {
+    display: none;
+  }
+
+  .ci-cell {
+    width: 34%;
+  }
+}

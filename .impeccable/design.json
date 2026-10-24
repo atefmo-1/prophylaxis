@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T00:00:00Z",
+  "title": "Design System: Chess Coach",
+  "extensions": {
+    "colorMeta": {
+      "page": {
+        "role": "neutral",
+        "displayName": "Page",
+        "canonical": "oklch(20.4% 0.003 248)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232425",
+          "#3f4041",
+          "#5c5e5f",
+          "#7c7d7f",
+          "#9d9ea0",
+          "#c3c4c6",
+          "#edeff0"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "oklch(24.3% 0.004 264)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3f4042",
+          "#5c5e60",
+          "#7c7d80",
+          "#9d9ea1",
+          "#c3c4c7",
+          "#edeef1"
+        ]
+      },
+      "panel-raised": {
+        "role": "neutral",
+        "displayName": "Raised",
+        "canonical": "oklch(28.1% 0.006 271)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7c7d81",
+          "#9d9ea2",
+          "#c3c4c8",
+          "#edeef2"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(33.2% 0.008 264)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#222428",
+          "#3e4044",
+          "#5b5e62",
+          "#7b7d82",
+          "#9c9ea3",
+          "#c2c4c9",
+          "#eceef4"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(94.0% 0.004 91)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#252422",
+          "#40403d",
+          "#5e5d5b",
+          "#7e7d7a",
+          "#9f9e9b",
+          "#c5c4c1",
+          "#efeeeb"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(78.2% 0.007 97)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403c",
+          "#5f5e59",
+          "#7e7d79",
+          "#9f9e9a",
+          "#c5c4bf",
+          "#f0efe9"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(64.6% 0.007 97)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403b",
+          "#5f5e59",
+          "#7e7d78",
+          "#9f9e99",
+          "#c5c4bf",
+          "#f0efe9"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Move Blue",
+        "canonical": "oklch(58.2% 0.135 255)",
+        "tonalRamp": [
+          "#00003b",
+          "#001f5b",
+          "#003d84",
+          "#1c5da8",
+          "#3f7ecc",
+          "#61a1f1",
+          "#86c7ff",
+          "#b7f3ff"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Pale Move Blue",
+        "canonical": "oklch(77.9% 0.091 252)",
+        "tonalRamp": [
+          "#00062f",
+          "#00234e",
+          "#16416e",
+          "#35608f",
+          "#5580b2",
+          "#75a2d6",
+          "#9ac8fe",
+          "#c3f3ff"
+        ]
+      },
+      "square-light": {
+        "role": "secondary",
+        "displayName": "Classic Board Light",
+        "canonical": "oklch(89.5% 0.054 79)",
+        "tonalRamp": [
+          "#170700",
+          "#322000",
+          "#4f3c1c",
+          "#6e5a3a",
+          "#8f7a59",
+          "#b19b79",
+          "#d7c19d",
+          "#ffebc7"
+        ]
+      },
+      "square-dark": {
+        "role": "secondary",
+        "displayName": "Classic Board Dark",
+        "canonical": "oklch(66.1% 0.075 60)",
+        "tonalRamp": [
+          "#1f0000",
+          "#3d1800",
+          "#5c350f",
+          "#7d532f",
+          "#9e734e",
+          "#c1946e",
+          "#e9b993",
+          "#ffe4bc"
+        ]
+      },
+      "grade-great": {
+        "role": "tertiary",
+        "displayName": "Great",
+        "canonical": "oklch(61.7% 0.076 242)",
+        "tonalRamp": [
+          "#000b27",
+          "#002745",
+          "#124464",
+          "#336385",
+          "#5383a7",
+          "#74a5ca",
+          "#99cbf1",
+          "#c2f6ff"
+        ]
+      },
+      "grade-best": {
+        "role": "tertiary",
+        "displayName": "Best",
+        "canonical": "oklch(71.6% 0.148 131)",
+        "tonalRamp": [
+          "#001200",
+          "#0a2e00",
+          "#1f4d00",
+          "#3d6d00",
+          "#5c8e1f",
+          "#7cb147",
+          "#a1d86e",
+          "#d2ffaa"
+        ]
+      },
+      "grade-excellent": {
+        "role": "tertiary",
+        "displayName": "Excellent",
+        "canonical": "oklch(74.4% 0.147 125)",
+        "tonalRamp": [
+          "#021000",
+          "#162c00",
+          "#2d4b00",
+          "#4a6a00",
+          "#688b07",
+          "#89ae3c",
+          "#add564",
+          "#dbfda3"
+        ]
+      },
+      "grade-good": {
+        "role": "tertiary",
+        "displayName": "Good",
+        "canonical": "oklch(70.8% 0.048 134)",
+        "tonalRamp": [
+          "#040f00",
+          "#1a2910",
+          "#35452b",
+          "#536448",
+          "#728467",
+          "#92a587",
+          "#b8cbac",
+          "#e2f6d6"
+        ]
+      },
+      "grade-inaccuracy": {
+        "role": "tertiary",
+        "displayName": "Inaccuracy",
+        "canonical": "oklch(81.5% 0.149 84)",
+        "tonalRamp": [
+          "#210000",
+          "#3e1900",
+          "#643200",
+          "#845200",
+          "#a77300",
+          "#ca9400",
+          "#f2bb3c",
+          "#ffe88d"
+        ]
+      },
+      "grade-mistake": {
+        "role": "tertiary",
+        "displayName": "Mistake",
+        "canonical": "oklch(71.0% 0.152 59)",
+        "tonalRamp": [
+          "#290000",
+          "#4a0700",
+          "#751e00",
+          "#984000",
+          "#bc6200",
+          "#e28427",
+          "#ffaa54",
+          "#ffdb9b"
+        ]
+      },
+      "grade-miss": {
+        "role": "tertiary",
+        "displayName": "Miss",
+        "canonical": "oklch(65.7% 0.176 37)",
+        "tonalRamp": [
+          "#2d0000",
+          "#4f0000",
+          "#840000",
+          "#aa2400",
+          "#d04b22",
+          "#f76f48",
+          "#ff966e",
+          "#ffd2b5"
+        ]
+      },
+      "grade-blunder": {
+        "role": "tertiary",
+        "displayName": "Blunder",
+        "canonical": "oklch(55.7% 0.187 27)",
+        "tonalRamp": [
+          "#2d0000",
+          "#4f0000",
+          "#880000",
+          "#af1019",
+          "#d6403b",
+          "#fe665c",
+          "#ff8d81",
+          "#ffcfc3"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Move Blue Hover"
+      },
+      "current-move": {
+        "role": "primary",
+        "displayName": "Current Move Wash"
+      },
+      "eval-white": {
+        "role": "neutral",
+        "displayName": "Eval White"
+      },
+      "eval-black": {
+        "role": "neutral",
+        "displayName": "Eval Black"
+      }
+    },
+    "typographyMeta": {
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "H1 on Habits, Practice, Games."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Report-card title and #1 habit heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Coach card and section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prose and UI text; 60-72ch on pages."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Tabs, buttons, table heads, captions. Sentence case."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Accuracy and skill values, tabular figures."
+      }
+    },
+    "shadows": [
+      {
+        "name": "board-lift",
+        "value": "0 10px 30px -14px rgb(0 0 0 / 0.7)",
+        "purpose": "Under the review board only."
+      },
+      {
+        "name": "badge-lift",
+        "value": "drop-shadow(0 1px 2px rgb(0 0 0 / 0.5))",
+        "purpose": "Filter on the on-board grade badge."
+      },
+      {
+        "name": "focus-ring",
+        "value": "2px solid #8dbbf0, offset 2px",
+        "purpose": "Outline on every focusable element."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "Shared easing for every transition."
+      },
+      {
+        "name": "state",
+        "value": "150ms",
+        "purpose": "Hover, tab and colour changes."
+      },
+      {
+        "name": "press",
+        "value": "100ms",
+        "purpose": "Button press nudge (translateY 1px)."
+      },
+      {
+        "name": "piece",
+        "value": "180ms",
+        "purpose": "Chessground piece animation."
+      },
+      {
+        "name": "eval",
+        "value": "320ms",
+        "purpose": "Eval bar fill."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0ms",
+        "purpose": "All durations under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "review-stack",
+        "value": "899px"
+      },
+      {
+        "name": "pages-md",
+        "value": "860px"
+      },
+      {
+        "name": "topbar-sm",
+        "value": "640px"
+      },
+      {
+        "name": "pages-sm",
+        "value": "560px"
+      },
+      {
+        "name": "topbar-xs",
+        "value": "400px"
+      }
+    ],
+    "boardArrows": [
+      {
+        "name": "best",
+        "value": "#629924",
+        "opacity": 0.85
+      },
+      {
+        "name": "played",
+        "value": "#3b78c7",
+        "opacity": 0.8
+      },
+      {
+        "name": "threat",
+        "value": "#d43b32",
+        "opacity": 0.8
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default solid control on the Raised fill.",
+      "html": "<button class=\"ds-btn\">Show the best move</button>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--c-panel-2,#28292c);color:var(--c-ink,#ecebe8);font-family:var(--c-font);font-weight:600;font-size:14px;cursor:pointer;transition:background-color 150ms var(--c-ease),transform 100ms var(--c-ease);} .ds-btn:hover{background:#33353a;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;} "
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one Move Blue action per decision.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Next moment</button>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--c-panel-2,#28292c);color:var(--c-ink,#ecebe8);font-family:var(--c-font);font-weight:600;font-size:14px;cursor:pointer;transition:background-color 150ms var(--c-ease),transform 100ms var(--c-ease);} .ds-btn:hover{background:#33353a;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;} .ds-btn-primary{background:#3d7cc9;color:#fff;} .ds-btn-primary:hover{background:#4b8bd8;}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Unfilled secondary action in Muted Ink.",
+      "html": "<button class=\"ds-btn ds-btn-quiet\">Skip</button>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--c-panel-2,#28292c);color:var(--c-ink,#ecebe8);font-family:var(--c-font);font-weight:600;font-size:14px;cursor:pointer;transition:background-color 150ms var(--c-ease),transform 100ms var(--c-ease);} .ds-btn:hover{background:#33353a;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;} .ds-btn-quiet{background:none;color:#8f8e89;} .ds-btn-quiet:hover{background:#28292c;color:#ecebe8;}"
+    },
+    {
+      "name": "Step Controls",
+      "kind": "custom",
+      "refersTo": "button-icon",
+      "description": "Icon buttons for stepping through the game, drawn on a 20px grid at 1.75 stroke.",
+      "html": "<div class=\"ds-controls\"><button class=\"ds-btn ds-btn-icon\" aria-label=\"First\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 4v12M15 4l-6 6 6 6\"/></svg></button><button class=\"ds-btn ds-btn-icon\" aria-label=\"Previous\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12.5 4l-6 6 6 6\"/></svg></button><button class=\"ds-btn ds-btn-icon\" aria-label=\"Next\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7.5 4l6 6-6 6\"/></svg></button><button class=\"ds-btn ds-btn-icon\" aria-label=\"Last\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 4v12M5 4l6 6-6 6\"/></svg></button></div>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--c-panel-2,#28292c);color:var(--c-ink,#ecebe8);font-family:var(--c-font);font-weight:600;font-size:14px;cursor:pointer;transition:background-color 150ms var(--c-ease),transform 100ms var(--c-ease);} .ds-btn:hover{background:#33353a;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;} .ds-controls{display:flex;gap:6px;} .ds-btn-icon{width:44px;padding:0;}"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Sticky 52px bar: brand, four sections, player.",
+      "html": "<nav class=\"ds-topbar\"><b class=\"ds-brand\">Chess Coach</b><a href=\"#\" aria-current=\"page\">Review</a><a href=\"#\">Habits</a><a href=\"#\">Practice</a><a href=\"#\">Games</a></nav>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-topbar{display:flex;align-items:center;gap:2px;height:52px;padding:0 24px;background:#161718;border-bottom:1px solid #34363a;font-family:var(--c-font);font-size:15px;} .ds-brand{color:#ecebe8;font-weight:700;letter-spacing:-0.01em;margin-right:26px;} .ds-topbar a{padding:6px 12px;border-radius:6px;color:#b9b8b3;font-weight:550;text-decoration:none;transition:background-color 150ms,color 150ms;} .ds-topbar a:hover,.ds-topbar a[aria-current=page]{background:#28292c;color:#ecebe8;} .ds-topbar a:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;}"
+    },
+    {
+      "name": "Panel Tabs",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Review panel tabs with the Pale Move Blue underline.",
+      "html": "<div class=\"ds-tabs\"><button aria-pressed=\"true\">Summary</button><button aria-pressed=\"false\">Key moments</button><button aria-pressed=\"false\">Moves</button></div>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #34363a;background:#1f2022;font-family:var(--c-font);} .ds-tabs button{padding:9px 0 10px;border:0;background:none;color:#8f8e89;font:inherit;font-weight:600;cursor:pointer;box-shadow:inset 0 -2px 0 transparent;transition:color 150ms,box-shadow 150ms;} .ds-tabs button:hover{color:#ecebe8;} .ds-tabs button[aria-pressed=true]{color:#ecebe8;box-shadow:inset 0 -2px 0 #8dbbf0;} .ds-tabs button:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;}"
+    },
+    {
+      "name": "Segmented Filter",
+      "kind": "chip",
+      "refersTo": "segmented",
+      "description": "Games filter control.",
+      "html": "<div class=\"ds-seg\"><button aria-pressed=\"true\">All</button><button aria-pressed=\"false\">Wins</button><button aria-pressed=\"false\">Losses</button></div>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-seg{display:inline-flex;padding:3px;border-radius:8px;background:#1f2022;font-family:var(--c-font);} .ds-seg button{padding:6px 12px;border:0;border-radius:6px;background:none;color:#8f8e89;font:inherit;font-size:14px;font-weight:600;cursor:pointer;} .ds-seg button:hover{color:#ecebe8;} .ds-seg button[aria-pressed=true]{background:#28292c;color:#ecebe8;} .ds-seg button:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;}"
+    },
+    {
+      "name": "Grade Badges",
+      "kind": "custom",
+      "refersTo": "grade-badge",
+      "description": "chess.com grade ramp as SVG circles with a white mark; always named in text nearby.",
+      "html": "<div class=\"ds-badges\"><span><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"9.25\" fill=\"#81b64c\" stroke=\"rgb(0 0 0 / 0.25)\" stroke-width=\".75\"/><path d=\"M10 4.2l1.7 3.6 3.9.5-2.9 2.7.7 3.9L10 13l-3.4 1.9.7-3.9-2.9-2.7 3.9-.5z\" fill=\"#fff\"/></svg>Best</span><span><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"9.25\" fill=\"#95a88a\" stroke=\"rgb(0 0 0 / 0.25)\" stroke-width=\".75\"/><path d=\"M6.3 10.3l2.4 2.4 5-5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Good</span><span><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"9.25\" fill=\"#f0b93a\" stroke=\"rgb(0 0 0 / 0.25)\" stroke-width=\".75\"/><text x=\"10\" y=\"13.9\" text-anchor=\"middle\" font-size=\"9.5\" font-weight=\"800\" fill=\"#fff\">?!</text></svg>Inaccuracy</span><span><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"9.25\" fill=\"#e8613a\" stroke=\"rgb(0 0 0 / 0.25)\" stroke-width=\".75\"/><path d=\"M7.2 7.2l5.6 5.6M12.8 7.2l-5.6 5.6\" stroke=\"#fff\" stroke-width=\"2.1\" stroke-linecap=\"round\"/></svg>Miss</span><span><svg width=\"18\" height=\"18\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"10\" r=\"9.25\" fill=\"#ca3431\" stroke=\"rgb(0 0 0 / 0.25)\" stroke-width=\".75\"/><text x=\"10\" y=\"13.9\" text-anchor=\"middle\" font-size=\"9.5\" font-weight=\"800\" fill=\"#fff\">??</text></svg>Blunder</span></div>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-badges{display:flex;flex-wrap:wrap;gap:14px;padding:12px;background:#1f2022;color:#b9b8b3;font-family:var(--c-font);font-size:14px;font-weight:600;} .ds-badges span{display:inline-flex;align-items:center;gap:8px;} .ds-badges text{font-family:var(--c-font);}"
+    },
+    {
+      "name": "Scoresheet",
+      "kind": "custom",
+      "refersTo": "scoresheet-cell",
+      "description": "Two-column move list; own moves bolder, current move in the blue wash.",
+      "html": "<ol class=\"ds-sheet\"><li><span>1</span><button class=\"mine\">e4</button><button>e5</button></li><li><span>2</span><button class=\"mine\" aria-current=\"true\">Nf3</button><button>Nc6</button></li><li><span>3</span><button class=\"mine\">Bc4</button><button>Nd4</button></li></ol>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-sheet{margin:0;padding:4px 0;list-style:none;width:320px;background:#1f2022;font-family:var(--c-font);font-size:15px;} .ds-sheet li{display:grid;grid-template-columns:44px 1fr 1fr;} .ds-sheet li:nth-child(even){background:rgb(255 255 255 / 0.025);} .ds-sheet span{align-self:center;padding-left:16px;color:#8f8e89;font-size:13px;font-variant-numeric:tabular-nums;} .ds-sheet button{min-height:30px;margin:1px 6px 1px 0;padding:0 8px;border:0;border-radius:4px;background:none;color:#b9b8b3;font:inherit;font-weight:500;text-align:left;cursor:pointer;} .ds-sheet button.mine{color:#ecebe8;font-weight:650;} .ds-sheet button:hover{background:#28292c;} .ds-sheet button[aria-current=true]{background:rgb(61 124 201 / 0.32);color:#fff;} .ds-sheet button:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;}"
+    },
+    {
+      "name": "Page Card",
+      "kind": "card",
+      "refersTo": "page-card",
+      "description": "Panel-fill container on Habits and Practice; callouts sit on the Raised fill inside.",
+      "html": "<section class=\"ds-card\"><h2>You leave pieces undefended</h2><p>In 9 of your last 20 games a piece was taken that nothing protected.</p><p class=\"ds-fix\">Before each move, check what your last move left unguarded.</p><a class=\"ds-btn ds-btn-primary\" href=\"#\">Practise this</a></section>",
+      "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--c-panel-2,#28292c);color:var(--c-ink,#ecebe8);font-family:var(--c-font);font-weight:600;font-size:14px;cursor:pointer;transition:background-color 150ms var(--c-ease),transform 100ms var(--c-ease);} .ds-btn:hover{background:#33353a;} .ds-btn:active{transform:translateY(1px);} .ds-btn:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;} .ds-btn-primary{background:#3d7cc9;color:#fff;text-decoration:none;} .ds-btn-primary:hover{background:#4b8bd8;} .ds-card{max-width:520px;padding:20px;border-radius:10px;background:#1f2022;color:#ecebe8;font-family:var(--c-font);font-size:15px;line-height:1.5;} .ds-card h2{margin:0 0 8px;font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-0.015em;} .ds-card p{margin:0 0 10px;color:#b9b8b3;} .ds-fix{padding:12px 14px;border-radius:6px;background:#28292c;color:#ecebe8 !important;margin-bottom:16px !important;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Board Carries It",
+    "overview": "A chess-native review room. Everything a player already knows from chess.com and lichess stays where they expect it: the board first and as large as the viewport allows, an eval bar on its edge, player strips above and below, a two-column scoresheet, an advantage graph, and chess.com's move-grade names and colour ramp. The chrome around that is deliberately quiet: three near-black greys, warm off-white ink in three strengths, one blue.\n\nColour has a job here. The board is the only large warm surface, and the grade ramp (great blue through blunder red) is the only chromatic vocabulary; the chrome never competes with either. Density is that of a tool, not a page: 15px body, tight rows, numbers in tabular figures, sections separated by hairlines and tonal steps rather than ornament. There is no decorative layer, no invented layout, no costume styling.",
+    "keyCharacteristics": [
+      "Dark, flat, tonal chrome in three steps (page, panel, raised).",
+      "One blue accent for the primary action, the current move and focus.",
+      "A classic brown board, sized to the viewport height.",
+      "Colour reserved for move grades, drawn as SVG badges with a mark, never colour alone.",
+      "One sans (Hanken Grotesk) for everything, with tabular numbers."
+    ],
+    "rules": [
+      {
+        "name": "The Grades Own Colour Rule",
+        "body": "Chromatic colour belongs to the move grades and the board. Chrome is grey and ink; any status colour (win, loss, rating up or down) is drawn from the grade ramp, never a new hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Blue Rule",
+        "body": "Blue means \"you are here or go here\": the primary action, the current move, focus and the active tab. It is never decoration and never a second button style.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Sans Rule",
+        "body": "Hanken Grotesk everywhere, including board coordinates (700, 11px) and graph labels. No second family, no uppercase tracked labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Every rating, accuracy, move number, percentage and count is set with tabular figures so columns and strips don't jitter as values change.",
+        "section": "typography"
+      },
+      {
+        "name": "The Board Sets the Height Rule",
+        "body": "On the review screen the board is as large as the viewport height allows, and the panel takes the board's height, not the other way round.",
+        "section": "layout"
+      },
+      {
+        "name": "The Only Lifted Thing Rule",
+        "body": "The board is the one object that casts a shadow. Everything else sits flat and separates by tone.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep chrome on the three surface steps (page, panel, raised) and separate regions with hairlines.",
+      "**Do** pair every grade colour with its badge mark and its name (PRODUCT.md: move classes must not rely on colour alone).",
+      "**Do** use Move Blue for exactly one primary action per decision, and for the current move and focus.",
+      "**Do** set every number with tabular figures.",
+      "**Do** size the review board from the viewport height and let the panel match it.",
+      "**Do** keep transitions short (150ms for state, 180ms for piece moves, 320ms for the eval bar) on the shared ease curve; motion drops to zero under reduced-motion."
+    ],
+    "donts": [
+      "**Don't** introduce a hue outside the grade ramp and the board; status colour borrows from the ramp.",
+      "**Don't** shadow panels, cards or buttons; the board is the only lifted object.",
+      "**Don't** add a second typeface, uppercase tracked labels or eyebrow text above headings.",
+      "**Don't** restyle the board away from the classic cream and brown, or rename the chess.com grades.",
+      "**Don't** invent layouts where chess players have a convention (board left, panel right, scoresheet in two columns)."
+    ]
+  }
+}

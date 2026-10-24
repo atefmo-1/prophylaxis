@@ -1,0 +1,316 @@
+/* App shell and shared tokens. Quiet dark surfaces; colour is reserved for move grades and the current move. */
+:root {
+  --c-bg: #161718;
+  --c-panel: #1f2022;
+  --c-panel-2: #28292c;
+  --c-line: #34363a;
+  --c-ink: #ecebe8;
+  --c-ink-2: #b9b8b3;
+  --c-ink-3: #8f8e89;
+  --c-accent: #3d7cc9;
+  --c-accent-ink: #8dbbf0;
+  --c-current: rgb(61 124 201 / 0.32);
+  --c-win: #8fc45c;
+  --c-loss: #ef7a6c;
+  --c-hover: #33353a;
+  --c-pressed: #3a3c41;
+  --c-accent-hover: #4b8bd8;
+  --c-foot: #1b1c1e;
+  --c-font: "Hanken Grotesk Variable", system-ui, sans-serif;
+  --c-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sq-light: #f0d9b5;
+  --sq-dark: #b58863;
+  --c-line-strong: #4a4c51;
+  --c-panel-edge: transparent;
+  --c-current-ink: #ffffff;
+  --c-scroll: #45474c;
+  --c-row-hover: rgb(255 255 255 / 0.03);
+  --c-row-alt: rgb(255 255 255 / 0.025);
+  --c-band: rgb(236 235 232 / 0.18);
+  --c-shade: rgb(0 0 0 / 0.22);
+  --gi-great: #7fa9c9;
+  --gi-best: #96bc4b;
+  --gi-good: #a8b89d;
+  --gi-inaccuracy: #f0b93a;
+  --gi-mistake: #ee9a49;
+  --gi-miss: #f07c5a;
+  --gi-blunder: #ec5a56;
+  color-scheme: dark;
+}
+
+/* Light theme: follows the system unless the viewer picked a theme. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --c-bg: #f3f3f1;
+    --c-panel: #ffffff;
+    --c-panel-2: #ececea;
+    --c-line: #dededa;
+    --c-line-strong: #c4c4bf;
+    --c-panel-edge: #e3e3df;
+    --c-ink: #18191b;
+    --c-ink-2: #45474b;
+    --c-ink-3: #66686c;
+    --c-accent: #2f6db5;
+    --c-accent-ink: #2a62a3;
+    --c-current: rgb(47 109 181 / 0.16);
+    --c-current-ink: #0e2a4d;
+    --c-win: #3f7d1f;
+    --c-loss: #bf3a2d;
+    --c-hover: #e2e2de;
+    --c-pressed: #d8d8d3;
+    --c-accent-hover: #3b7bc6;
+    --c-foot: #fafaf8;
+    --c-scroll: #c4c4bf;
+    --c-row-hover: rgb(0 0 0 / 0.03);
+    --c-row-alt: rgb(0 0 0 / 0.025);
+    --c-band: rgb(24 25 27 / 0.14);
+    --c-shade: rgb(0 0 0 / 0.05);
+    --gi-great: #3f6f94;
+    --gi-best: #4c8620;
+    --gi-good: #5b6c51;
+    --gi-inaccuracy: #9a7000;
+    --gi-mistake: #b25b16;
+    --gi-miss: #c04b29;
+    --gi-blunder: #b52c29;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --c-bg: #f3f3f1;
+  --c-panel: #ffffff;
+  --c-panel-2: #ececea;
+  --c-line: #dededa;
+  --c-line-strong: #c4c4bf;
+  --c-panel-edge: #e3e3df;
+  --c-ink: #18191b;
+  --c-ink-2: #45474b;
+  --c-ink-3: #66686c;
+  --c-accent: #2f6db5;
+  --c-accent-ink: #2a62a3;
+  --c-current: rgb(47 109 181 / 0.16);
+  --c-current-ink: #0e2a4d;
+  --c-win: #3f7d1f;
+  --c-loss: #bf3a2d;
+  --c-hover: #e2e2de;
+  --c-pressed: #d8d8d3;
+  --c-accent-hover: #3b7bc6;
+  --c-foot: #fafaf8;
+  --c-scroll: #c4c4bf;
+  --c-row-hover: rgb(0 0 0 / 0.03);
+  --c-row-alt: rgb(0 0 0 / 0.025);
+  --c-band: rgb(24 25 27 / 0.14);
+  --c-shade: rgb(0 0 0 / 0.05);
+  --gi-great: #3f6f94;
+  --gi-best: #4c8620;
+  --gi-good: #5b6c51;
+  --gi-inaccuracy: #9a7000;
+  --gi-mistake: #b25b16;
+  --gi-miss: #c04b29;
+  --gi-blunder: #b52c29;
+  color-scheme: light;
+}
+
+html {
+  background: var(--c-bg);
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--c-font);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent-ink);
+  outline-offset: 2px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  scrollbar-color: var(--c-scroll) transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--c-ink-3);
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 20;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--c-accent);
+  color: #fff;
+}
+
+.skip:focus {
+  top: 8px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 52px;
+  padding: 0 24px;
+  background: var(--c-bg);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.brand {
+  color: var(--c-ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.topnav {
+  display: flex;
+  gap: 2px;
+}
+
+.topnav a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--c-ink-2);
+  font-weight: 550;
+  text-decoration: none;
+  transition: background-color 150ms var(--c-ease), color 150ms var(--c-ease);
+}
+
+.topnav a:hover {
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
+.topnav a[aria-current="page"] {
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
+.theme {
+  display: inline-flex;
+  margin-left: auto;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--c-panel-2);
+}
+
+.theme button {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--c-ink-3);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme button:hover { color: var(--c-ink); }
+.theme button[aria-pressed="true"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 0 0 1px var(--c-panel-edge); }
+
+.me {
+  white-space: nowrap;
+  color: var(--c-ink-2);
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.me span {
+  margin-left: 6px;
+  color: var(--c-ink);
+}
+
+.me:hover {
+  color: var(--c-ink);
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .brand {
+    display: none;
+  }
+
+  .topnav a {
+    padding: 6px 9px;
+  }
+
+  .me {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 520px) {
+  .theme button {
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 400px) {
+  .me {
+    display: none;
+  }
+
+}

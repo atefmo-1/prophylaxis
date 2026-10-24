@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+/data/
+node_modules/
+web/dist/
+.DS_Store
+.ruff_cache/
+.pytest_cache/
+
+# Design-review screenshots and decision-page scratch files
+.impeccable/review/
+.impeccable/decision/
+*.tsbuildinfo
+.impeccable/questions/
