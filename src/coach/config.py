@@ -10,7 +10,7 @@ DB_PATH = DATA_DIR / "chess.db"
 EXPORT_DIR = Path(os.environ.get("COACH_EXPORT_DIR", ROOT / "web" / "public" / "data"))
 
 USERNAME = os.environ.get("COACH_USERNAME", "atefmo-1")
-USER_AGENT = "chess-coach/0.1 (personal game-analysis tool)"
+USER_AGENT = "prophylaxis/0.1 (personal game-analysis tool)"
 
 ENGINE_NODES = int(os.environ.get("COACH_ENGINE_NODES", "1000000"))
 ENGINE_WORKERS = int(os.environ.get("COACH_ENGINE_WORKERS") or max(1, (os.cpu_count() or 2) - 1))

@@ -1,5 +1,5 @@
 ---
-name: Chess Coach
+name: Prophylaxis
 description: A chess-native game review and habit coach. Quiet dark chrome; the board and the move grades carry the design.
 colors:
   page: "#161718"
@@ -135,7 +135,7 @@ components:
     size: "18px"
 ---
 
-# Design System: Chess Coach
+# Design System: Prophylaxis
 
 ## Overview
 

@@ -121,14 +121,14 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
   const style = el("style");
   style.textContent = CSS;
   const card = el("section", { className: "card" });
-  card.setAttribute("aria-label", "Chess Coach game review");
+  card.setAttribute("aria-label", "Prophylaxis game review");
   const close = el("button", { className: "close", title: "Hide for this game" }, "×");
   close.setAttribute("aria-label", "Hide");
   close.onclick = () => {
     dismissed.add(id);
     unmount();
   };
-  card.append(el("div", { className: "head" }, el("span", { className: "brand" }, "Chess Coach"), close));
+  card.append(el("div", { className: "head" }, el("span", { className: "brand" }, "Prophylaxis"), close));
 
   if (state.status === "analysing") {
     const fill = el("span");

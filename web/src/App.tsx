@@ -39,7 +39,7 @@ function TopBar({ route }: { route: Route }) {
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: "latest" })}>
-        Chess Coach
+        Prophylaxis
       </a>
       <nav className="topnav" aria-label="Sections">
         {NAV.map((item) => (

@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 
 from . import db, stats
 
-app = FastAPI(title="Chess Coach")
+app = FastAPI(title="Prophylaxis")
 
 
 @app.get("/data/overview.json")

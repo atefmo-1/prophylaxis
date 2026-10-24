@@ -1,4 +1,4 @@
-# UX research & spec: how Chess Coach should present each feature
+# UX research & spec: how Prophylaxis should present each feature
 
 Written 2026-10-24 after the first two designs missed. Both invented their own layouts instead of starting from what chess players already know. This spec starts from the conventions of chess.com and Lichess, keeps everything players expect, and puts our own effort only where we can do better than they do.
 
@@ -37,7 +37,7 @@ Written 2026-10-24 after the first two designs missed. Both invented their own l
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Chess Coach   Review · Habits · Practice · Games              atefmo-1 · 225 │
+│ Prophylaxis   Review · Habits · Practice · Games              atefmo-1 · 225 │
 ├───┬───────────────────────────────────────────┬──────────────────────────────┤
 │ E │ ▢ cooldude44445  180          47.5 acc     │ ┌ COACH ────────────────────┐ │
 │ V │ ┌─────────────────────────────────────┐   │ │ 8… f6  ?? Blunder          │ │

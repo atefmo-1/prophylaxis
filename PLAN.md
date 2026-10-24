@@ -1,4 +1,4 @@
-# Chess Coach: Plan & Architecture
+# Prophylaxis: Plan & Architecture
 
 A personal chess coach for chess.com user **atefmo-1**. It covers what chess.com puts behind its paywall (Game Review, Move Explanations, Advanced Stats) and adds something chess.com doesn't do: it analyzes **all** of your games together to find recurring weaknesses and turn them into training.
 
@@ -303,7 +303,7 @@ coach review <game_id>   # terminal review of one game
 ## 10. Repo layout
 
 ```
-chess-coach/
+prophylaxis/
 ├── PLAN.md
 ├── pyproject.toml            # uv-managed
 ├── coach/

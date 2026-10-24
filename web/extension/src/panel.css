@@ -16,7 +16,7 @@
   border-bottom: 1px solid var(--c-line);
 }
 
-/* Chrome already titles the panel "Chess Coach", so the header is for getting to the rest of the site. */
+/* Chrome already titles the panel "Prophylaxis", so the header is for getting to the rest of the site. */
 .xp-nav {
   display: flex;
   align-items: center;

@@ -159,7 +159,7 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
         Open this panel when a game ends
       </label>
       <label>
-        Your Chess Coach site
+        Your Prophylaxis site
         <input value={settings.siteUrl} type="url" required onChange={(e) => setSettings({ ...settings, siteUrl: e.target.value.trim() })} />
         <small>Used for your habit history and the "see the pattern" links.</small>
       </label>
@@ -215,7 +215,7 @@ function App() {
     <div className="xp">
       <header className="xp-top">
         {siteBase && (
-          <nav className="xp-nav" aria-label="Your Chess Coach site (opens in a new tab)" key={siteBase}>
+          <nav className="xp-nav" aria-label="Your Prophylaxis site (opens in a new tab)" key={siteBase}>
             <a href={href({ name: "patterns" })}>Habits</a>
             <a href={href({ name: "practice", tag: null })}>Practice</a>
             <a href={href({ name: "games" })}>

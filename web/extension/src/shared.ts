@@ -8,7 +8,7 @@ export interface Settings {
   autoOpen: boolean;
 }
 
-export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "http://localhost:5173/", autoOpen: true };
+export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "https://atefmo-1.github.io/prophylaxis/", autoOpen: true };
 
 export async function getSettings(): Promise<Settings> {
   const stored = await chrome.storage.sync.get({ ...DEFAULTS } as Record<string, unknown>);

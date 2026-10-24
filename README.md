@@ -1,4 +1,6 @@
-# Chess Coach
+# Prophylaxis
+
+In chess, *prophylaxis* means seeing a problem coming and stopping it before it happens. This does that for your own habits.
 
 A personal chess coach built around one player's real games ([atefmo-1 on chess.com](https://www.chess.com/member/atefmo-1)). It covers the features chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across every game to rank the habits that cost the most.
 
@@ -46,7 +48,11 @@ Another player: `COACH_USERNAME=<username> uv run coach sync` (use a separate `C
 
 ## Deploying
 
-`npm --prefix web run build` produces a static site in `web/dist/` that runs from any path: Vercel, Netlify, GitHub Pages, or a sub-folder of a portfolio site. No server needed. Re-run `coach sync && coach analyze && coach export` and rebuild to publish new games.
+Live: **[atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Every push to `main` rebuilds it with GitHub Actions (`.github/workflows/pages.yml`) from the game data committed in `web/public/data/`. To publish new games: `uv run coach sync && uv run coach analyze && uv run coach export`, then commit and push.
+
+`npm --prefix web run build` produces the same static site in `web/dist/`, which runs from any path (Vercel, Netlify, a sub-folder of a portfolio site). No server needed.
+
+Using it for your own games: clone the repo, run the steps under **Running it** with `COACH_USERNAME=<your username>`, and deploy your fork (in the fork's settings, set Pages to deploy from GitHub Actions). In the extension's Settings, set your username and your site's address.
 
 ## Chrome extension
 
@@ -54,7 +60,7 @@ When chess.com shows its game-over card, the side panel opens and replays the an
 
 - Analysis runs in your browser with Stockfish 19 Lite (WebAssembly), using a TypeScript port of the pipeline's grading and tactic rules (`web/src/analysis/`). A game takes about 20–30 seconds. The lite engine is weaker than the full Stockfish used by the pipeline, so treat the extension as a quick review; the site stays the reference.
 - **Fair play:** the extension never reads the live board. It acts only on finished-game pages, and only after chess.com's public archive lists the game, which happens once the game is over.
-- Habit links come from your Chess Coach site (`data/overview.json`). Set your username and site address under **Settings** in the side panel.
+- Habit links come from your Prophylaxis site (`data/overview.json`). Set your username and site address under **Settings** in the side panel.
 
 ```bash
 npm --prefix web run build:extension
@@ -74,3 +80,7 @@ npm --prefix web run typecheck
 ## Roadmap
 
 See [PLAN.md](PLAN.md): grounded LLM move explanations, a coach chat agent, spaced-repetition drills from your own mistakes, an ML tactic classifier trained on the Lichess puzzle database, and a Chrome extension for finished games.
+
+## Licence
+
+GPL-3.0-or-later (see [LICENSE](LICENSE)). The extension bundles Stockfish, which is also GPLv3.

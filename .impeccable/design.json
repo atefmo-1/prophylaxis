@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-24T00:00:00Z",
-  "title": "Design System: Chess Coach",
+  "title": "Design System: Prophylaxis",
   "extensions": {
     "colorMeta": {
       "page": {
@@ -459,7 +459,7 @@
       "kind": "nav",
       "refersTo": "nav-link",
       "description": "Sticky 52px bar: brand, four sections, player.",
-      "html": "<nav class=\"ds-topbar\"><b class=\"ds-brand\">Chess Coach</b><a href=\"#\" aria-current=\"page\">Review</a><a href=\"#\">Habits</a><a href=\"#\">Practice</a><a href=\"#\">Games</a></nav>",
+      "html": "<nav class=\"ds-topbar\"><b class=\"ds-brand\">Prophylaxis</b><a href=\"#\" aria-current=\"page\">Review</a><a href=\"#\">Habits</a><a href=\"#\">Practice</a><a href=\"#\">Games</a></nav>",
       "css": ":root{--c-bg:#161718;--c-panel:#1f2022;--c-panel-2:#28292c;--c-line:#34363a;--c-ink:#ecebe8;--c-ink-2:#b9b8b3;--c-ink-3:#8f8e89;--c-accent:#3d7cc9;--c-accent-ink:#8dbbf0;--c-current:rgb(61 124 201 / 0.32);--c-font:\"Hanken Grotesk Variable\",system-ui,sans-serif;--c-ease:cubic-bezier(0.2,0.8,0.2,1);} .ds-topbar{display:flex;align-items:center;gap:2px;height:52px;padding:0 24px;background:#161718;border-bottom:1px solid #34363a;font-family:var(--c-font);font-size:15px;} .ds-brand{color:#ecebe8;font-weight:700;letter-spacing:-0.01em;margin-right:26px;} .ds-topbar a{padding:6px 12px;border-radius:6px;color:#b9b8b3;font-weight:550;text-decoration:none;transition:background-color 150ms,color 150ms;} .ds-topbar a:hover,.ds-topbar a[aria-current=page]{background:#28292c;color:#ecebe8;} .ds-topbar a:focus-visible{outline:2px solid #8dbbf0;outline-offset:2px;}"
     },
     {
