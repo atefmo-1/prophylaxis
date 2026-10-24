@@ -211,6 +211,8 @@ async function watch(id: string) {
 // someone opening an old game page only gets "Game Review".
 const announced = new Set<string>();
 
+const NEW_GAME = /^(Rematch|Accept Rematch|New \d+ min|New Game)$/;
+
 const visible = (el: Element) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
 
 function gameOverCardShown(root: ParentNode = document): boolean {
@@ -220,10 +222,23 @@ function gameOverCardShown(root: ParentNode = document): boolean {
     const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
     if (text.length > 40 || !visible(el)) continue;
     if (text === "Game Review") review = true;
-    else if (/^(Rematch|Accept Rematch|New \d+ min|New Game)$/.test(text)) again = true;
+    else if (NEW_GAME.test(text)) again = true;
     if (review && again) return true;
   }
   return false;
+}
+
+/** Too late to open the panel by itself: the next click anywhere on the page (closing chess.com's card, say) opens it. */
+function openOnNextClick(id: string) {
+  const onClick = (e: MouseEvent) => {
+    document.removeEventListener("click", onClick, true);
+    if (current !== id || !alive()) return;
+    // Starting another game isn't the moment for a review; it stays one click away in the toolbar.
+    const control = (e.target as Element | null)?.closest?.("button, a, [role='button']");
+    if (control && NEW_GAME.test((control.textContent ?? "").replace(/\s+/g, " ").trim())) return;
+    send({ type: "open-panel", id, mode: "summary" });
+  };
+  document.addEventListener("click", onClick, true);
 }
 
 let pending = 0;
@@ -237,11 +252,15 @@ const observer = new MutationObserver(() => {
     if (!alive()) return shutdown();
     // The worker takes over from here: it waits for chess.com to list the game and starts the review.
     const open = (await getSettings().catch(() => DEFAULT_OFF)).autoOpen;
+    // Chrome opens the side panel only while the page has a recent click (about 5 seconds). Check it now, after
+    // the awaits above, so the worker knows whether to try.
+    const gesture = navigator.userActivation?.isActive ?? false;
     if (open) {
       dismissed.add(id); // the panel shows this game, so the corner card would only repeat it
       unmount();
+      if (!gesture) openOnNextClick(id);
     }
-    send({ type: "game-over", id, open });
+    send({ type: "game-over", id, open, gesture });
   }, 250);
 });
 observer.observe(document.documentElement, { childList: true, subtree: true });

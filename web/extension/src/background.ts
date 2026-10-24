@@ -9,9 +9,9 @@ async function setState(id: string, state: GameState) {
   await chrome.storage.local.set({ [stateKey(id)]: state });
 }
 
-async function panelOpen(): Promise<boolean> {
+async function panelOpen(windowId?: number): Promise<boolean> {
   const panels = await chrome.runtime.getContexts({ contextTypes: [chrome.runtime.ContextType.SIDE_PANEL] });
-  return panels.length > 0;
+  return panels.some((p) => windowId === undefined || p.windowId === windowId);
 }
 
 async function check(id: string): Promise<CheckReply> {
@@ -105,11 +105,16 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, reply) => {
       analyse(msg.id);
       break;
     case "game-over":
-      // chess.com just showed its game-over card. Chrome lets the panel open because the player has been
-      // interacting with this page (every move is a click). If Chrome ever refuses, fall back to the toolbar popup.
+      // chess.com just showed its game-over card. Chrome only lets the panel open within about 5 seconds of a click
+      // on the page, which is often the case right after your own last move. Otherwise (or if Chrome refuses), the
+      // toolbar popup offers a one-click "Open review", and the content script opens the panel on the next page click.
       if (msg.open && sender.tab?.id !== undefined) {
         const windowId = sender.tab.windowId;
-        chrome.sidePanel.open({ tabId: sender.tab.id }).catch(() => openPopupFallback(windowId));
+        const fallback = async () => {
+          if (!(await panelOpen(windowId))) await openPopupFallback(windowId);
+        };
+        if (msg.gesture) chrome.sidePanel.open({ tabId: sender.tab.id }).catch(fallback);
+        else fallback();
       }
       chrome.storage.session.set({ panelRequest: { id: msg.id, mode: "summary", at: Date.now() } });
       awaitGame(msg.id);

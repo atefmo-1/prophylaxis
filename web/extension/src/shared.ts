@@ -42,7 +42,7 @@ export type Message =
   | { type: "analyse"; id: string }
   | { type: "open-panel"; id: string; mode: "summary" | "moments" }
   | { type: "await"; id: string }
-  | { type: "game-over"; id: string; open: boolean }
+  | { type: "game-over"; id: string; open: boolean; gesture: boolean }
   | { type: "progress"; id: string; percent: number; frame?: Frame; meta?: { color: Color; opponent: string; plies: number } }
   | { type: "done"; id: string; review: unknown }
   | { type: "failed"; id: string; message: string }
