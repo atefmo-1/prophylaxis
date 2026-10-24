@@ -10,7 +10,7 @@ const REPO = "https://github.com/atefmo-1/prophylaxis";
 const DEMO_FEN = "r3k3/ppN2ppp/8/8/8/8/PPP2PPP/4K2R b K - 0 1";
 
 export function Start() {
-  const { start } = useLibrary();
+  const { start, startSample } = useLibrary();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +61,12 @@ export function Start() {
               </p>
             )}
           </form>
+          <p className="start-sample">
+            No chess.com account?{" "}
+            <button type="button" onClick={startSample}>
+              Look around with a sample player
+            </button>
+          </p>
         </div>
         <div className="start-board" aria-hidden="true">
           <Board

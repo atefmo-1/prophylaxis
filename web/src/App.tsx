@@ -38,7 +38,7 @@ function ThemeSwitch() {
 
 /** The player this browser follows, with switching and deleting their data. */
 function PlayerMenu({ player }: { player: string }) {
-  const { leave, forgetPlayer } = useLibrary();
+  const { leave, forgetPlayer, isSample } = useLibrary();
   const overview = useOverview();
   const rating = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
   const menu = useRef<HTMLDetailsElement>(null);
@@ -46,15 +46,17 @@ function PlayerMenu({ player }: { player: string }) {
   return (
     <details className="me" ref={menu}>
       <summary>
-        {player} {rating !== null && <span className="num">{rating}</span>}
+        {isSample ? "Sample player" : player} {rating !== null && <span className="num">{rating}</span>}
       </summary>
       <div className="me-menu">
         <div className="me-theme">
           Theme <ThemeSwitch />
         </div>
-        <a href={`https://www.chess.com/member/${player}`} target="_blank" rel="noreferrer" onClick={close}>
-          Profile on chess.com
-        </a>
+        {!isSample && (
+          <a href={`https://www.chess.com/member/${player}`} target="_blank" rel="noreferrer" onClick={close}>
+            Profile on chess.com
+          </a>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -62,18 +64,21 @@ function PlayerMenu({ player }: { player: string }) {
             leave();
           }}
         >
-          Switch player
+          {isSample ? "Leave the sample" : "Switch player"}
         </button>
-        <button
-          type="button"
-          className="me-danger"
-          onClick={() => {
-            close();
-            if (window.confirm(`Delete ${player}'s reviews from this browser? You can review the games again later.`)) forgetPlayer();
-          }}
-        >
-          Delete my data from this browser
-        </button>
+        {!isSample && (
+          <button
+            type="button"
+            className="me-danger"
+            onClick={() => {
+              close();
+              if (window.confirm(`Delete ${player}'s reviews from this browser? You can review the games again later.`))
+                forgetPlayer();
+            }}
+          >
+            Delete my data from this browser
+          </button>
+        )}
       </div>
     </details>
   );
@@ -112,20 +117,34 @@ export function App() {
   );
 }
 
+/** Under the top bar while the sample player is open, so nobody mistakes it for a real person's games. */
+function SampleNote() {
+  const { leave } = useLibrary();
+  return (
+    <p className="sample-note">
+      You're looking at a sample player: made-up beginner games, played by a weak engine.{" "}
+      <button type="button" onClick={leave}>
+        Review your own games
+      </button>
+    </p>
+  );
+}
+
 function Shell() {
   const route = useRoute();
-  const { player } = useLibrary();
+  const { player, isSample } = useLibrary();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [route.name, route.name === "game" ? route.id : null]);
 
   return (
-    <div className="shell">
+    <div className={isSample ? "shell shell--sample" : "shell"}>
       <a className="skip" href="#main">
         Skip to content
       </a>
       <TopBar route={route} />
+      {isSample && <SampleNote />}
       <main id="main">
         {!player ? (
           <Start />

@@ -378,6 +378,33 @@ p {
   display: none;
 }
 
+/* The review fits the board to the screen below the top bar (52px); the sample note adds a line. */
+.shell--sample {
+  --chrome: 90px;
+}
+
+.sample-note {
+  margin: 0;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-panel);
+  color: var(--c-ink-2);
+  font-size: 14px;
+  text-align: center;
+}
+
+.sample-note button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 @media (max-width: 640px) {
   .me-theme {
     display: flex;

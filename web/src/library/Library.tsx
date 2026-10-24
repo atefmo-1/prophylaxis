@@ -9,6 +9,29 @@ import { fetchGames, findPlayer, gameId } from "./chesscom";
 import { forget, loadGames, saveGame } from "./store";
 
 const PLAYER_KEY = "prophylaxis.player";
+/**
+ * The sample player: made-up beginner games played by weak engine settings (scripts/make_sample.py), so anyone can
+ * look around without a chess.com account. Their reviews ship with the site, already done.
+ */
+export const SAMPLE = "sample-player";
+const sampleFile = (name: string) => `${import.meta.env.BASE_URL}sample/${name}`;
+
+async function sampleGames(): Promise<ChessComGame[]> {
+  const res = await fetch(sampleFile("games.json"));
+  if (!res.ok) throw new Error("The sample games are missing.");
+  return ((await res.json()).games as ChessComGame[]).sort((a, b) => b.end_time - a.end_time);
+}
+
+async function sampleReviews(): Promise<StoredGame[] | null> {
+  try {
+    const res = await fetch(sampleFile("reviews.json"));
+    // A dev server answers a missing file with the page itself, so check it really is JSON.
+    if (!res.ok || !res.headers.get("content-type")?.includes("json")) return null;
+    return (await res.json()) as StoredGame[];
+  } catch {
+    return null;
+  }
+}
 /** The most recent games analysed per player; enough for habits, and about 40 minutes of work the first time. */
 export const MAX_GAMES = 100;
 const MONTHS = 24;
@@ -37,7 +60,9 @@ interface LibraryValue {
   overview: Overview;
   games: GameSummary[];
   practice: PracticePosition[];
+  isSample: boolean;
   start: (username: string) => Promise<void>;
+  startSample: () => void;
   leave: () => void;
   forgetPlayer: () => Promise<void>;
 }
@@ -90,7 +115,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     let todo: ChessComGame[];
     try {
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
-      todo = (await fetchGames(who, MONTHS, MAX_GAMES)).slice(0, MAX_GAMES).filter((g) => !done.has(gameId(g)));
+      const all = who === SAMPLE ? await sampleGames() : await fetchGames(who, MONTHS, MAX_GAMES);
+      todo = all.slice(0, MAX_GAMES).filter((g) => !done.has(gameId(g)));
     } catch (e) {
       if (live()) setStatus({ kind: "error", message: (e as Error).message });
       return;
@@ -129,19 +155,27 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setStored([]);
     setStatus({ kind: "idle" });
     if (!player) return;
-    loadGames(player.toLowerCase()).then(
-      (have) => {
-        if (run.current !== token) return;
-        setStored(have);
-        setLoaded(true);
-        sync(player, token, have);
-      },
-      () => {
-        if (run.current !== token) return;
-        setLoaded(true);
-        sync(player, token, []);
-      },
-    );
+    const fromBrowser = () =>
+      loadGames(player.toLowerCase())
+        .catch(() => [] as StoredGame[])
+        .then((have) => {
+          if (run.current !== token) return;
+          setStored(have);
+          setLoaded(true);
+          sync(player, token, have);
+        });
+    if (player !== SAMPLE) {
+      fromBrowser();
+      return;
+    }
+    // The sample is already reviewed: show it at once. (Without reviews.json it is reviewed like any player, which
+    // is how that file gets made.)
+    sampleReviews().then((reviews) => {
+      if (run.current !== token) return;
+      if (!reviews) return void fromBrowser();
+      setStored(reviews);
+      setLoaded(true);
+    });
   }, [player, sync]);
 
   // Coming back to the tab after a while: check chess.com for games played since.
@@ -151,7 +185,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   statusRef.current = status;
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState !== "visible" || !player || !loaded) return;
+      if (document.visibilityState !== "visible" || !player || player === SAMPLE || !loaded) return;
       if (statusRef.current.kind === "analysing" || statusRef.current.kind === "checking") return;
       if (Date.now() - lastCheck.current < RECHECK_MS) return;
       sync(player, run.current, storedRef.current);
@@ -164,6 +198,11 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     const name = await findPlayer(username);
     writePlayer(name);
     setPlayer(name);
+  }, []);
+
+  const startSample = useCallback(() => {
+    writePlayer(SAMPLE);
+    setPlayer(SAMPLE);
   }, []);
 
   const leave = useCallback(() => {
@@ -186,8 +225,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   }, [stored, player]);
 
   const value = useMemo<LibraryValue>(
-    () => ({ player, loaded, stored, ...derived, start, leave, forgetPlayer }),
-    [player, loaded, stored, derived, start, leave, forgetPlayer],
+    () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, start, startSample, leave, forgetPlayer }),
+    [player, loaded, stored, derived, start, startSample, leave, forgetPlayer],
   );
 
   return (

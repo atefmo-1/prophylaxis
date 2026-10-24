@@ -1,12 +1,12 @@
 /* Review screen: the board fills the viewport height; the coach panel sits beside it at the same height. */
 .rv {
   --strip: 40px;
-  --board: clamp(300px, min(calc(100dvh - 52px - 36px - 2 * var(--strip) - 16px), calc(100vw - 520px)), 860px);
+  --board: clamp(300px, min(calc(100dvh - var(--chrome, 52px) - 36px - 2 * var(--strip) - 16px), calc(100vw - 520px)), 860px);
   padding: 18px 24px;
 }
 
 .rv--loading {
-  min-height: calc(100dvh - 52px);
+  min-height: calc(100dvh - var(--chrome, 52px));
 }
 
 .rv-grid {

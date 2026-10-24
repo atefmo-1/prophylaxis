@@ -375,9 +375,13 @@ export function ReviewView({
             </div>
             <p className="panel-games">
               {newer ? <a href={href({ name: "game", id: newer, ply: null })}>Newer game</a> : <span />}
-              <a href={g.url} target="_blank" rel="noreferrer">
-                Open on chess.com
-              </a>
+              {g.url.startsWith("https://www.chess.com/") ? (
+                <a href={g.url} target="_blank" rel="noreferrer">
+                  Open on chess.com
+                </a>
+              ) : (
+                <span />
+              )}
               {older ? <a href={href({ name: "game", id: older, ply: null })}>Older game</a> : <span />}
             </p>
           </footer>

@@ -103,6 +103,23 @@
   color: var(--c-loss);
 }
 
+.start-sample {
+  margin: 16px 0 0;
+  color: var(--c-ink-3);
+}
+
+.start-sample button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 .start-board .board {
   position: relative;
   width: 100%;
