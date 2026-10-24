@@ -15,5 +15,6 @@ web/dist/
 .impeccable/questions/
 web/dist-extension/
 
-# A player's exported analysis stays on their machine; the site analyses games in the browser.
+# A player's analysis stays on their machine: the site analyses games in the browser, and the Python pipeline
+# writes to data/ (ignored above).
 web/public/data/

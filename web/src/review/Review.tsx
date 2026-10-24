@@ -3,7 +3,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Board, type Arrow, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { IconFirst, IconLast, IconNext, IconPrev } from "../components/Icons";
+import { FirstReview } from "../components/Progress";
 import { useGame, useGames } from "../data";
+import { useLibrary } from "../library/Library";
 import { read } from "../lib/coach";
 import { chancesAround, explain, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, plural, timeControl } from "../lib/format";
@@ -116,27 +118,30 @@ export function Review({ id, ply }: { id: string | null; ply: number | null }) {
   const list = games.status === "ready" ? games.data : [];
   const gameId = id ?? list[0]?.id ?? null;
   const review = useGame(gameId);
+  const { player } = useLibrary();
 
-  if (games.status === "error") return <p className="state">Couldn't load your games ({games.error}). Run `coach export` and reload.</p>;
-  if (games.status === "ready" && list.length === 0) return <p className="state">No analysed games yet.</p>;
+  if (games.status === "error") return <p className="state">Couldn't load your games ({games.error}).</p>;
+  if (games.status === "ready" && list.length === 0) return <FirstReview />;
   if (review.status === "error") return <p className="state">Couldn't load this game ({review.error}).</p>;
   if (review.status === "loading") return <div className="rv rv--loading" aria-busy="true" />;
 
   const position = list.findIndex((g) => g.id === review.data.game.id);
   const newer = position > 0 ? list[position - 1].id : null;
   const older = position >= 0 && position < list.length - 1 ? list[position + 1].id : null;
-  return <ReviewView key={review.data.game.id} review={review.data} initialPly={ply} newer={newer} older={older} />;
+  return <ReviewView key={review.data.game.id} review={review.data} player={player ?? "You"} initialPly={ply} newer={newer} older={older} />;
 }
 
 /** The review for one game's data. Also used by the Chrome extension's side panel. */
 export function ReviewView({
   review,
+  player = "You",
   initialPly = null,
   newer = null,
   older = null,
   startMode = "summary",
 }: {
   review: ReviewData;
+  player?: string;
   initialPly?: number | null;
   newer?: string | null;
   older?: string | null;
@@ -257,7 +262,7 @@ export function ReviewView({
   // The eval bar follows the position on the board: before the mistake while you look for a better move.
   const shownPly = mode.kind === "moments" && momentPly !== null && !threat ? momentPly - 1 : index + 1;
   const whiteWin = shownPly >= 1 ? review.moves[shownPly - 1].win_white : review.start_win_white;
-  const me = { name: "atefmo-1", rating: g.rating, change: g.rating_change, accuracy: g.accuracy, color: g.color };
+  const me = { name: player, rating: g.rating, change: g.rating_change, accuracy: g.accuracy, color: g.color };
   const them = { name: g.opponent, rating: g.opp_rating, change: null, accuracy: g.opp_accuracy, color: g.color === "white" ? ("black" as const) : ("white" as const) };
   const nextMistake = review.moves.findIndex((m, i) => i > index && m.mine && BAD.includes(m.class) && !m.decided);
 

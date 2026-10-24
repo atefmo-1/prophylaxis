@@ -410,7 +410,8 @@ def overview(conn: sqlite3.Connection) -> dict:
             "tag": tag,
             **info,
             "windows": {
-                "size": HABIT_WINDOW,
+                # Fewer games than the window: "in 4 of your last 5 games", not "of your last 10".
+                "size": min(HABIT_WINDOW, n_played),
                 "last": sum(gid in games_tagged for gid in last),
                 "prev": sum(gid in games_tagged for gid in prev) if len(prev) == HABIT_WINDOW else None,
             },

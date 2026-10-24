@@ -7,6 +7,7 @@ import { makeSan, parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import type { NormalMove } from "chessops/types";
 import type { Color, GameReview, Move, MoveClass, MoveTag, Overview, Result } from "../types";
+import type { GameFacts } from "./stats";
 import { ENDINGS, TAG_INFO } from "./catalog";
 import type { Engine } from "./engine";
 import { classify, gameAccuracy, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
@@ -23,6 +24,7 @@ export interface ChessComGame {
   url: string;
   pgn: string;
   time_control: string;
+  time_class?: string;
   end_time: number;
   rules?: string;
   eco?: string;
@@ -48,15 +50,27 @@ function clockOf(comments: string[] | undefined): number | null {
   return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : null;
 }
 
-function openingName(ecoUrl: string | undefined): string {
+/** Readable opening name and family from a chess.com ECO URL (as src/coach/openings.py). */
+export function openingParts(ecoUrl: string | undefined): { name: string; family: string } {
   const slug = (ecoUrl ?? "").replace(/\/$/, "").split("/").pop() ?? "";
-  if (!slug || slug === "Undefined") return "Unclassified opening";
-  const possessive: Record<string, string> = { Kings: "King's", Queens: "Queen's", Bishops: "Bishop's", Birds: "Bird's", Petrovs: "Petrov's", Alekhines: "Alekhine's" };
+  if (!slug || slug === "Undefined") return { name: "Unclassified opening", family: "Unclassified opening" };
+  const possessive: Record<string, string> = {
+    Kings: "King's", Queens: "Queen's", Bishops: "Bishop's", Birds: "Bird's", Petrovs: "Petrov's", Alekhines: "Alekhine's", Owens: "Owen's", Larsens: "Larsen's",
+  };
   const words = slug.split("-").map((w) => possessive[w] ?? w).join(" ").replace("Van t ", "Van't ").split(" ");
   const cut = words.findIndex((w) => ["Opening", "Game", "Defense", "Gambit", "Attack", "System"].includes(w));
   const end = cut >= 0 ? cut + 1 : Math.min(2, words.length);
+  const family = words.slice(0, end).join(" ");
   const rest = words.slice(end).join(" ");
-  return rest ? `${words.slice(0, end).join(" ")}: ${rest}` : words.slice(0, end).join(" ");
+  return { name: rest ? `${family}: ${rest}` : family, family };
+}
+
+/** What the statistics need about a game beyond its review. */
+export function gameFacts(game: ChessComGame, username: string): GameFacts {
+  const mine = game.white.username.toLowerCase() === username.toLowerCase() ? game.white : game.black;
+  const theirs = mine === game.white ? game.black : game.white;
+  const eco = game.eco ?? parsePgn(game.pgn)[0]?.headers.get("ECOUrl");
+  return { time_class: game.time_class ?? "rapid", family: openingParts(eco).family, my_code: mine.result, opp_code: theirs.result, end_time: game.end_time };
 }
 
 export async function buildReview(
@@ -214,8 +228,8 @@ export async function buildReview(
       opp_rating: opp.rating,
       rating: me.rating,
       result,
-      ending: ENDINGS[`${result}:${endingCode}`] ?? result,
-      opening: openingName(game.eco ?? parsed.headers.get("ECOUrl")),
+      ending: ENDINGS[`${result}:${endingCode}`] ?? result[0].toUpperCase() + result.slice(1),
+      opening: openingParts(game.eco ?? parsed.headers.get("ECOUrl")).name,
       time_control: game.time_control,
       accuracy: myColor === "white" ? accWhite : accBlack,
       opp_accuracy: myColor === "white" ? accBlack : accWhite,

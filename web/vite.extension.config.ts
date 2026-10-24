@@ -1,4 +1,5 @@
 import react from "@vitejs/plugin-react";
+import { cpSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
@@ -8,7 +9,16 @@ export default defineConfig({
   root: resolve(import.meta.dirname, "extension"),
   base: "./",
   publicDir: resolve(import.meta.dirname, "extension/public"),
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Stockfish lives once, in the site's public folder; the extension ships a copy.
+    {
+      name: "copy-engine",
+      closeBundle() {
+        cpSync(resolve(import.meta.dirname, "public/engine"), resolve(import.meta.dirname, "dist-extension/engine"), { recursive: true });
+      },
+    },
+  ],
   build: {
     outDir: resolve(import.meta.dirname, "dist-extension"),
     emptyOutDir: true,

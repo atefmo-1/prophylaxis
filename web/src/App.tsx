@@ -1,9 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
 import { useTheme, type ThemeChoice } from "./lib/theme";
+import { LibraryProvider, useLibrary } from "./library/Library";
 import { Games } from "./pages/Games";
 import { Habits } from "./pages/Habits";
 import { Practice } from "./pages/Practice";
+import { Start } from "./pages/Start";
 import { Review } from "./review/Review";
 import { href, useRoute, type Route } from "./router";
 
@@ -33,33 +36,85 @@ function ThemeSwitch() {
   );
 }
 
-function TopBar({ route }: { route: Route }) {
+/** The player this browser follows, with switching and deleting their data. */
+function PlayerMenu({ player }: { player: string }) {
+  const { leave, forgetPlayer } = useLibrary();
   const overview = useOverview();
-  const player = overview.status === "ready" && !overview.data.empty ? overview.data.player : null;
+  const rating = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
+  const menu = useRef<HTMLDetailsElement>(null);
+  const close = () => menu.current?.removeAttribute("open");
+  return (
+    <details className="me" ref={menu}>
+      <summary>
+        {player} {rating !== null && <span className="num">{rating}</span>}
+      </summary>
+      <div className="me-menu">
+        <div className="me-theme">
+          Theme <ThemeSwitch />
+        </div>
+        <a href={`https://www.chess.com/member/${player}`} target="_blank" rel="noreferrer" onClick={close}>
+          Profile on chess.com
+        </a>
+        <button
+          type="button"
+          onClick={() => {
+            close();
+            leave();
+          }}
+        >
+          Switch player
+        </button>
+        <button
+          type="button"
+          className="me-danger"
+          onClick={() => {
+            close();
+            if (window.confirm(`Delete ${player}'s reviews from this browser? You can review the games again later.`)) forgetPlayer();
+          }}
+        >
+          Delete my data from this browser
+        </button>
+      </div>
+    </details>
+  );
+}
+
+function TopBar({ route }: { route: Route }) {
+  const { player } = useLibrary();
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: "latest" })}>
         Prophylaxis
       </a>
-      <nav className="topnav" aria-label="Sections">
-        {NAV.map((item) => (
-          <a key={item.label} href={href(item.route)} aria-current={item.match.includes(route.name) ? "page" : undefined}>
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <ThemeSwitch />
       {player && (
-        <a className="me" href={`https://www.chess.com/member/${player.username}`} target="_blank" rel="noreferrer">
-          {player.username} <span className="num">{player.rating}</span>
-        </a>
+        <nav className="topnav" aria-label="Sections">
+          {NAV.map((item) => (
+            <a key={item.label} href={href(item.route)} aria-current={item.match.includes(route.name) ? "page" : undefined}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
       )}
+      <div className="topbar-end">
+        {player && <ProgressPill />}
+        <ThemeSwitch />
+        {player && <PlayerMenu player={player} />}
+      </div>
     </header>
   );
 }
 
 export function App() {
+  return (
+    <LibraryProvider>
+      <Shell />
+    </LibraryProvider>
+  );
+}
+
+function Shell() {
   const route = useRoute();
+  const { player } = useLibrary();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -72,7 +127,9 @@ export function App() {
       </a>
       <TopBar route={route} />
       <main id="main">
-        {route.name === "patterns" ? (
+        {!player ? (
+          <Start />
+        ) : route.name === "patterns" ? (
           <Habits />
         ) : route.name === "practice" ? (
           <Practice tag={route.tag} />

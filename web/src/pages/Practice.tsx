@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Board, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { IconNext } from "../components/Icons";
+import { NotEnough } from "../components/Progress";
 import { useOverview, usePractice } from "../data";
 import { tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
@@ -39,16 +40,19 @@ export function Practice({ tag }: { tag: string | null }) {
   const [round, setRound] = useState(0);
 
   const ready = pool.status === "ready" && overview.status === "ready";
+  // Positions arrive while games are reviewed: build the first session once there are some, then keep it steady.
+  const none = pool.status === "ready" && pool.data.length === 0;
   const info = new Map<string, TagInfo>(ready && !overview.data.empty ? overview.data.weaknesses.map((w) => [w.tag, w]) : []);
   const session = useMemo(() => {
     if (pool.status !== "ready" || overview.status !== "ready" || overview.data.empty) return [];
     const rank = new Map(overview.data.weaknesses.map((w, i) => [w.tag, i]));
     return buildSession(pool.data, tag, rank);
     // A new round rebuilds the session from what is due now.
-  }, [pool.status, overview.status, tag, round]);
+  }, [pool.status, overview.status, tag, round, none]);
 
   if (pool.status === "error") return <p className="pstate">Couldn't load practice positions ({pool.error}).</p>;
   if (!ready) return <div className="page" aria-busy="true" />;
+  if (none) return <NotEnough title="Practice needs a few games" when="Positions appear here as soon as a reviewed game has a mistake to try again." />;
   return <Session key={`${tag}-${round}`} session={session} tag={tag} info={info} onAgain={() => setRound((r) => r + 1)} />;
 }
 

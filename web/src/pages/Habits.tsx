@@ -8,6 +8,9 @@ import { CLASS_META, RESULT_META, day, plural, share } from "../lib/format";
 import { href } from "../router";
 import type { MoveClass, Overview, Skill, Weakness } from "../types";
 import "./pages.css";
+import { NotEnough } from "../components/Progress";
+
+const MIN_GAMES = 5;
 
 function windowLine(w: Weakness) {
   const { last, prev, size } = w.windows;
@@ -81,7 +84,9 @@ function Skills({ skills, played }: { skills: Skill[]; played: number }) {
     <section className="block" aria-labelledby="skills-title">
       <h2 id="skills-title">Skill areas</h2>
       <p className="block-lede">
-        Your last {games} games, compared with the {played - games} before them.
+        {played > games
+          ? `Your last ${games} games, compared with the ${played - games} before them.`
+          : `Your ${games} games so far. Once you have more than ${games}, each area compares your recent games with the ones before.`}
       </p>
       <ul className="skills">
         {skills.map((s) => (
@@ -397,7 +402,8 @@ export function Habits() {
   if (overview.status === "error") return <p className="pstate">Couldn't load your stats ({overview.error}).</p>;
   if (overview.status === "loading") return <div className="page" aria-busy="true" />;
   const data = overview.data;
-  if (data.empty || data.weaknesses.length === 0) return <p className="pstate">No habits yet: play and analyse a few games first.</p>;
+  if (data.empty || data.player.played < MIN_GAMES) return <NotEnough title="Habits need a few games" when={`This page fills in once ${MIN_GAMES} are done.`} />;
+  if (data.weaknesses.length === 0) return <p className="pstate">No habits yet: none of your reviewed games has a mistake the coach recognises.</p>;
   return (
     <div className="page">
       <header className="page-top">

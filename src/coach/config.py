@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = Path(os.environ.get("COACH_DATA_DIR", ROOT / "data"))
 DB_PATH = DATA_DIR / "chess.db"
-EXPORT_DIR = Path(os.environ.get("COACH_EXPORT_DIR", ROOT / "web" / "public" / "data"))
+EXPORT_DIR = Path(os.environ.get("COACH_EXPORT_DIR", DATA_DIR / "export"))
 
 USERNAME = os.environ.get("COACH_USERNAME", "")
 USER_AGENT = "prophylaxis/0.1 (personal game-analysis tool)"
