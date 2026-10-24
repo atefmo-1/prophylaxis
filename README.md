@@ -45,8 +45,8 @@ The site picks up new games within the hour on its own. To have it update as soo
 
 1. On GitHub, open **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
 2. Under **Repository access**, choose **Only select repositories** and pick your Prophylaxis repository.
-3. Under **Permissions → Repository permissions**, set **Actions** to **Read and write**. Leave everything else as it is.
-4. Generate the token and paste it into the extension's **Settings → GitHub token**, then **Save**.
+3. Under **Permissions**, click **Add permissions**, choose **Actions** and set it to **Read and write**. GitHub adds **Metadata: Read-only** by itself; add nothing else.
+4. Generate the token, copy it (GitHub shows it only once) and paste it into the extension's **Settings → GitHub token**, then **Save**.
 
 The token stays on this computer (it is not synced). After each game, the panel shows "Adding this game to your site", then "On your site" with a link, usually within about 3 minutes.
 
