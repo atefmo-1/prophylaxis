@@ -31,7 +31,13 @@ export interface ChessComGame {
   accuracies?: { white?: number; black?: number };
 }
 
-export type Progress = (done: number, total: number, stage: "positions" | "retries") => void;
+/** A position the engine just finished, for showing the analysis as it happens. */
+export interface Frame {
+  fen: string;
+  win: number; // white's winning chances
+}
+
+export type Progress = (done: number, total: number, stage: "positions" | "retries", frame?: Frame) => void;
 
 const terminal = (p: Position) => p.isCheckmate() || p.isStalemate() || p.isInsufficientMaterial();
 const fenOf = (p: Position) => makeFen(p.toSetup());
@@ -86,7 +92,8 @@ export async function buildReview(
   const todo = [...new Set(positions.filter((p) => !terminal(p)).map(fenOf))];
   for (let i = 0; i < todo.length; i++) {
     if (!lines.has(epd(todo[i]))) lines.set(epd(todo[i]), await engine.analyse(todo[i], 2, NODES));
-    progress?.(i + 1, todo.length, "positions");
+    const top = lines.get(epd(todo[i]))![0];
+    progress?.(i + 1, todo.length, "positions", { fen: todo[i], win: top ? lineWinWhite(top) : 50 });
   }
   const linesAt = (p: Position) => (terminal(p) ? null : lines.get(epd(fenOf(p))) ?? []);
   const winWhite = positions.map((p) =>

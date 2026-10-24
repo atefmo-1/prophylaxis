@@ -50,7 +50,7 @@ Another player: `COACH_USERNAME=<username> uv run coach sync` (use a separate `C
 
 ## Chrome extension
 
-After a game on chess.com ends, a small card shows your biggest moment, whether it's one of your habits, and buttons to **retry it** or open the **full review** in Chrome's side panel (the same review screen as the site).
+When chess.com shows its game-over card, the side panel opens by itself and replays the analysis live, then shows the review (turn this off in the panel's Settings). Chrome only lets extensions open the panel after the user has interacted with the page, which every game involves; if Chrome ever refuses, the extension's toolbar popup opens instead with a one-click "Open review". chess.com takes a few seconds (sometimes a couple of minutes) to list a finished game in its public archive; the extension's background worker waits for it, so you can leave the game page, and the panel shows how long it has been waiting. With the panel closed, a small card shows your biggest moment, whether it's one of your habits, and buttons to **retry it** or open the **full review** in Chrome's side panel (the same review screen as the site).
 
 - Analysis runs in your browser with Stockfish 19 Lite (WebAssembly), using a TypeScript port of the pipeline's grading and tactic rules (`web/src/analysis/`). A game takes about 20–30 seconds. The lite engine is weaker than the full Stockfish used by the pipeline, so treat the extension as a quick review; the site stays the reference.
 - **Fair play:** the extension never reads the live board. It acts only on finished-game pages, and only after chess.com's public archive lists the game, which happens once the game is over.
@@ -60,7 +60,7 @@ After a game on chess.com ends, a small card shows your biggest moment, whether 
 npm --prefix web run build:extension
 ```
 
-Then open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked**, and select `web/dist-extension`. To check it end to end: `node web/scripts/check-extension.mjs <gameId>`.
+Then open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked**, and select `web/dist-extension`. To check it end to end: `node web/scripts/check-extension.mjs <gameId>`, and `node web/scripts/check-waiting.mjs <gameId>` for the wait after a game ends.
 
 Stockfish is GPLv3; its licence ships with the extension in `engine/COPYING.txt`.
 

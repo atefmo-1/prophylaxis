@@ -1,20 +1,36 @@
 // Shared by the extension's background worker, offscreen engine page, content script and side panel.
-import type { ChessComGame } from "../../src/analysis/review";
+import type { ChessComGame, Frame } from "../../src/analysis/review";
+import type { Color } from "../../src/types";
 
 export interface Settings {
   username: string;
   siteUrl: string;
+  autoOpen: boolean;
 }
 
-export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "http://localhost:5173/" };
+export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "http://localhost:5173/", autoOpen: true };
 
 export async function getSettings(): Promise<Settings> {
   const stored = await chrome.storage.sync.get({ ...DEFAULTS } as Record<string, unknown>);
-  return { username: String(stored.username || DEFAULTS.username), siteUrl: String(stored.siteUrl || DEFAULTS.siteUrl) };
+  return {
+    username: String(stored.username || DEFAULTS.username),
+    siteUrl: String(stored.siteUrl || DEFAULTS.siteUrl),
+    autoOpen: stored.autoOpen !== false,
+  };
+}
+
+export interface Live {
+  color: Color;
+  opponent: string;
+  fen: string | null;
+  wins: number[]; // white's winning chances for each position read so far
+  plies: number;
 }
 
 export type GameState =
-  | { status: "analysing"; percent: number }
+  | { status: "waiting"; since: number } // the game ended; chess.com hasn't listed it in the archive yet
+  | { status: "unlisted" } // still not listed after a long wait
+  | { status: "analysing"; percent: number; live?: Live }
   | { status: "ready" }
   | { status: "error"; message: string };
 
@@ -25,12 +41,18 @@ export type Message =
   | { type: "check"; id: string }
   | { type: "analyse"; id: string }
   | { type: "open-panel"; id: string; mode: "summary" | "moments" }
-  | { type: "progress"; id: string; percent: number }
+  | { type: "await"; id: string }
+  | { type: "game-over"; id: string; open: boolean }
+  | { type: "progress"; id: string; percent: number; frame?: Frame; meta?: { color: Color; opponent: string; plies: number } }
   | { type: "done"; id: string; review: unknown }
   | { type: "failed"; id: string; message: string }
   | { target: "offscreen"; type: "analyse"; id: string; username: string; siteUrl: string };
 
 export type CheckResult = "finished" | "not-found" | "not-mine";
+export interface CheckReply {
+  result: CheckResult;
+  panelOpen: boolean;
+}
 
 /** The game id on a finished-game page: /game/live/123, /game/daily/123, /game/123, /analysis/game/live/123. */
 export function gameIdFromPath(path: string): string | null {

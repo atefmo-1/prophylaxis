@@ -42,20 +42,97 @@
   color: var(--c-ink-2);
 }
 
-.xp-bar {
-  height: 4px;
+.xp-empty p {
+  margin: 0 0 14px;
+}
+
+/* ---------- Live analysis ---------- */
+
+.xp-live {
+  padding: 18px 14px 24px;
+}
+
+.xp-live h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.xp-live-line {
+  min-height: 2.9em;
+  margin: 4px 0 12px;
+  color: var(--c-ink-2);
+  animation: xp-fade 380ms var(--c-ease);
+}
+
+@keyframes xp-fade {
+  from { opacity: 0; transform: translateY(3px); }
+}
+
+.xp-live-board .board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--sq-dark);
+  box-shadow: 0 10px 30px -16px rgb(0 0 0 / 0.6);
+}
+
+.xp-live-board .board-ground {
+  width: 100%;
+  height: 100%;
+}
+
+.xp-live-board cg-board {
+  background-color: var(--sq-light);
+  background-image: repeating-conic-gradient(var(--sq-dark) 0 25%, var(--sq-light) 0 50%);
+  background-size: 25% 25%;
+}
+
+.xp-live-board cg-board square.last-move {
+  background-color: rgb(155 199 0 / 0.41);
+}
+
+.xp-live-meter {
+  height: 8px;
   margin-top: 10px;
-  border-radius: 2px;
-  background: var(--c-panel-2);
+  border-radius: 3px;
+  background: #403d39;
+  box-shadow: 0 0 0 1px var(--c-line-strong);
   overflow: hidden;
 }
 
-.xp-bar span {
+.xp-live-meter span {
   display: block;
   height: 100%;
-  background: var(--c-accent);
+  background: #f2f1ed;
   transform-origin: left;
-  transition: transform 300ms var(--c-ease);
+  transition: transform 320ms var(--c-ease);
+}
+
+.xp-live-graph {
+  display: block;
+  width: 100%;
+  height: 64px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.xp-live-graph .mid { stroke: var(--c-line-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.xp-live-graph .area { fill: var(--c-ink); fill-opacity: 0.1; stroke: none; }
+.xp-live-graph .line { fill: none; stroke: var(--c-ink-2); stroke-width: 1.75; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+
+.xp-live-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: var(--c-ink-3);
+  font-size: 13px;
 }
 
 .xp-settings {
@@ -69,6 +146,18 @@
   gap: 6px;
   font-weight: 600;
   font-size: 14px;
+}
+
+.xp-settings .xp-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xp-check input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--c-accent);
 }
 
 .xp-settings small {

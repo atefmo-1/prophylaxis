@@ -1,10 +1,34 @@
 // Content script on chess.com. Inert until a finished game of yours is open: it never reads the board, and it
 // shows nothing until chess.com's public archive lists the game (which only happens once the game is over).
 import type { GameReview, MoveTag } from "../../src/types";
-import { gameIdFromPath, reviewKey, stateKey, type CheckResult, type GameState, type Message } from "./shared";
+import { gameIdFromPath, getSettings, reviewKey, stateKey, type CheckReply, type GameState, type Message } from "./shared";
 
+// A finished game you open is usually listed already, so check quickly at first. A game you are still playing gets
+// picked up by chess.com's game-over card below; the slow check is only a fallback in case that card isn't recognised.
 const POLL_MS = 5000;
-const POLL_FOR_MS = 3 * 60 * 1000;
+const SLOW_POLL_MS = 30000;
+const FAST_FOR_MS = 60 * 1000;
+
+// After the extension is reloaded or updated, this copy of the script keeps running in tabs that were already open
+// but can no longer talk to the extension ("Extension context invalidated"). Notice that and stop quietly.
+let stopped = false;
+const alive = () => {
+  try {
+    return !stopped && !!chrome.runtime?.id;
+  } catch {
+    return false;
+  }
+};
+
+async function send<T = unknown>(message: Message): Promise<T | undefined> {
+  if (!alive()) return shutdown();
+  try {
+    return (await chrome.runtime.sendMessage(message)) as T;
+  } catch {
+    return alive() ? undefined : shutdown();
+  }
+}
+
 const GRADE: Record<string, { label: string; color: string }> = {
   inaccuracy: { label: "Inaccuracy", color: "#f0b93a" },
   mistake: { label: "Mistake", color: "#e5872b" },
@@ -116,7 +140,7 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
     );
   } else if (state.status === "error") {
     const again = el("button", { className: "btn" }, "Try again");
-    again.onclick = () => chrome.runtime.sendMessage({ type: "analyse", id } satisfies Message);
+    again.onclick = () => send({ type: "analyse", id });
     card.append(el("p", {}, `Couldn't review this game: ${state.message}`), el("div", { className: "actions" }, again));
   } else if (review) {
     const moments = review.key_moments.map((p) => review.moves[p - 1]);
@@ -143,9 +167,9 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
       }
     }
     const retry = el("button", { className: "btn primary" }, biggest ? "Retry it" : "Open review");
-    retry.onclick = () => chrome.runtime.sendMessage({ type: "open-panel", id, mode: biggest ? "moments" : "summary" } satisfies Message);
+    retry.onclick = () => send({ type: "open-panel", id, mode: biggest ? "moments" : "summary" });
     const full = el("button", { className: "btn" }, "Full review");
-    full.onclick = () => chrome.runtime.sendMessage({ type: "open-panel", id, mode: "summary" } satisfies Message);
+    full.onclick = () => send({ type: "open-panel", id, mode: "summary" });
     card.append(el("div", { className: "actions" }, retry, ...(biggest ? [full] : [])));
   } else {
     return unmount();
@@ -154,24 +178,73 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
 }
 
 async function refresh(id: string) {
-  const data = await chrome.storage.local.get([stateKey(id), reviewKey(id)]);
+  if (!alive()) return shutdown();
+  let data: Record<string, unknown>;
+  try {
+    data = await chrome.storage.local.get([stateKey(id), reviewKey(id)]);
+  } catch {
+    return shutdown();
+  }
   if (current !== id) return;
   render(id, (data[stateKey(id)] as GameState) ?? null, (data[reviewKey(id)] as GameReview) ?? null);
 }
 
 async function watch(id: string) {
   const started = Date.now();
-  while (current === id && Date.now() - started < POLL_FOR_MS) {
-    const result = (await chrome.runtime.sendMessage({ type: "check", id } satisfies Message)) as CheckResult | { error: string };
+  while (current === id) {
+    const reply = await send<CheckReply | { error: string }>({ type: "check", id });
+    if (!reply) return;
     if (current !== id) return;
-    if (result === "finished") {
-      await chrome.runtime.sendMessage({ type: "analyse", id } satisfies Message);
+    if ("result" in reply && reply.result === "finished") {
+      await send({ type: "analyse", id });
+      // The side panel already shows this game when it's open, so the card would only repeat it.
+      if (reply.panelOpen) dismissed.add(id);
       return refresh(id);
     }
-    if (result === "not-mine") return;
-    await new Promise((r) => setTimeout(r, POLL_MS));
+    if ("result" in reply && reply.result === "not-mine") return;
+    await new Promise((r) => setTimeout(r, Date.now() - started < FAST_FOR_MS ? POLL_MS : SLOW_POLL_MS));
   }
 }
+
+// chess.com's game-over card is the moment to open the review. It is recognised by its own controls: "Game Review"
+// (a link) together with "Rematch" or "New 10 min", which only appear to the players right after a game ends;
+// someone opening an old game page only gets "Game Review".
+const announced = new Set<string>();
+
+const visible = (el: Element) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+
+function gameOverCardShown(root: ParentNode = document): boolean {
+  let review = false;
+  let again = false;
+  for (const el of root.querySelectorAll("button, a, [role='button']")) {
+    const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+    if (text.length > 40 || !visible(el)) continue;
+    if (text === "Game Review") review = true;
+    else if (/^(Rematch|Accept Rematch|New \d+ min|New Game)$/.test(text)) again = true;
+    if (review && again) return true;
+  }
+  return false;
+}
+
+let pending = 0;
+const observer = new MutationObserver(() => {
+  if (pending || !current || announced.has(current)) return;
+  pending = window.setTimeout(async () => {
+    pending = 0;
+    const id = current;
+    if (!id || announced.has(id) || !gameOverCardShown()) return;
+    announced.add(id);
+    if (!alive()) return shutdown();
+    // The worker takes over from here: it waits for chess.com to list the game and starts the review.
+    const open = (await getSettings().catch(() => DEFAULT_OFF)).autoOpen;
+    if (open) {
+      dismissed.add(id); // the panel shows this game, so the corner card would only repeat it
+      unmount();
+    }
+    send({ type: "game-over", id, open });
+  }, 250);
+});
+observer.observe(document.documentElement, { childList: true, subtree: true });
 
 function onLocation() {
   const id = gameIdFromPath(location.pathname);
@@ -181,11 +254,24 @@ function onLocation() {
   if (id) watch(id);
 }
 
-chrome.storage.onChanged.addListener((changes, area) => {
+const DEFAULT_OFF = { autoOpen: false };
+
+function onStorage(changes: Record<string, chrome.storage.StorageChange>, area: string) {
   if (area !== "local" || !current) return;
   if (changes[stateKey(current)] || changes[reviewKey(current)]) refresh(current);
-});
+}
+
+chrome.storage.onChanged.addListener(onStorage);
 
 // chess.com is a single-page app: watch for URL changes without touching the page.
-setInterval(onLocation, 1000);
+const timer = window.setInterval(() => (alive() ? onLocation() : shutdown()), 1000);
 onLocation();
+
+function shutdown(): undefined {
+  if (stopped) return;
+  stopped = true;
+  window.clearInterval(timer);
+  observer.disconnect();
+  unmount();
+  return undefined;
+}

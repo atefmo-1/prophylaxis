@@ -1,4 +1,5 @@
 // Offscreen page: hosts Stockfish (WebAssembly, in a worker) and turns a finished game into a review.
+import { parsePgn } from "chessops/pgn";
 import { Engine, workerTransport } from "../../src/analysis/engine";
 import { buildReview } from "../../src/analysis/review";
 import type { Overview } from "../../src/types";
@@ -20,14 +21,14 @@ async function run(id: string, username: string, siteUrl: string) {
   try {
     const game = await findGame(username, id);
     if (!game) throw new Error("chess.com hasn't published this game yet.");
+    const color = game.white.username.toLowerCase() === username.toLowerCase() ? "white" : "black";
+    const opponent = game[color === "white" ? "black" : "white"].username;
+    const plies = [...(parsePgn(game.pgn)[0]?.moves.mainline() ?? [])].length;
+    chrome.runtime.sendMessage({ type: "progress", id, percent: 0, meta: { color, opponent, plies } } satisfies Message);
     const overview = await loadOverview(siteUrl);
-    let last = -1;
-    const review = await buildReview(game, username, engine, overview, (done, total, stage) => {
+    const review = await buildReview(game, username, engine, overview, (done, total, stage, frame) => {
       const percent = Math.round(stage === "positions" ? (done / total) * 85 : 85 + (done / total) * 15);
-      if (percent !== last) {
-        last = percent;
-        chrome.runtime.sendMessage({ type: "progress", id, percent } satisfies Message);
-      }
+      chrome.runtime.sendMessage({ type: "progress", id, percent, frame } satisfies Message);
     });
     await chrome.runtime.sendMessage({ type: "done", id, review } satisfies Message);
   } catch (e) {

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chess Coach</title>
+    <style>
+      body { margin: 0; width: 260px; padding: 14px 16px 16px; background: #1f2022; color: #ecebe8; font: 14px/1.45 system-ui, sans-serif; }
+      @media (prefers-color-scheme: light) { body { background: #fff; color: #18191b; } p { color: #45474b; } }
+      h1 { margin: 0 0 4px; font-size: 15px; }
+      p { margin: 0 0 12px; color: #b9b8b3; }
+      button { width: 100%; min-height: 36px; border: 0; border-radius: 6px; background: #3d7cc9; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h1>Your game is over</h1>
+    <p>Your review is being prepared.</p>
+    <button type="button" id="open" autofocus>Open review</button>
+    <script type="module" src="./src/popup.ts"></script>
+  </body>
+</html>

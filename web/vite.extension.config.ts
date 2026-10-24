@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         panel: resolve(import.meta.dirname, "extension/panel.html"),
         offscreen: resolve(import.meta.dirname, "extension/offscreen.html"),
+        popup: resolve(import.meta.dirname, "extension/popup.html"),
         background: resolve(import.meta.dirname, "extension/src/background.ts"),
       },
       output: {
