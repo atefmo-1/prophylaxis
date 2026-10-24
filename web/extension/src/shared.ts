@@ -10,11 +10,14 @@ export interface Settings {
 
 export const DEFAULTS: Settings = { username: "atefmo-1", siteUrl: "https://atefmo-1.github.io/prophylaxis/", autoOpen: true };
 
+// The old default, from before the site was deployed. Saving Settings stored it, so treat it as "not set".
+const OLD_DEFAULT_SITE = "http://localhost:5173/";
+
 export async function getSettings(): Promise<Settings> {
   const stored = await chrome.storage.sync.get({ ...DEFAULTS } as Record<string, unknown>);
   return {
     username: String(stored.username || DEFAULTS.username),
-    siteUrl: String(stored.siteUrl || DEFAULTS.siteUrl),
+    siteUrl: String(stored.siteUrl && stored.siteUrl !== OLD_DEFAULT_SITE ? stored.siteUrl : DEFAULTS.siteUrl),
     autoOpen: stored.autoOpen !== false,
   };
 }
