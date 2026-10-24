@@ -8,7 +8,7 @@ A personal chess coach built around one player's real games ([atefmo-1 on chess.
 - **Habits:** your #1 habit with a real position, six skill areas (last 20 games vs before), and every habit ranked by how much it costs you, each linked to its positions.
 - **Practice:** five positions a day from your own mistakes, with spaced repetition kept in the browser.
 - **Honest numbers:** with a few dozen games, every rate is shown with a 90% interval, not as a falsely exact percentage.
-- **Validated:** our accuracy score correlates with chess.com's own (r = 0.83 on the 15 games where chess.com computed one).
+- **Validated:** our accuracy score correlates with chess.com's own (r = 0.85 on the 17 games where chess.com computed one).
 
 Only finished games are analysed. The tool never helps during a live game (chess.com Fair Play policy).
 
