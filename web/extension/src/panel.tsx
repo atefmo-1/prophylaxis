@@ -5,7 +5,7 @@ import "@fontsource-variable/hanken-grotesk";
 import "../../src/app.css";
 import { Board } from "../../src/components/Board";
 import { ReviewView } from "../../src/review/Review";
-import { setLinkBase } from "../../src/router";
+import { href, setLinkBase } from "../../src/router";
 import type { GameReview } from "../../src/types";
 import { DEFAULTS, getSettings, reviewKey, stateKey, type GameState, type Live, type Message, type Settings } from "./shared";
 import "./panel.css";
@@ -173,17 +173,20 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
 function App() {
   const { request, state, review } = useGame();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [siteUrl, setSiteUrl] = useState(DEFAULTS.siteUrl);
+  // Links to the site need its address first, so nothing renders until the settings are read.
+  const [siteBase, setSiteBase] = useState<string | null>(null);
 
   useEffect(() => {
     getSettings().then((s) => {
-      setSiteUrl(s.siteUrl);
-      setLinkBase(s.siteUrl.replace(/\/?$/, "/"));
+      const base = s.siteUrl.replace(/\/?$/, "/");
+      setLinkBase(base);
+      setSiteBase(base);
     });
   }, [settingsOpen]);
 
   let body: React.ReactNode;
-  if (settingsOpen) body = <SettingsForm onDone={() => setSettingsOpen(false)} />;
+  if (!siteBase) body = null;
+  else if (settingsOpen) body = <SettingsForm onDone={() => setSettingsOpen(false)} />;
   else if (!request)
     body = (
       <p className="xp-empty">
@@ -211,9 +214,18 @@ function App() {
   return (
     <div className="xp">
       <header className="xp-top">
-        <a href={siteUrl} className="xp-brand">
-          Chess Coach
-        </a>
+        {siteBase && (
+          <nav className="xp-nav" aria-label="Your Chess Coach site (opens in a new tab)" key={siteBase}>
+            <a href={href({ name: "patterns" })}>Habits</a>
+            <a href={href({ name: "practice", tag: null })}>Practice</a>
+            <a href={href({ name: "games" })}>
+              All games
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                <path d="M4.5 2.5h5v5M9.5 2.5 3 9" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          </nav>
+        )}
         <button type="button" className="xp-link" onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen}>
           {settingsOpen ? "Close settings" : "Settings"}
         </button>

@@ -16,13 +16,38 @@
   border-bottom: 1px solid var(--c-line);
 }
 
-.xp-brand {
-  color: var(--c-ink);
-  font-weight: 700;
+/* Chrome already titles the panel "Chess Coach", so the header is for getting to the rest of the site. */
+.xp-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -8px;
+}
+
+.xp-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--c-ink-2);
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 
+.xp-nav a:hover {
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
+.xp-nav svg {
+  color: var(--c-ink-3);
+}
+
 .xp-link {
+  min-height: 32px;
   border: 0;
   background: none;
   color: var(--c-ink-3);
@@ -191,11 +216,41 @@
   color: #fff;
 }
 
-/* The panel is narrow: the shared review uses its stacked layout, with tighter edges. */
-.xp .rv {
-  padding: 10px 12px 24px;
-}
-
+/* The panel is narrow: the shared review uses its stacked layout, with tighter edges and a full-width card. */
 .xp .rv {
   --board: calc(100vw - 24px);
+  /* Room for the move buttons pinned to the bottom of the panel. */
+  padding: 10px 12px calc(var(--xp-bar) + 12px);
+}
+
+.xp {
+  --xp-bar: 53px;
+}
+
+.xp .rv-panel {
+  margin: 12px -12px 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-top: 1px solid var(--c-line);
+}
+
+/* The move buttons stay put at the bottom of the panel, however long the explanation above them is. */
+.xp .rv .controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--c-foot);
+  border-top: 1px solid var(--c-line);
+}
+
+/* No sticky summary buttons here: the pinned move buttons already hold the bottom edge. */
+.xp .summary .summary-actions {
+  position: static;
+  margin: 16px 0 0;
+  padding: 0;
+  background: none;
 }

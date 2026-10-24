@@ -82,6 +82,18 @@
   color: var(--sq-light) !important;
 }
 
+/* File letters sit in the bottom-right corner of their square, as on chess.com (chessground's default overhangs the board). */
+.rv .board coords.files {
+  left: 0;
+  bottom: 1px;
+  text-transform: none;
+}
+
+.rv .board coords.files coord {
+  padding-right: 3px;
+  text-align: right;
+}
+
 .board-badge {
   position: absolute;
   z-index: 3;
@@ -137,10 +149,10 @@
 }
 
 .strip-color {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   flex: none;
-  border-radius: 3px;
+  border-radius: 50%;
 }
 
 .strip-color--white { background: #f2f1ed; box-shadow: inset 0 0 0 1px var(--c-line-strong); }
@@ -673,6 +685,59 @@
 .state {
   padding: 48px 24px;
   color: var(--c-ink-2);
+}
+
+/* ---------- Narrow review panel (phones, Chrome's side panel) ---------- */
+
+@media (max-width: 460px) {
+  .panel-tabs button {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* Phases as a short list: three cards side by side don't fit. */
+  .summary-phases {
+    flex-direction: column;
+    gap: 0;
+    border-radius: 6px;
+    background: var(--c-panel-2);
+  }
+
+  .summary-phases li {
+    grid-template-columns: auto 1fr auto;
+    background: none;
+    border-radius: 0;
+  }
+
+  .summary-phases li + li {
+    border-top: 1px solid var(--c-line);
+  }
+
+  .summary-phases small {
+    grid-column: 3;
+  }
+
+  .summary-phases svg {
+    grid-row: auto;
+  }
+
+  .summary .summary-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .rv .controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  }
+
+  .rv .controls .btn--icon {
+    width: auto;
+  }
+
+  .rv .controls-next {
+    padding: 0 12px;
+    white-space: nowrap;
+  }
 }
 
 /* ---------- Narrow screens: board full width, panel below ---------- */
