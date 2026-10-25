@@ -9,6 +9,8 @@ A free chess coach for anyone who plays on chess.com. It covers what chess.com p
 - **Game review:** opens on a chess.com-style report card, then walks you through your key moments as puzzles ("find a better move"), accepting any move that holds your position. Every move is graded on chess.com's scale (brilliant, great, best … book … miss, blunder) with a scoresheet, eval bar, winning-chances graph and a plain-English explanation.
 - **Habits:** your #1 habit with a position from your own games, six skill areas, and every habit ranked by how much it costs you, each linked to its positions.
 - **Practice:** five positions a day from your own mistakes, with spaced repetition, plus Lichess puzzles of the exact tactic behind each habit, at your level.
+- **Opening tree:** your first ten moves across all your games, merged into one tree, with how each line turned out.
+- **Compare:** you against any chess.com player. Their last 30 games in your time control are reviewed in your browser like yours, then shown side by side with yours, with tips for beating them drawn from their numbers (their costliest habits, where and when they go wrong, how they convert, their openings), each with its evidence.
 - **Honest numbers:** with a few dozen games, every rate is shown with a 90% interval, not as a falsely exact percentage.
 - **Private:** everything runs in your browser. Your analysis is kept there and never uploaded; there is no server.
 
@@ -24,7 +26,8 @@ Only finished games are analysed. It never helps during a live game (chess.com F
    - **Review** opens on your latest game. The **Summary** tab is the report card. **Review key moments** turns your worst moves into puzzles: drag a piece to find a better move; **Hint**, **Show the answer** and **Skip** are there when you're stuck. The **Moves** tab steps through the game with an explanation for every move (arrow keys, the buttons under the graph, or **Next mistake**).
    - **Habits** shows your #1 habit with a real position, then skill areas and every habit ranked by what it costs. It fills in once 5 games are reviewed.
    - **Practice** gives you five positions a day from your own mistakes. Ones you miss come back sooner, ones you solve come back later. Each tactic habit also has **Puzzles**: Lichess puzzles of that tactic that start at your level and get harder as you solve them.
-   - **Games** lists every reviewed game; filter by result and colour.
+   - **Games** lists every reviewed game; filter by result and colour. Its **Opening tree** tab merges your openings into one tree: click a move to follow it.
+   - **Compare** takes any chess.com username (or one of the players you've met most), reviews their last 30 games in your main time control (about 2–3 minutes, after your own games are done), and shows the two of you side by side, how to beat them, and their opening tree. Their reviews stay in your browser, so comparing again is instant, and deleting your data deletes them too.
 
 Your name in the top bar opens a menu to switch to another player or to delete your reviews from this browser.
 

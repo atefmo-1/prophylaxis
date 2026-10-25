@@ -6,13 +6,17 @@ import { useEffect, useState } from "react";
 //   #/patterns         weaknesses across games
 //   #/games            every game
 //   #/puzzles/<tag>    Lichess puzzles for a habit
+//   #/openings         the opening tree of your games
+//   #/compare/<name>   you against another chess.com player
 export type Route =
   | { name: "latest" }
   | { name: "game"; id: string; ply: number | null }
   | { name: "patterns" }
   | { name: "games" }
   | { name: "practice"; tag: string | null }
-  | { name: "puzzles"; tag: string | null };
+  | { name: "puzzles"; tag: string | null }
+  | { name: "openings" }
+  | { name: "compare"; player: string | null };
 
 export function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
@@ -24,6 +28,8 @@ export function parse(hash: string): Route {
   if (parts[0] === "games") return { name: "games" };
   if (parts[0] === "practice") return { name: "practice", tag: parts[1] ?? null };
   if (parts[0] === "puzzles") return { name: "puzzles", tag: parts[1] ?? null };
+  if (parts[0] === "openings") return { name: "openings" };
+  if (parts[0] === "compare") return { name: "compare", player: parts[1] ? decodeURIComponent(parts[1]) : null };
   return { name: "latest" };
 }
 
@@ -49,6 +55,10 @@ function hashOf(route: Route): string {
       return `#/practice${route.tag ? `/${route.tag}` : ""}`;
     case "puzzles":
       return `#/puzzles${route.tag ? `/${route.tag}` : ""}`;
+    case "openings":
+      return "#/openings";
+    case "compare":
+      return `#/compare${route.player ? `/${encodeURIComponent(route.player)}` : ""}`;
     default:
       return "#/";
   }

@@ -2,14 +2,15 @@
 // that finds new games and analyses them with Stockfish, newest first, on as many engines as the device can spare
 // (device.ts). Every page reads from here.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
-import { loadBook, type OpeningBook } from "../analysis/book";
-import { loadTacticModel, retagReview, type TacticModel } from "../analysis/tactics";
+import { NODES, type ChessComGame, type Frame } from "../analysis/review";
+import { retagReview } from "../analysis/tactics";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
 import { fetchGames, findPlayer, gameId } from "./chesscom";
 import { getDevice, pliesOf, type Device } from "./device";
+import { forgetCompared } from "./compared";
+import { getTactics, reviewGame } from "./reviewer";
 import { forget, loadGames, saveGame } from "./store";
 
 const PLAYER_KEY = "prophylaxis.player";
@@ -135,10 +136,6 @@ export function useLibrary(): LibraryValue {
 
 export const useLibraryStatus = () => useContext(StatusContext);
 
-let tactics: Promise<TacticModel | null> | null = null;
-const getTactics = () => (tactics ??= loadTacticModel(import.meta.env.BASE_URL));
-let book: Promise<OpeningBook | null> | null = null;
-const getBook = () => (book ??= loadBook(import.meta.env.BASE_URL));
 
 const readPlayer = () => {
   try {
@@ -239,12 +236,12 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current }, eta: etaFrom(i, current.percent), paused: paused.current });
       };
       show();
-      const [model, openings] = await Promise.all([getTactics(), getBook()]);
+      await getTactics(); // loading the model isn't part of the game's time
       const started = performance.now();
       const pausesBefore = pauses.current;
       const pausedBefore = paused.current; // a game that starts paused waits; that wait isn't speed
       try {
-        const review = await buildReview(game, who, dev.pool, null, (n, total, stage, frame?: Frame) => {
+        const entry = await reviewGame(game, who, dev, (n, total, stage, frame?: Frame) => {
           if (!live()) return;
           if (frame) {
             current.fen = frame.fen;
@@ -253,12 +250,11 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.plies = stage === "positions" ? total : current.plies;
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           show();
-        }, { tactics: model, book: openings });
+        });
         if (!pausedBefore && pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
-        const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION, tagged: model?.version };
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
-        setStored((s) => [...s.filter((x) => x.review.game.id !== review.game.id), entry]);
+        setStored((s) => [...s.filter((x) => x.review.game.id !== entry.review.game.id), entry]);
       } catch {
         // A game the analysis can't read (a broken PGN, a variant that slipped through) is skipped; so is one
         // stopped because the player changed.
@@ -388,6 +384,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     device.current?.pool.cancel();
     writeTarget(player, null);
     await forget(player.toLowerCase());
+    await forgetCompared();
     writePlayer(null);
     setPlayer(null);
   }, [player]);

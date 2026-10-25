@@ -4,8 +4,10 @@ import { useOverview } from "./data";
 import { timeLeft } from "./lib/format";
 import { useTheme, type ThemeChoice } from "./lib/theme";
 import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library";
+import { Compare } from "./pages/Compare";
 import { Games } from "./pages/Games";
 import { Habits } from "./pages/Habits";
+import { Openings } from "./pages/Openings";
 import { Practice } from "./pages/Practice";
 import { Puzzles } from "./pages/Puzzles";
 import { Start } from "./pages/Start";
@@ -16,7 +18,8 @@ const NAV: { label: string; route: Route; match: Route["name"][] }[] = [
   { label: "Review", route: { name: "latest" }, match: ["latest", "game"] },
   { label: "Habits", route: { name: "patterns" }, match: ["patterns"] },
   { label: "Practice", route: { name: "practice", tag: null }, match: ["practice", "puzzles"] },
-  { label: "Games", route: { name: "games" }, match: ["games"] },
+  { label: "Games", route: { name: "games" }, match: ["games", "openings"] },
+  { label: "Compare", route: { name: "compare", player: null }, match: ["compare"] },
 ];
 
 const THEMES: { value: ThemeChoice; label: string }[] = [
@@ -172,6 +175,10 @@ function Shell() {
           <Puzzles tag={route.tag} />
         ) : route.name === "games" ? (
           <Games />
+        ) : route.name === "openings" ? (
+          <Openings />
+        ) : route.name === "compare" ? (
+          <Compare player={route.player} />
         ) : (
           <Review id={route.name === "game" ? route.id : null} ply={route.name === "game" ? route.ply : null} />
         )}

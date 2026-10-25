@@ -50,3 +50,36 @@ export function bookPlies(book: OpeningBook, positions: Position[]): number {
   }
   return plies;
 }
+
+/** Lichess's name for each line, by the position it ends in ("Sicilian Defense: Alapin Variation"). */
+export function parseNames(tsv: string): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const row of tsv.split("\n").slice(1)) {
+    const [, name, pgn] = row.split("\t");
+    if (!name || !pgn) continue;
+    const pos = Chess.default();
+    let ok = true;
+    for (const token of pgn.trim().split(/\s+/)) {
+      if (token.endsWith(".")) continue;
+      const move = parseSan(pos, token);
+      if (!move) {
+        ok = false;
+        break;
+      }
+      pos.play(move);
+    }
+    const key = bookKey(pos);
+    if (ok && !names.has(key)) names.set(key, name);
+  }
+  return names;
+}
+
+let names: Promise<Map<string, string>> | null = null;
+
+/** Opening names, loaded once; empty if the list can't be loaded. */
+export function loadOpeningNames(base: string): Promise<Map<string, string>> {
+  return (names ??= fetch(`${base}openings/lichess.tsv`)
+    .then((res) => (res.ok ? res.text() : ""))
+    .then(parseNames)
+    .catch(() => new Map()));
+}

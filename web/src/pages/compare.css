@@ -1,0 +1,185 @@
+/* Compare: pick a player, then the two of you side by side. */
+.cmp-picker {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.cmp-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.cmp-row {
+  display: flex;
+  gap: 8px;
+  max-width: 520px;
+}
+
+.cmp-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  background: var(--c-panel);
+  color: var(--c-ink);
+  font: inherit;
+}
+
+.cmp-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.cmp-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--c-ink);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cmp-chip:hover {
+  border-color: var(--c-accent);
+}
+
+.cmp-status {
+  margin-bottom: 20px;
+  color: var(--c-ink-2);
+}
+
+.cmp-status p {
+  margin: 0 0 8px;
+}
+
+.cmp-error {
+  color: var(--c-loss);
+}
+
+.cmp-bar {
+  display: block;
+  max-width: 320px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-panel-2);
+  overflow: hidden;
+}
+
+.cmp-bar span {
+  display: block;
+  height: 100%;
+  background: var(--c-accent);
+  transform-origin: left;
+  transition: transform 300ms var(--c-ease);
+}
+
+.cmp-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: var(--c-panel);
+}
+
+.cmp-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.cmp-head > div:nth-child(3) {
+  text-align: right;
+}
+
+.cmp-head b {
+  font-size: 28px;
+}
+
+.cmp-vs {
+  color: var(--c-ink-3);
+  font-weight: 700;
+}
+
+.cmp-h2h {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: var(--c-ink-2);
+}
+
+.cmp-tips {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.cmp-tips li {
+  display: grid;
+  gap: 2px;
+}
+
+.cmp-tips span {
+  color: var(--c-ink-2);
+}
+
+.cmp-table th[scope="row"] {
+  font-weight: 600;
+}
+
+.cmp-table th small {
+  display: block;
+  color: var(--c-ink-3);
+  font-weight: 400;
+}
+
+.cmp-edge {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cmp-edge--you { color: var(--c-win); }
+.cmp-edge--them { color: var(--c-loss); }
+.cmp-edge--even { color: var(--c-ink-3); font-weight: 400; }
+
+.cmp-habits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.cmp-habits h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.cmp-habits ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1.3em;
+}
+
+.cmp-habits li span {
+  display: block;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .cmp-habits {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cmp-head b {
+    font-size: 22px;
+  }
+}

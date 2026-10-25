@@ -625,6 +625,18 @@
 }
 
 .seg button:hover { color: var(--c-ink); }
+
+.seg--links { margin-bottom: 16px; }
+.seg a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--c-ink-3);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.seg a:hover { color: var(--c-ink); }
+.seg a[aria-current="page"] { background: var(--c-panel-2); color: var(--c-ink); }
 .seg button[aria-pressed="true"] { background: var(--c-panel-2); color: var(--c-ink); }
 
 .table-scroll {
