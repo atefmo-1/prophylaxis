@@ -357,3 +357,53 @@ def _table(result: dict) -> None:
     RESULTS.mkdir(exist_ok=True)
     (RESULTS / "games.md").write_text("\n".join(lines) + "\n")
     (RESULTS / "games.json").write_text(json.dumps(result, indent=1))
+
+
+SITE_NODES = 400_000  # what the site searches each position with (web/src/analysis/review.ts, NODES)
+
+
+def _site_line(ex: dict) -> dict:
+    board = chess.Board(ex["fen"])
+    infos = _engine.analyse(board, chess.engine.Limit(nodes=SITE_NODES), multipv=2)
+    return {"id": ex["id"], "pv": [m.uci() for m in infos[0].get("pv", [])] if infos else []}
+
+
+def site_lines(workers: int = max(1, (os.cpu_count() or 2) - 1)) -> dict:
+    """The test half again, but with the line the site would have: a separate, shallower search (the site's node
+    count) instead of the 1M-node line the labels came from. Shows whether the model needs the exact labelling line."""
+    from .export import WEB_MODELS, run
+    from .metrics import labels, per_theme
+    from .planes import encode, model_line
+
+    examples = [ex for line in (OUT / "blunders.jsonl").open() if half((ex := json.loads(line))["game"]) == "test"]
+    cache = OUT / "site-lines.jsonl"
+    done = {row["id"]: row["pv"] for row in map(json.loads, cache.open())} if cache.exists() else {}
+    todo = [ex for ex in examples if ex["id"] not in done]
+    with cache.open("a") as f, Pool(workers, initializer=_start) as pool:
+        for row in pool.imap(_site_line, todo, chunksize=8):
+            done[row["id"]] = row["pv"]
+            f.write(json.dumps(row) + "\n")
+    meta = json.loads((WEB_MODELS / "tactics.json").read_text())
+
+    def predict(lines: list[list[str]]) -> np.ndarray:
+        planes = []
+        for ex, line in zip(examples, lines):
+            board = chess.Board(ex["fen"])
+            planes.append(encode(board, model_line(board, [chess.Move.from_uci(u) for u in line] or
+                                                   [chess.Move.from_uci(ex["line"][0])])))
+        return (run(WEB_MODELS / "tactics.onnx", np.stack(planes)) >= np.array(meta["thresholds"])).astype(np.uint8)
+
+    y = labels(examples)
+    same = per_theme(y, predict([ex["line"] for ex in examples]))
+    site = per_theme(y, predict([done[ex["id"]] for ex in examples]))
+    first_moves_agree = sum(done[ex["id"]][:1] == ex["line"][:1] for ex in examples) / len(examples)
+    result = {
+        "n": len(examples), "site_nodes": SITE_NODES, "first_move_agrees": first_moves_agree,
+        "themes": {t: {"support": same[t]["support"], "labelling_line_f1": same[t]["f1"], "site_line_f1": site[t]["f1"],
+                       "site_line_precision": site[t]["precision"], "site_line_recall": site[t]["recall"]}
+                   for t in THEMES},
+    }
+    from .report import RESULTS
+
+    (RESULTS / "games-site-lines.json").write_text(json.dumps(result, indent=1))
+    return result

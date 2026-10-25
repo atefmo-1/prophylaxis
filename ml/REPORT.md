@@ -59,6 +59,7 @@ uv run pytest
 | `fixtures`, `report`, `analysis` | parity fixtures, `results/metrics.md`, `results/analysis.json` | 5 min |
 | `games`, `blunders` | 10,000 real games; Stockfish finds the blunders | 3 h on 7 cores |
 | `real` | scores the real blunders and decides what ships | 3 min |
+| `siteline` | the test half again, with the line the site's shallower search gives | 6 min |
 | `bundle` | practice puzzles into `web/public/puzzles/` | 1 min |
 
 - **Resuming.** Each step reads the previous one's output from `ml/data/` (ignored by git), so any step can be
@@ -224,6 +225,27 @@ The CNN v1 column is the previous shipped model, run once on the same blunders.
 - **When there's nothing to name:** on the 1,712 test-half blunders with none of the 15 themes, the model names one
   for 9.9% of them. On puzzles with none, it does so for 6.5% (v1: 16.6%; the rules: 9.7%).
 
+**With the line the site would actually have** (`siteline` step, `results/games-site-lines.json`). The labels above
+come from a 1M-node line, and the model was given that same line. In the site, the model gets the line from the
+site's own 400,000-node search instead. So each test-half blunder was searched again at that depth, in a separate
+search, and the model was given that line while the labels stayed the same. (The site runs Stockfish 19 *Lite* in
+the browser; this used full Stockfish 19 at the same node count and number of lines, which is close but not
+identical.)
+
+| Theme | With the labelling line | With the site's line (P / R) |
+|---|---:|---:|
+| fork | 0.91 | 0.89 (0.88 / 0.91) |
+| hangingPiece | 0.93 | 0.93 (0.97 / 0.89) |
+| pin | 0.81 | 0.79 (0.85 / 0.73) |
+| discoveredAttack | 0.89 | 0.84 (0.85 / 0.83) |
+| skewer | 0.83 | 0.75 (0.73 / 0.77) |
+| trappedPiece | 0.78 | 0.73 (0.80 / 0.67) |
+| backRankMate | 0.92 | 0.92 (0.85 / 1.00) |
+
+The shallower search starts with the same move every time, but its line often differs after that. The model loses
+0 to 8 points of F1, mostly in recall. Every theme the site shows keeps a precision of 0.73 or more, so a name the
+site shows is still right about three times in four or better.
+
 **What ships**, decided on the val half (`real` step). A theme the model beat the rules on in the puzzle test must
 also beat them on real blunders, with **precision of at least 0.6, on at least 20 cases**:
 
@@ -305,12 +327,16 @@ above is the evidence for that.
 
 - **The labels come from a program.** Lichess's tagger is itself a set of hand-written rules. So the model learned
   to agree with another rule set, and on real games it does (pin 0.81, discovered attack 0.89). "Agrees with
-  Lichess's tagger" is not the same as "a coach would agree". A small check by a person would still add something,
-  and it can be done with yes/no questions about the board.
-- **The model sees the line that defines the label.** On puzzles, the line is the solution the tagger labelled;
-  on real games, it is Stockfish's line, cut the same way, and the labels come from that same line. That is by
+  Lichess's tagger" is not the same as "a coach would agree". `uv run tactics human` picks 46 test-half blunders for
+  a check by a person: for each of the six tactics the site names, cases where the model and the tagger agree, where
+  only the model sees the tactic, and where only the tagger does, shown in a shuffled order without saying which.
+  Each comes with one yes/no question about the board (`tactics/human-page.html` is the review page).
+  `uv run tactics human-score` scores the answers into `results/human.json`.
+- **The model sees the line that defines the label.** On puzzles, the line is the solution the tagger labelled.
+  On real games, it is Stockfish's line, cut the same way, and the labels come from that same line. That is by
   design, since the site has the engine's line, but it makes the task easier than "name the tactic from the
-  position alone". v1 did that harder task and scored 0.81 on puzzles.
+  position alone" (v1 did that harder task and scored 0.81 on puzzles). Given the site's own shallower line
+  instead, the model drops by 0 to 8 points of F1 and keeps a precision of 0.73 or more on every theme it names.
 - **Rare themes have little real evidence.** Attraction, double check and smothered mate had fewer than 20 real
   blunders in the deciding half, so the site doesn't use them. Back-rank mate shipped on 29 test cases; its
   interval is wide (0.86–0.97).
