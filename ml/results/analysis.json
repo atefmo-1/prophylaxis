@@ -1,0 +1,145 @@
+{
+ "bands": {
+  "0-999": {
+   "n": 54433,
+   "rules_f1": {
+    "mateIn1": 0.9977132961836467,
+    "mateIn2": 0.99828422230511,
+    "fork": 0.8483040854546716,
+    "pin": 0.0,
+    "discoveredAttack": 0.0,
+    "deflection": 0.0,
+    "hangingPiece": 0.31942857142857145,
+    "attraction": 0.0,
+    "backRankMate": 0.49598520200109303,
+    "promotion": 0.0,
+    "skewer": 0.0,
+    "trappedPiece": 0.0,
+    "capturingDefender": 0.0,
+    "doubleCheck": 0.0,
+    "smotheredMate": 0.0
+   },
+   "model_f1": {
+    "mateIn1": 0.9977132961836467,
+    "mateIn2": 0.9798667764388893,
+    "fork": 0.9757954854500953,
+    "pin": 0.8808290155440415,
+    "discoveredAttack": 0.9296740994854202,
+    "deflection": 0.8271604938271605,
+    "hangingPiece": 0.8250047501425042,
+    "attraction": 0.7886435331230285,
+    "backRankMate": 0.9872261230014381,
+    "promotion": 0.8327464788732394,
+    "skewer": 0.9119872560732776,
+    "trappedPiece": 0.641025641025641,
+    "capturingDefender": 0.5882352941176471,
+    "doubleCheck": 0.970873786407767,
+    "smotheredMate": 0.993103448275862
+   },
+   "model_macro_f1": 0.8753256985313106
+  },
+  "1000-1399": {
+   "n": 62164,
+   "rules_f1": {
+    "mateIn1": 0.9978260869565216,
+    "mateIn2": 0.9973970971015131,
+    "fork": 0.7040062232594322,
+    "pin": 0.0,
+    "discoveredAttack": 0.0,
+    "deflection": 0.0,
+    "hangingPiece": 0.622231778112234,
+    "attraction": 0.0,
+    "backRankMate": 0.35594329334787345,
+    "promotion": 0.0,
+    "skewer": 0.0,
+    "trappedPiece": 0.0,
+    "capturingDefender": 0.0,
+    "doubleCheck": 0.0,
+    "smotheredMate": 0.0
+   },
+   "model_f1": {
+    "mateIn1": 0.9978260869565216,
+    "mateIn2": 0.9194759049522541,
+    "fork": 0.9085735759918399,
+    "pin": 0.8286595625350532,
+    "discoveredAttack": 0.8574338085539714,
+    "deflection": 0.7670283303194697,
+    "hangingPiece": 0.8421052631578948,
+    "attraction": 0.8557919621749409,
+    "backRankMate": 0.9546827794561934,
+    "promotion": 0.7472596304415909,
+    "skewer": 0.7977627318221961,
+    "trappedPiece": 0.7410440122824974,
+    "capturingDefender": 0.605230386052304,
+    "doubleCheck": 0.9111470113085621,
+    "smotheredMate": 0.986111111111111
+   },
+   "model_macro_f1": 0.8480088104744267
+  },
+  "1400-2000": {
+   "n": 75470,
+   "rules_f1": {
+    "mateIn1": 0.9973390101117615,
+    "mateIn2": 0.9983313468414781,
+    "fork": 0.5209176788124156,
+    "pin": 0.0,
+    "discoveredAttack": 0.0,
+    "deflection": 0.0,
+    "hangingPiece": 0.6491180461329714,
+    "attraction": 0.0,
+    "backRankMate": 0.1939817302525524,
+    "promotion": 0.0,
+    "skewer": 0.0,
+    "trappedPiece": 0.0,
+    "capturingDefender": 0.0,
+    "doubleCheck": 0.0,
+    "smotheredMate": 0.0
+   },
+   "model_f1": {
+    "mateIn1": 0.9973390101117615,
+    "mateIn2": 0.7930227289888998,
+    "fork": 0.7786754732558825,
+    "pin": 0.6890839167734937,
+    "discoveredAttack": 0.6444017914267434,
+    "deflection": 0.5497966146175043,
+    "hangingPiece": 0.813699536730642,
+    "attraction": 0.7933964554503521,
+    "backRankMate": 0.8479604449938196,
+    "promotion": 0.573067467904944,
+    "skewer": 0.5394366197183098,
+    "trappedPiece": 0.6609058402860548,
+    "capturingDefender": 0.41591784338896026,
+    "doubleCheck": 0.8588709677419355,
+    "smotheredMate": 0.9263157894736843
+   },
+   "model_macro_f1": 0.7254593667241992
+  }
+ },
+ "no_theme": {
+  "n": 61084,
+  "model_names_one": 0.1664756728439526,
+  "rules_name_one": 0.11513653329840876
+ },
+ "rules_or_model": {
+  "fork": {
+   "precision": 0.7822312906349426,
+   "recall": 0.8538693846734616,
+   "f1": 0.8164819694617911,
+   "support": 26490,
+   "predicted": 28916
+  },
+  "hangingPiece": {
+   "precision": 0.5745305164319249,
+   "recall": 0.9494319756165143,
+   "f1": 0.7158675441345451,
+   "support": 7218,
+   "predicted": 11928
+  }
+ },
+ "rules_false_positives": {
+  "fork: forking piece can be won": 3661,
+  "hangingPiece: defended, taken by a cheaper piece": 2325,
+  "hangingPiece: undefended": 1580,
+  "fork: other": 1321
+ }
+}
