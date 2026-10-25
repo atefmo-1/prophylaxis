@@ -139,7 +139,7 @@ if (await page.$(".pill")) {
   };
   // A laptop pauses from the button in the top bar; a phone from the player menu.
   const toggle = async (label) => (phone ? menu(label) : page.$eval(".pill-btn", (b) => (b.click(), b.getAttribute("aria-label"))).catch(() => null));
-  console.log("PAUSE:", await toggle("Pause reviewing"));
+  console.log("PAUSE:", await toggle("Pause reviewing"), "| ms per move:", (await profile())?.ms_per_ply?.toFixed(0));
   await wait(3000); // the search already running finishes
   const p1 = await percent();
   await wait(10000);
@@ -148,7 +148,7 @@ if (await page.$(".pill")) {
   await page.screenshot({ path: `${out}/device-${kind}-paused.png` });
   console.log("RESUME:", await toggle("Resume reviewing"));
   await wait(8000);
-  console.log(`RESUMED: ${(await percent()) !== p2 ? "moving" : "STUCK"} | pill: ${await text(".pill")}`);
+  console.log(`RESUMED: ${(await percent()) !== p2 ? "moving" : "STUCK"} | pill: ${await text(".pill")} | ms per move: ${(await profile())?.ms_per_ply?.toFixed(0)}`);
 
   // A low battery, not charging, pauses; plugging in resumes.
   await page.evaluate(() => {

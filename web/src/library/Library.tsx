@@ -237,6 +237,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       const [model, openings] = await Promise.all([getTactics(), getBook()]);
       const started = performance.now();
       const pausesBefore = pauses.current;
+      const pausedBefore = paused.current; // a game that starts paused waits; that wait isn't speed
       try {
         const review = await buildReview(game, who, dev.pool, null, (n, total, stage, frame?: Frame) => {
           if (!live()) return;
@@ -248,7 +249,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           show();
         }, { tactics: model, book: openings });
-        if (pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
+        if (!pausedBefore && pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
         const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION, tagged: model?.version };
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
