@@ -12,6 +12,7 @@ import hashlib
 import json
 import random
 import sys
+from pathlib import Path
 
 import chess
 import numpy as np
@@ -153,7 +154,7 @@ def score(answers_path: str) -> dict:
     from .report import RESULTS
 
     questions = json.loads((HUMAN / "questions.json").read_text())
-    answers = json.loads(open(answers_path).read())
+    answers = json.loads(Path(answers_path).read_text())
     table: dict = {}
     for q in questions:
         a = answers.get(q["id"])
