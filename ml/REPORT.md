@@ -330,8 +330,14 @@ above is the evidence for that.
   Lichess's tagger" is not the same as "a coach would agree". `uv run tactics human` picks 46 test-half blunders for
   a check by a person: for each of the six tactics the site names, cases where the model and the tagger agree, where
   only the model sees the tactic, and where only the tagger does, shown in a shuffled order without saying which.
-  Each comes with one yes/no question about the board (`tactics/human-page.html` is the review page).
-  `uv run tactics human-score` scores the answers into `results/human.json`.
+  Each comes with the line in plain English and one yes/no question about the board (`tactics/human-page.html` is
+  the review page). `uv run tactics human-score` scores the answers into `results/human.json`.
+  - **The rule the answers use:** a tactic counts if the side that moves first uses it *anywhere in the line*, not
+    only on the first move. That is how Lichess's tagger, and so the labels, define a theme. A pin that is on the
+    board but plays no part in how the line wins counts as no. The first wording of the questions asked only about
+    the first move; answers given to that wording are kept but not scored until confirmed under the new one.
+  - **Who answered:** the site's owner, who is new to chess, with some answers checked with Claude's help. So these
+    are not purely human labels, and the report treats them as a cross-check, not ground truth.
 - **The model sees the line that defines the label.** On puzzles, the line is the solution the tagger labelled.
   On real games, it is Stockfish's line, cut the same way, and the labels come from that same line. That is by
   design, since the site has the engine's line, but it makes the task easier than "name the tactic from the

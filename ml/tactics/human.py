@@ -23,6 +23,10 @@ from .games import OUT, half
 from .planes import encode, model_line
 
 HUMAN = DATA / "human"
+# The rule for every question: the tactic counts if the side that moves first uses it anywhere in the line, which is
+# how Lichess's tagger (and so the labels) define a theme. Questions first asked only about the first move; answers
+# given to that wording are kept but not scored (the review page asks to confirm them).
+ANYWHERE_REV = 2
 PER_GROUP = {"both": 3, "model": 3, "tagger": 2}
 SHOWN = ["fork", "pin", "skewer", "discoveredAttack", "trappedPiece", "backRankMate"]
 NAMES = {chess.PAWN: "pawn", chess.KNIGHT: "knight", chess.BISHOP: "bishop", chess.ROOK: "rook", chess.QUEEN: "queen",
@@ -65,19 +69,6 @@ def _arrows(board: chess.Board, move: chess.Move) -> list[list[str]]:
     return out
 
 
-def _trapped_piece(after: chess.Board, me: chess.Color) -> chess.Square | None:
-    for square in chess.SquareSet(after.occupied_co[not me]):
-        pt = after.piece_type_at(square)
-        if pt in (chess.PAWN, chess.KING) or not after.is_attacked_by(me, square):
-            continue
-        if all(
-            after.color_at(t) == (not me) or (after.is_attacked_by(me, t) and VALUE.get(after.piece_type_at(t), 0) < VALUE[pt])
-            for t in after.attacks(square)
-        ):
-            return square
-    return None
-
-
 def _english(board: chess.Board, move: chess.Move) -> str:
     """One move in plain English, for someone new to chess notation."""
     side, piece = _side(board.turn), NAMES[board.piece_type_at(move.from_square)]
@@ -106,49 +97,44 @@ def _question(ex: dict, theme: str) -> dict:
     board = chess.Board(ex["fen"])
     line = model_line(board, [chess.Move.from_uci(u) for u in ex["line"]])
     me, them = _side(board.turn), _side(not board.turn)
-    key = line[0]
     sans, steps, b = [], [], board.copy(stack=False)
-    for move in line:
+    for i, move in enumerate(line):
         sans.append(b.san(move))
         text = _english(b, move)
+        # The attacking side's moves show what they attack; the replies show just the move.
+        arrows = _arrows(b, move) if i % 2 == 0 else [[chess.square_name(move.from_square), chess.square_name(move.to_square), "move"]]
         b.push(move)
-        steps.append({"fen": b.fen(), "arrow": [chess.square_name(move.from_square), chess.square_name(move.to_square)],
-                      "text": text})
-    after = board.copy(stack=False)
-    after.push(key)
-    moved = NAMES[after.piece_type_at(key.to_square)]
-    shown, arrows, auto = board.fen(), _arrows(board, key), None
-    to = chess.square_name(key.to_square)
+        steps.append({"fen": b.fen(), "arrows": arrows, "text": text})
+    shown, auto, rev = board.fen(), None, ANYWHERE_REV
+    anywhere = f"{me} moves first. Play the moves and look at the whole line, not just the first move."
     if theme == "fork":
-        ask = (f"{me}'s {moved} moves to {to} (blue arrow). Look at the red arrows that start from that {moved}: does it "
-               f"now attack two or more of {them}'s pieces at the same time? (Attacking the king counts.)")
+        ask = (f"{anywhere} At any point, does one of {me}'s pieces move to a square where it attacks two or more of "
+               f"{them}'s pieces at the same time? (Attacking the king counts.)")
     elif theme == "pin":
-        ask = (f"After {me}'s move (blue arrow), is there a {me} bishop, rook or queen lined up with two of {them}'s pieces "
-               f"in a row, so that the front one can't move away without leaving the one behind it (more valuable, or the "
-               f"king) open to capture?")
+        ask = (f"{anywhere} At any point, does {me} use a pin: a {me} bishop, rook or queen lined up with two of {them}'s "
+               f"pieces, so the front one can't move without leaving a more valuable piece (or the king) behind it open, "
+               f"and does that pin help {me} win material or give mate? A pin that is on the board but plays no part in "
+               f"the line counts as No.")
     elif theme == "skewer":
-        ask = (f"After {me}'s move (blue arrow), does a {me} bishop, rook or queen attack a valuable {them} piece (or the "
-               f"king) with another {them} piece directly behind it on the same line, so that when the front piece "
-               f"steps away, the one behind can be taken?")
+        ask = (f"{anywhere} At any point, does {me} use a skewer: a {me} bishop, rook or queen attacks a valuable "
+               f"{them} piece (or the king), and when that piece steps away, the {them} piece behind it on the same line "
+               f"can be taken?")
     elif theme == "discoveredAttack":
-        ask = (f"{me}'s move (blue arrow) gets a piece out of the way. Does a different {me} piece, the one that was behind "
-               f"it, now attack one of {them}'s pieces (or the king) that it couldn't reach before?")
+        ask = (f"{anywhere} At any point, does one of {me}'s moves get a piece out of the way, so that a different {me} "
+               f"piece that was behind it now attacks one of {them}'s pieces (or the king)?")
     elif theme == "trappedPiece":
-        square = _trapped_piece(after, board.turn)
-        piece = (f"{them}'s {NAMES[after.piece_type_at(square)]} on {chess.square_name(square)}" if square
-                 else f"one of {them}'s pieces")
-        ask = (f"After {me}'s move (blue arrow), is {piece} under attack with no safe square to run to, so {them} is "
-               f"going to lose it?")
-    else:  # backRankMate
-        shown, arrows = b.fen(), []
+        ask = (f"{anywhere} At any point, does one of {them}'s pieces end up attacked with no safe square to run to, so "
+               f"that {me} wins it?")
+    else:  # backRankMate: about the end of the line from the start, so its wording and answers never changed
+        shown, rev = b.fen(), 1
         row = "8 (the top row from White's side)" if them == "Black" else "1 (the bottom row from White's side)"
         if not b.is_checkmate():
             # Not checkmate at all, so not a back-rank mate: that is a fact, not something to ask a person.
             auto = "no"
         ask = (f"This is the end of the line, and it is checkmate. Is {them}'s king on its own back row, row {row}, with "
                f"the squares just in front of it filled by {them}'s own pieces, so it was boxed in by them?")
-    return {"fen": shown, "orientation": "white" if board.turn == chess.WHITE else "black", "arrows": arrows,
-            "line": " ".join(sans), "steps": steps, "start": board.fen(), "question": ask, "auto": auto}
+    return {"fen": shown, "orientation": "white" if board.turn == chess.WHITE else "black", "arrows": [],
+            "line": " ".join(sans), "steps": steps, "start": board.fen(), "question": ask, "auto": auto, "rev": rev}
 
 
 def build(seed: int = 7) -> dict:
@@ -177,31 +163,47 @@ def build(seed: int = 7) -> dict:
     rng.shuffle(questions)
     HUMAN.mkdir(parents=True, exist_ok=True)
     (HUMAN / "questions.json").write_text(json.dumps(questions, indent=1))
-    page = [{k: q[k] for k in ("id", "fen", "orientation", "arrows", "line", "steps", "start", "question")}
+    page = [{k: q[k] for k in ("id", "fen", "orientation", "arrows", "line", "steps", "start", "question", "rev")}
             for q in questions if not q["auto"]]
     (HUMAN / "page.json").write_text(json.dumps(page, separators=(",", ":")))
     return {"questions": len(questions), "by_group": {g: sum(q["group"] == g for q in questions) for g in PER_GROUP}}
 
 
 def score(answers_path: str) -> dict:
-    """answers.json: {question id: "yes" | "no" | "unsure"}. Per theme and group, how often the answer was yes.
-    Back-rank questions whose line isn't checkmate are answered "no" automatically and never shown."""
+    """answers.json: {question id: {"answer": "yes" | "no" | "unsure", "rev": n}}, as the review page stores them.
+    An answer counts only if it was given to the question's current wording (rev). Back-rank questions whose line
+    isn't checkmate are answered "no" automatically and never shown. Per theme and group: how often the answer was
+    yes."""
     from .report import RESULTS
 
     questions = json.loads((HUMAN / "questions.json").read_text())
     answers = json.loads(Path(answers_path).read_text())
     table: dict = {}
+    counted = unsure = stale = 0
     for q in questions:
-        a = q["auto"] or answers.get(q["id"])
+        given = answers.get(q["id"])
+        if q["auto"]:
+            a = q["auto"]
+        elif given and given.get("rev", 1) >= q["rev"]:
+            a = given["answer"]
+            counted += a in ("yes", "no")
+            unsure += a == "unsure"
+        else:
+            stale += given is not None
+            continue
         if a not in ("yes", "no"):
             continue
         cell = table.setdefault(q["theme"], {}).setdefault(q["group"], {"yes": 0, "no": 0})
         cell[a] += 1
     totals = {g: {"yes": sum(t.get(g, {}).get("yes", 0) for t in table.values()),
                   "no": sum(t.get(g, {}).get("no", 0) for t in table.values())} for g in PER_GROUP}
-    result = {"answered": sum(a in ("yes", "no") for a in answers.values()), "unsure": sum(a == "unsure" for a in answers.values()),
-              "automatic": sum(bool(q["auto"]) for q in questions), "questions": len(questions), "by_theme": table,
-              "by_group": totals}
+    result = {
+        "rule": "a tactic counts if the side that moves first uses it anywhere in the line",
+        "who": "the owner, some answers checked with Claude's help: not purely human labels",
+        "answered": counted, "unsure": unsure, "old_wording_not_counted": stale,
+        "automatic": sum(bool(q["auto"]) for q in questions), "questions": len(questions),
+        "by_theme": table, "by_group": totals,
+    }
     (RESULTS / "human.json").write_text(json.dumps(result, indent=1))
     return result
 
