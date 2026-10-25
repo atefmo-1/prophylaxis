@@ -101,16 +101,18 @@ export function OpeningTree({
           <span className="muted num">{plural(tree.games, "game")}</span>
         </div>
 
-        <nav className="otree-path" aria-label="Moves so far">
-          <button type="button" onClick={() => setPath([])} aria-current={ply === 0 ? "step" : undefined}>
-            Start
-          </button>
-          {nodes.slice(1).map((n, i) => (
-            <button key={i} type="button" onClick={() => setPath(path.slice(0, i + 1))} aria-current={i + 1 === ply ? "step" : undefined}>
-              {moveLabel(i, n.san!)}
+        {ply > 0 && (
+          <nav className="otree-path" aria-label="Moves so far">
+            <button type="button" className="otree-back" onClick={() => setPath(path.slice(0, -1))}>
+              ← Back
             </button>
-          ))}
-        </nav>
+            {nodes.slice(1).map((n, i) => (
+              <button key={i} type="button" onClick={() => setPath(path.slice(0, i + 1))} aria-current={i + 1 === ply ? "step" : undefined}>
+                {moveLabel(i, n.san!)}
+              </button>
+            ))}
+          </nav>
+        )}
 
         <p className="otree-name">{name ?? (ply === 0 ? "Starting position" : "Off the named lines")}</p>
         <p className="otree-here">

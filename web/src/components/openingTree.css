@@ -82,6 +82,13 @@
   cursor: pointer;
 }
 
+.otree-path .otree-back {
+  margin-right: 6px;
+  border-color: transparent;
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
 .otree-path button[aria-current="step"] {
   border-color: var(--c-accent);
   color: var(--c-ink);

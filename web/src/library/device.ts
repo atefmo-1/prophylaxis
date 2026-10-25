@@ -89,11 +89,24 @@ export function getDevice(): Promise<Device> {
       estimate: (plies) => Math.max(plies, 1) * current.ms_per_ply,
       learn: (plies, ms) => {
         if (plies < 10) return; // too short to say much
-        current.ms_per_ply = 0.6 * current.ms_per_ply + 0.4 * (ms / plies);
+        // A stored speed that's far off (measured while the machine was busy, say) is replaced quickly.
+        const seen = ms / plies;
+        const ratio = seen / current.ms_per_ply;
+        const weight = ratio > 2 || ratio < 0.5 ? 0.8 : 0.4;
+        current.ms_per_ply = (1 - weight) * current.ms_per_ply + weight * seen;
         writeProfile(current);
       },
     };
   })());
+}
+
+// Chrome slows down a page in a background tab, so a game reviewed while the tab was hidden says nothing about speed.
+let hiddenTimes = 0;
+if (typeof document !== "undefined") document.addEventListener("visibilitychange", () => void (document.hidden && hiddenTimes++));
+/** Call before a game; the returned check says whether the page stayed in view all through it. */
+export function inView(): () => boolean {
+  const before = document.hidden ? -1 : hiddenTimes;
+  return () => hiddenTimes === before;
 }
 
 /** Moves (plies) in a PGN, without reading it properly: enough for estimates. */

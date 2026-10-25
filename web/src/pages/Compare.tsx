@@ -245,7 +245,7 @@ export function Compare({ player }: { player: string | null }) {
           {status.kind === "reviewing" && (
             <>
               <p>
-                Reviewing {name}'s games: {status.done} of {status.total} done, {timeLeft(status.eta)} left.
+                Reviewing {name}'s games: {status.done} of {status.total} done{status.eta === null ? "; timing the first one" : `, ${timeLeft(status.eta)} left`}.
                 {theirs.length < COMPARE_MIN ? ` The comparison appears after ${COMPARE_MIN}.` : " The numbers firm up as the rest finish."}
               </p>
               <span className="cmp-bar" aria-hidden="true">

@@ -18,7 +18,8 @@ const NAV: { label: string; route: Route; match: Route["name"][] }[] = [
   { label: "Review", route: { name: "latest" }, match: ["latest", "game"] },
   { label: "Habits", route: { name: "patterns" }, match: ["patterns"] },
   { label: "Practice", route: { name: "practice", tag: null }, match: ["practice", "puzzles"] },
-  { label: "Games", route: { name: "games" }, match: ["games", "openings"] },
+  { label: "Games", route: { name: "games" }, match: ["games"] },
+  { label: "Openings", route: { name: "openings" }, match: ["openings"] },
   { label: "Compare", route: { name: "compare", player: null }, match: ["compare"] },
 ];
 

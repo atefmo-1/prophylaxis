@@ -20,19 +20,6 @@ const COLORS: { label: string; value: Color | "all" }[] = [
 ];
 
 /** Games and the opening tree are two views of the same games. */
-export function GamesTabs({ current }: { current: "games" | "openings" }) {
-  return (
-    <nav className="seg seg--links" aria-label="Views">
-      <a href={href({ name: "games" })} aria-current={current === "games" ? "page" : undefined}>
-        All games
-      </a>
-      <a href={href({ name: "openings" })} aria-current={current === "openings" ? "page" : undefined}>
-        Opening tree
-      </a>
-    </nav>
-  );
-}
-
 export function Games() {
   const games = useGames();
   const overview = useOverview();
@@ -50,7 +37,6 @@ export function Games() {
   return (
     <div className="page">
       <header className="page-top">
-        <GamesTabs current="games" />
         <h1>Games</h1>
         <p>
           {games.data.length} games, newest first.

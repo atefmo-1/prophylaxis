@@ -6,7 +6,7 @@ import { NODES, type ChessComGame } from "../analysis/review";
 import { ANALYSIS_VERSION, overview as buildOverview, type StoredGame } from "../analysis/stats";
 import type { Overview } from "../types";
 import { fetchGames, findPlayer, gameId } from "./chesscom";
-import { getDevice, pliesOf } from "./device";
+import { getDevice, inView, pliesOf } from "./device";
 import { useLibraryStatus } from "./Library";
 import { reviewGame } from "./reviewer";
 import { remember } from "./compared";
@@ -46,7 +46,7 @@ export type CompareStatus =
   | { kind: "idle" }
   | { kind: "loading"; step: string }
   | { kind: "waiting" } // the player's own games are reviewed first
-  | { kind: "reviewing"; done: number; total: number; eta: number }
+  | { kind: "reviewing"; done: number; total: number; eta: number | null } // no estimate until a game is timed
   | { kind: "ready" }
   | { kind: "error"; message: string };
 
@@ -69,6 +69,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
   const [todo, setTodo] = useState<ChessComGame[] | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
   const run = useRef(0);
+  const pace = useRef({ ms: 0, plies: 0 }); // what this comparison's games actually took, for the time left
 
   // Who they are, what's already reviewed, and which of their games to review.
   useEffect(() => {
@@ -78,6 +79,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
     setStored([]);
     setTodo(null);
     setChosen([]);
+    pace.current = { ms: 0, plies: 0 };
     if (!name || !timeClass) return void setStatus({ kind: "idle" });
     const rival = sample && name.toLowerCase() === SAMPLE_RIVAL;
     (async () => {
@@ -113,12 +115,23 @@ export function useComparison(name: string | null, timeClass: string | null, sam
     const live = () => run.current === token && !stopped;
     (async () => {
       const dev = await getDevice();
-      const eta = todo.reduce((a, g) => a + dev.estimate(pliesOf(g.pgn)), 0);
+      // The time left, from what this comparison's games took: the device's stored speed can be stale (measured while
+      // the machine was busy), and the first game takes only seconds on a laptop.
+      const { ms, plies: seen } = pace.current;
+      const eta = seen ? todo.reduce((a, g) => a + Math.max(pliesOf(g.pgn), 1) * (ms / seen), 0) : null;
       setStatus({ kind: "reviewing", done: chosen.length - todo.length, total: chosen.length, eta });
       const game = todo[0];
       try {
+        const plies = pliesOf(game.pgn);
+        const stayedInView = inView();
+        const started = performance.now();
         const entry = await reviewGame(game, player, dev);
         if (!live()) return;
+        if (stayedInView()) {
+          const took = performance.now() - started;
+          pace.current = { ms: pace.current.ms + took, plies: pace.current.plies + plies };
+          dev.learn(plies, took);
+        }
         await saveGame(player.toLowerCase(), entry);
         setStored((s) => [...s.filter((x) => x.review.game.id !== entry.review.game.id), entry]);
       } catch {

@@ -8,7 +8,7 @@ import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePosition
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
 import { fetchGames, findPlayer, gameId } from "./chesscom";
-import { getDevice, pliesOf, type Device } from "./device";
+import { getDevice, inView, pliesOf, type Device } from "./device";
 import { forgetCompared } from "./compared";
 import { getTactics, reviewGame } from "./reviewer";
 import { forget, loadGames, saveGame } from "./store";
@@ -240,6 +240,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       const started = performance.now();
       const pausesBefore = pauses.current;
       const pausedBefore = paused.current; // a game that starts paused waits; that wait isn't speed
+      const stayedInView = inView();
       try {
         const entry = await reviewGame(game, who, dev, (n, total, stage, frame?: Frame) => {
           if (!live()) return;
@@ -251,7 +252,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           show();
         });
-        if (!pausedBefore && pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
+        if (!pausedBefore && pauses.current === pausesBefore && !paused.current && stayedInView()) dev.learn(plies[i], performance.now() - started);
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
         setStored((s) => [...s.filter((x) => x.review.game.id !== entry.review.game.id), entry]);
