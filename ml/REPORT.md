@@ -28,6 +28,10 @@ them, and every name feeds the rest of the site:
 | Real beginner games, fork F1 | 0.81 | – | 0.82 | **0.91** |
 
 - **The shipped model:** a 915k-parameter ResNet, 0.98 MB as int8 ONNX. It runs in the browser in onnxruntime-web.
+- **A check by a person** (46 real blunders, answered by the owner with some help from Claude) agrees with the
+  model and the tagger when they agree (16 of 18). It accepts about half the extra tactics only the model sees,
+  which puts the share of the model's names a person would accept at about 83%. Pin and trapped piece looked
+  weakest.
 - **Where the rules still win:** mate-in-2 (puzzles 0.998 against 0.991; real games 1.00 against 0.90). The site
   keeps the rules for mates.
 - **What changed from v1 to v2:** the model now also sees the next moves of the engine's line, which the site has
@@ -264,6 +268,52 @@ also beat them on real blunders, with **precision of at least 0.6, on at least 2
   The site names only the first seven; the last three it doesn't show.
 - **Not shipped:** attraction, doubleCheck, smotheredMate, each with fewer than 20 real cases to judge them on.
 
+### A check by a person
+
+Lichess's tagger is a program, so agreeing with it is not the same as being right. To check that, 46 test-half
+blunders were picked for the six tactics the site names (`uv run tactics human`). Each tactic got three kinds of
+case, shown in a shuffled order without saying which was which:
+- both the model and the tagger see the tactic;
+- only the model sees it;
+- only the tagger does.
+
+Each case came with its line in plain English and one yes/no question about the board, on a review page.
+
+- **The rule the answers use:** a tactic counts if the side that moves first uses it *anywhere in the line*, which
+  is how the tagger defines a theme. A pin that is on the board but plays no part in how the line wins counts as
+  no.
+- **Who answered:** the site's owner, who is new to chess, with some answers checked with Claude's help. These are
+  not purely human labels; read them as a cross-check, not as ground truth.
+- **Automatic answers:** two back-rank cases whose line doesn't end in checkmate were answered no automatically,
+  since that is a fact. The site could never show them anyway: it asks about back-rank mate only when the engine's
+  line is a mate. 44 were answered on the page, none "not sure" (`results/human.json`).
+
+| | Both see it | Only the model | Only the tagger |
+|---|---:|---:|---:|
+| The person says the tactic is there | **16 of 18** | **9 of 18** | **8 of 10** |
+| fork | 3 of 3 | 2 of 3 | 2 of 2 |
+| skewer | 3 of 3 | 3 of 3 | 2 of 2 |
+| discoveredAttack | 3 of 3 | 2 of 3 | 2 of 2 |
+| backRankMate | 3 of 3 | 1 of 3 (2 automatic no) | none to ask |
+| trappedPiece | 3 of 3 | 0 of 3 | 1 of 2 |
+| pin | 1 of 3 | 1 of 3 | 1 of 2 |
+
+What this says, with the caveat that each cell holds only 2 or 3 cases:
+
+- **When the model and the tagger agree, they are almost always right** (16 of 18).
+- **When only the model sees a tactic, it is right about half the time** (9 of 18). Against the tagger's labels all
+  of these count as model errors, so the puzzle and real-game precision numbers undercount the model a little.
+  Combining the two rates with how often the model's calls agree with the tagger on real games (84% on average
+  across these six), the share of the model's names a person would accept comes out at about 83%. That is close
+  to the 84% measured against the tagger.
+- **When only the tagger sees a tactic, it is usually really there** (8 of 10): the model's misses are real misses.
+- **Pin and trapped piece look weakest to a person.** For pin, even cases where both programs agree were often
+  judged not to be a pin that matters (1 of 3), so the definition itself is the hard part. For trapped piece, the
+  model's own extra calls weren't accepted (0 of 3). Both are also the two lowest real-game F1 scores among the
+  site's names (0.81, 0.78). Three cases per cell is too few to overrule the 214 and 197 real cases behind those
+  scores, so the site keeps both. A larger check of just these two would be the next step before trusting them as
+  much as the others.
+
 ### Puzzles score a definition
 
 A label is Lichess's definition of a theme, and for two themes that definition is narrower than the site's tag:
@@ -325,19 +375,11 @@ above is the evidence for that.
 
 ## Honest limits
 
-- **The labels come from a program.** Lichess's tagger is itself a set of hand-written rules. So the model learned
-  to agree with another rule set, and on real games it does (pin 0.81, discovered attack 0.89). "Agrees with
-  Lichess's tagger" is not the same as "a coach would agree". `uv run tactics human` picks 46 test-half blunders for
-  a check by a person: for each of the six tactics the site names, cases where the model and the tagger agree, where
-  only the model sees the tactic, and where only the tagger does, shown in a shuffled order without saying which.
-  Each comes with the line in plain English and one yes/no question about the board (`tactics/human-page.html` is
-  the review page). `uv run tactics human-score` scores the answers into `results/human.json`.
-  - **The rule the answers use:** a tactic counts if the side that moves first uses it *anywhere in the line*, not
-    only on the first move. That is how Lichess's tagger, and so the labels, define a theme. A pin that is on the
-    board but plays no part in how the line wins counts as no. The first wording of the questions asked only about
-    the first move; answers given to that wording are kept but not scored until confirmed under the new one.
-  - **Who answered:** the site's owner, who is new to chess, with some answers checked with Claude's help. So these
-    are not purely human labels, and the report treats them as a cross-check, not ground truth.
+- **The labels come from a program, and the check by a person is small.** Lichess's tagger is itself a set of
+  hand-written rules, so the model learned to agree with another rule set. The 46-case check above suggests a
+  person would accept about the same share of the model's names (about 83%), but it was answered by someone new to
+  chess with some help from Claude, and has only 2 or 3 cases per tactic and group. Pin and trapped piece deserve a
+  larger check.
 - **The model sees the line that defines the label.** On puzzles, the line is the solution the tagger labelled.
   On real games, it is Stockfish's line, cut the same way, and the labels come from that same line. That is by
   design, since the site has the engine's line, but it makes the task easier than "name the tactic from the
