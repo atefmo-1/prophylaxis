@@ -399,15 +399,6 @@
   box-shadow: 0 0 0 2px var(--c-panel);
 }
 
-.method-list {
-  display: grid;
-  gap: 8px;
-  max-width: 66ch;
-  margin: 0;
-  padding-left: 18px;
-  color: var(--c-ink-2);
-}
-
 
 /* ---------- Analysis cards and charts ---------- */
 
@@ -463,8 +454,6 @@
 .ch-line--avg { stroke: var(--c-accent); }
 .ch-dots--game circle { fill: var(--c-ink-3); fill-opacity: 0.55; stroke: var(--c-panel); stroke-width: 1.5; }
 .ch-cursor { stroke: var(--c-accent-ink); stroke-width: 1.5; }
-.ch-equal { stroke: var(--c-line-strong); stroke-width: 1; }
-.ch-point { fill: var(--c-accent); stroke: var(--c-panel); stroke-width: 2; }
 
 .ch-tip {
   position: absolute;
@@ -606,14 +595,6 @@
   font-size: 12px;
 }
 
-.method {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-  gap: 24px;
-  align-items: start;
-  margin-top: 12px;
-}
-
 /* ---------- Games ---------- */
 
 .filters {
@@ -698,8 +679,7 @@
 }
 
 @media (max-width: 860px) {
-  .cards,
-  .method {
+  .cards {
     grid-template-columns: minmax(0, 1fr);
   }
 

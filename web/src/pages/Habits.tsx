@@ -1,7 +1,7 @@
 // Habits: the one thing to work on first, then skill areas, every habit, and the analysis behind them.
 import type { ReactNode } from "react";
 import { Board, type Arrow } from "../components/Board";
-import { BarRows, GameChart, Legend, PairedBars, RateRows, Scatter } from "../components/charts";
+import { BarRows, GameChart, Legend, PairedBars, RateRows } from "../components/charts";
 import { ClassIcon } from "../components/ClassIcon";
 import { useOverview } from "../data";
 import { CLASS_META, RESULT_META, day, plural, share } from "../lib/format";
@@ -376,40 +376,6 @@ function Openings({ data }: { data: Overview }) {
   );
 }
 
-function Method({ data }: { data: Overview }) {
-  const v = data.validation;
-  return (
-    <section className="block" aria-labelledby="method-title">
-      <h2 id="method-title">How this is graded</h2>
-      <div className="method">
-        <ul className="method-list">
-          <li>
-            Games come from the chess.com public API. Every position was searched by {data.method.engine} at{" "}
-            {data.method.nodes.toLocaleString()} nodes, the same budget each time, so results are reproducible.
-          </li>
-          <li>
-            Engine scores become winning chances and accuracy with Lichess's published formulas. Grades use chess.com's scale: a mistake
-            costs 10–20% winning chances, a blunder 20% or more.
-          </li>
-          <li>
-            Habits are named by rules checked against the engine's own lines. A hung piece only counts when the best reply really takes it
-            and the material is really lost. Rates carry 90% Jeffreys intervals.
-          </li>
-          <li>Retry puzzles accept any move within 3% of the best, scored by a full MultiPV search of every legal move.</li>
-        </ul>
-        {v.pairs.length > 0 && (
-          <Card
-            title="Checked against chess.com"
-            takeaway={`${v.pairs.length} games have chess.com's own accuracy. Ours correlates at r = ${v.pearson?.toFixed(2)}, typical gap ${v.mean_abs_diff?.toFixed(1)} points.`}
-          >
-            <Scatter pairs={v.pairs} />
-          </Card>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export function Habits() {
   const overview = useOverview();
   if (overview.status === "error") return <LoadError what="your stats" detail={overview.error} />;
@@ -432,7 +398,6 @@ export function Habits() {
       <Mistakes data={data} />
       <VersusAndResults data={data} />
       <Openings data={data} />
-      <Method data={data} />
     </div>
   );
 }
