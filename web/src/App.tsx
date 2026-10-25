@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { pausedLabel, ProgressPill } from "./components/Progress";
+import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
 import { timeLeft } from "./lib/format";
 import { useTheme, type ThemeChoice } from "./lib/theme";
+import { ComparisonProvider, useCurrentComparison } from "./library/Comparison";
 import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library";
 import { Compare } from "./pages/Compare";
 import { Games } from "./pages/Games";
@@ -106,6 +107,7 @@ function PlayerMenu({ player }: { player: string }) {
 
 function TopBar({ route }: { route: Route }) {
   const { player } = useLibrary();
+  const { target } = useCurrentComparison();
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: "latest" })}>
@@ -114,7 +116,7 @@ function TopBar({ route }: { route: Route }) {
       {player && (
         <nav className="topnav" aria-label="Sections">
           {NAV.map((item) => (
-            <a key={item.label} href={href(item.route)} aria-current={item.match.includes(route.name) ? "page" : undefined}>
+            <a key={item.label} href={href(item.route.name === "compare" ? { name: "compare", player: target } : item.route)} aria-current={item.match.includes(route.name) ? "page" : undefined}>
               {item.label}
             </a>
           ))}
@@ -122,6 +124,7 @@ function TopBar({ route }: { route: Route }) {
       )}
       <div className="topbar-end">
         {player && <ProgressPill />}
+        {player && route.name !== "compare" && <ComparePill />}
         <ThemeSwitch />
         {player && <PlayerMenu player={player} />}
       </div>
@@ -132,7 +135,9 @@ function TopBar({ route }: { route: Route }) {
 export function App() {
   return (
     <LibraryProvider>
-      <Shell />
+      <ComparisonProvider>
+        <Shell />
+      </ComparisonProvider>
     </LibraryProvider>
   );
 }

@@ -28,7 +28,7 @@ Only finished games are analysed. It never helps during a live game (chess.com F
    - **Practice** gives you five positions a day from your own mistakes. Ones you miss come back sooner, ones you solve come back later. Each tactic habit also has **Puzzles**: Lichess puzzles of that tactic that start at your level and get harder as you solve them.
    - **Games** lists every reviewed game; filter by result and colour.
    - **Openings** merges your first ten moves into one tree: click a move to follow it, **Back** to step back.
-   - **Compare** takes any chess.com username (or one of the players you've met most), reviews their last 30 games in your main time control (about 2–3 minutes, after your own games are done), and shows the two of you side by side, how to beat them, and their opening tree. Their reviews stay in your browser, so comparing again is instant, and deleting your data deletes them too.
+   - **Compare** takes any chess.com username (or one of the players you've met most), reviews their last 30 games in your main time control (about 2–3 minutes, after your own games are done; it keeps going while you look at other pages), and shows the two of you side by side, how to beat them, and their opening tree. Their reviews stay in your browser, so comparing again is instant, and deleting your data deletes them too.
 
 Your name in the top bar opens a menu to switch to another player or to delete your reviews from this browser.
 

@@ -1,9 +1,10 @@
 // You against another chess.com player: their latest games in your time control, reviewed in this browser like
 // yours, side by side with your own, with tips for playing them drawn from their numbers.
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { OpeningTree } from "../components/OpeningTree";
 import { NotEnough } from "../components/Progress";
-import { COMPARE_GAMES, COMPARE_MIN, latest, ownOverview, SAMPLE_RIVAL, useComparison } from "../library/compare";
+import { COMPARE_GAMES, COMPARE_MIN, latest, ownOverview, SAMPLE_RIVAL } from "../library/compare";
+import { useCurrentComparison } from "../library/Comparison";
 import { useLibrary } from "../library/Library";
 import { plural, share, timeLeft } from "../lib/format";
 import { tipsAgainst } from "../lib/tips";
@@ -210,7 +211,21 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
 export function Compare({ player }: { player: string | null }) {
   const lib = useLibrary();
   const tc = lib.overview.empty ? null : lib.overview.player.rating_time_class;
-  const { status, player: them, theirs, overview, total } = useComparison(player, tc, lib.isSample);
+  // The comparison runs above the pages (library/Comparison.tsx), so it carries on while the player is elsewhere.
+  const cmp = useCurrentComparison();
+  const { target, setTarget } = cmp;
+  const same = (a: string | null, b: string | null) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
+  useEffect(() => {
+    if (player && !same(player, target)) setTarget(player);
+    // Back on Compare without a name (the top bar's link before it knew one): show the comparison under way.
+    else if (!player && target) window.location.replace(href({ name: "compare", player: target }));
+  }, [player, target, setTarget]);
+  const current = same(player, target);
+  const status = current ? cmp.status : ({ kind: "idle" } as const);
+  const them = current ? cmp.player : null;
+  const theirs = current ? cmp.theirs : [];
+  const overview = current ? cmp.overview : null;
+  const total = current ? cmp.total : 0;
   const own = useMemo(() => (tc ? ownOverview(lib.stored, lib.player ?? "you", tc) : null), [lib.stored, lib.player, tc]);
   if (!lib.loaded) return <div className="page" aria-busy="true" />;
   if (lib.overview.empty || lib.overview.player.played < MIN_OWN)

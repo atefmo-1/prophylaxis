@@ -9,6 +9,14 @@
   white-space: nowrap;
 }
 
+.pill--link {
+  text-decoration: none;
+}
+
+.pill--link:hover {
+  color: var(--c-ink);
+}
+
 .pill-eta {
   font-weight: 450;
 }

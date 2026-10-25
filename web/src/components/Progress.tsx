@@ -1,7 +1,9 @@
 // How the background review is going: a compact line in the top bar, and a full view for when there's nothing to
 // show yet (your first game replays on the board as Stockfish reads it).
 import { timeLeft } from "../lib/format";
+import { useCurrentComparison } from "../library/Comparison";
 import { useLibrary, useLibraryStatus } from "../library/Library";
+import { href } from "../router";
 import { Board } from "./Board";
 import { IconPause, IconPlay } from "./Icons";
 import "./progress.css";
@@ -123,5 +125,25 @@ export function NotEnough({ title, when }: { title: string; when: string }) {
         {when}
       </p>
     </div>
+  );
+}
+
+/** A comparison under way, while the player is on another page: where it's at, and a way back to it. */
+export function ComparePill() {
+  const { status, player, target } = useCurrentComparison();
+  if (!target || (status.kind !== "reviewing" && status.kind !== "loading")) return null;
+  const name = player ?? target;
+  return (
+    <a className="pill pill--link" href={href({ name: "compare", player: target })}>
+      <span aria-live="polite">
+        Comparing with {name}
+        {status.kind === "reviewing" && (
+          <span className="pill-eta">
+            {" "}
+            · {status.done} of {status.total}
+          </span>
+        )}
+      </span>
+    </a>
   );
 }
