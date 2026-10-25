@@ -26,3 +26,8 @@ def test_back_rank_mate_in_one():
 def test_free_queen_is_hanging():
     # Qh1?? puts the queen on the rook's file with nothing defending it.
     assert rules.predict(puzzle("4k2r/8/8/8/8/8/8/4KQ2 w - - 0 1", "f1h1 h8h1 e1f2")) == {"hangingPiece"}
+
+
+def test_back_rank_mate_needs_the_king_boxed_in_by_its_own_pieces():
+    # Same mate on the first rank, but f2 is held by the e4 knight rather than a white pawn.
+    assert rules.predict(puzzle("3r2k1/8/8/8/4n3/8/6PP/R5K1 w - - 0 1", "a1a7 d8d1")) == {"mateIn1"}

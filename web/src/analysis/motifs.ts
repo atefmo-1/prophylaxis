@@ -86,7 +86,13 @@ function isBackRankMate(pos: Position, line: string[]): boolean {
   const king = p.board.kingOf(p.turn);
   const mater = p.board.get(last.to);
   const backRank = p.turn === "white" ? 0 : 7;
-  return king !== undefined && king >> 3 === backRank && !!mater && (mater.role === "rook" || mater.role === "queen") && last.to >> 3 === backRank;
+  if (king === undefined || king >> 3 !== backRank) return false;
+  // Boxed in: every square in front of the king holds one of its own pieces.
+  const inFront = backRank + (p.turn === "white" ? 1 : -1);
+  for (let f = Math.max(0, (king & 7) - 1); f <= Math.min(7, (king & 7) + 1); f++) {
+    if (p.board.get(inFront * 8 + f)?.color !== p.turn) return false;
+  }
+  return !!mater && (mater.role === "rook" || mater.role === "queen") && last.to >> 3 === backRank;
 }
 
 const name = (pos: Position, sq: Square) => pos.board.get(sq)?.role ?? "piece";

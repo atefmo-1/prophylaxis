@@ -5,12 +5,12 @@ back-rank mate and so on. It is measured against the hand-written motif rules th
 put in the browser only for the themes where it beats them.
 
 **Result.** A 730k-parameter ResNet on board planes, quantised to int8 (0.78 MB), reaches a macro F1 of 0.807
-over 15 themes on 192,067 held-out Lichess puzzles. The rules score 0.245, because they can name only 5 of the 15
-themes. On those 5 the CNN scores 0.920 and the rules 0.736. The rules still win on mate-in-2 (0.998 against
+over 15 themes on 192,067 held-out Lichess puzzles. The rules score 0.269, because they can name only 5 of the 15
+themes. On those 5 the CNN scores 0.920 and the rules 0.807. The rules still win on mate-in-2 (0.998 against
 0.919) and tie on mate-in-1, so the site keeps the rules' tags for mates.
 
 In the site, the model names the mistakes the rules could only call "lost material" or "missed tactic": pins,
-skewers, discovered attacks and trapped pieces. It also decides back-rank mates, where the rule has a bug. It does
+skewers, discovered attacks and trapped pieces. It also decides back-rank mates, where it beats the rule (0.973 against 0.782). It does
 *not* overrule the rules' hanging-piece and fork tags, although its puzzle F1 is higher there. Most of the rules'
 "errors" on those two themes come from a difference in definition: Lichess labels only undefended pieces as
 hanging, and leaves out forks whose forking piece can be taken. They are not wrong calls. On the sample player,
@@ -150,15 +150,15 @@ at those thresholds.
 | deflection | 8,077 | 0.000 | 0.587 | **0.670** | 0.669 (0.68 / 0.66) | 0.669 | CNN | not shown |
 | hangingPiece | 7,218 | 0.567 | **0.871** | 0.826 | 0.825 (0.77 / 0.89) | 0.825 | LightGBM | rules' tag, model adds |
 | attraction | 6,496 | 0.000 | 0.798 | **0.812** | 0.812 (0.86 / 0.77) | 0.812 | CNN | not shown |
-| backRankMate | 7,980 | 0.430 | 0.895 | **0.973** | 0.973 (0.97 / 0.97) | 0.973 | CNN | model |
+| backRankMate | 7,980 | 0.782 | 0.895 | **0.973** | 0.973 (0.97 / 0.97) | 0.973 | CNN | model |
 | promotion | 4,414 | 0.000 | **0.702** | 0.699 | 0.699 (0.68 / 0.72) | 0.699 | LightGBM | not shown |
 | skewer | 4,632 | 0.000 | 0.675 | **0.744** | 0.747 (0.79 / 0.71) | 0.747 | CNN | model |
 | trappedPiece | 2,071 | 0.000 | **0.686** | 0.679 | 0.678 (0.64 / 0.72) | 0.678 | LightGBM | model |
 | capturingDefender | 1,253 | 0.000 | **0.518** | 0.484 | 0.484 (0.50 / 0.47) | 0.484 | LightGBM | not shown |
 | doubleCheck | 982 | 0.000 | 0.876 | **0.889** | 0.889 (0.97 / 0.82) | 0.889 | CNN | not shown |
 | smotheredMate | 959 | 0.000 | 0.974 | **0.982** | 0.984 (0.98 / 0.99) | 0.984 | CNN | not shown |
-| **Macro F1, all 15** | | 0.245 | 0.791 | 0.806 | 0.807 | 0.807 | | |
-| **Macro F1, the 5 the rules can name** | | 0.736 | 0.899 | 0.920 | 0.920 | 0.920 | | |
+| **Macro F1, all 15** | | 0.269 | 0.791 | 0.806 | 0.807 | 0.807 | | |
+| **Macro F1, the 5 the rules can name** | | 0.807 | 0.899 | 0.920 | 0.920 | 0.920 | | |
 
 `uv run tactics report` regenerates this table as `results/metrics.md`. There, the last column records which
 themes the model beat the rules on ("Model trusted"). Here it says what the site does with each theme (see "In the
@@ -180,9 +180,9 @@ Rules F1 → shipped model F1 on the test split, by Lichess puzzle rating:
 
 | Rating | Puzzles | fork | hangingPiece | backRankMate | mateIn2 | pin | skewer | Model macro F1 |
 |---|---:|---|---|---|---|---|---|---:|
-| < 1000 | 54,433 | 0.848 → 0.976 | 0.319 → 0.825 | 0.496 → 0.987 | 0.998 → 0.980 | 0 → 0.881 | 0 → 0.912 | 0.875 |
-| 1000–1399 | 62,164 | 0.704 → 0.909 | 0.622 → 0.842 | 0.356 → 0.955 | 0.997 → 0.919 | 0 → 0.829 | 0 → 0.798 | 0.848 |
-| 1400–2000 | 75,470 | 0.521 → 0.779 | 0.649 → 0.814 | 0.194 → 0.848 | 0.998 → 0.793 | 0 → 0.689 | 0 → 0.539 | 0.725 |
+| < 1000 | 54,433 | 0.848 → 0.976 | 0.319 → 0.825 | 0.803 → 0.987 | 0.998 → 0.980 | 0 → 0.881 | 0 → 0.912 | 0.875 |
+| 1000–1399 | 62,164 | 0.704 → 0.909 | 0.622 → 0.842 | 0.763 → 0.955 | 0.997 → 0.919 | 0 → 0.829 | 0 → 0.798 | 0.848 |
+| 1400–2000 | 75,470 | 0.521 → 0.779 | 0.649 → 0.814 | 0.597 → 0.848 | 0.998 → 0.793 | 0 → 0.689 | 0 → 0.539 | 0.725 |
 
 The model is at its best on the easiest puzzles, which are the closest to the tactics a beginner meets.
 
@@ -202,10 +202,14 @@ The model is at its best on the easiest puzzles, which are the closest to the ta
 - **Why the rules miss forks** (recall 0.62): most of the forks they miss come on the solver's *second* move.
   Lichess tags a puzzle "fork" if any move in the solution forks, but the rule checks only the first move of the
   reply. The model sees only the first move too, but it learns the positions in which a fork is coming.
-- **Why the rules over-call back-rank mates** (precision 0.28): the rule's docstring says the king is "boxed in
-  by its own pawns", but its code only checks that the mate is given by a rook or queen along the king's back
-  rank. Lichess requires the king to be trapped by its own pieces. That is a real bug in the rule, independent
-  of the model, and worth fixing in `motifs.py` and `motifs.ts` (left alone here, since they are the baseline).
+- **Back-rank mates: a bug the baseline found.** The first baseline run gave the rule a precision of 0.28 (F1
+  0.430). Its docstring said the king is "boxed in by its own pawns", but its code only checked that a rook or
+  queen mates along the king's back rank. The rule now also requires every square in front of the king to hold
+  one of its own pieces, in both `motifs.py` and `motifs.ts`, with tests. That raises precision to 0.65 and F1 to
+  0.782, with recall unchanged (0.99), and Python and TypeScript still agree on every puzzle. Of the 4,303
+  false positives left, 4,274 are boards where one of those boxing pieces is also attacked by the mating side.
+  Lichess's tagger excludes that case; the site's description of the tag doesn't. So those are a definition
+  difference, and the rule stays as it is. The model is still better here (0.973) and decides the tag in the site.
 - **The weakest themes** are capturingDefender (0.48), trappedPiece (0.68) and deflection (0.67). These are
   ideas about what a piece *was doing* before it was removed, and the site does not surface them (below).
 
@@ -227,9 +231,9 @@ a queen taken by a pawn, a knight by a pawn, a rook by a bishop. It also turned 
 king and queen, with the knight then taken) into a "pin". So on these two themes the site keeps the rules' tag,
 which the engine's line has already confirmed. The model only names what the rules left generic.
 
-The same check supports letting the model decide **back-rank mate**. Lichess's definition (the king trapped on its
-back rank by its own pieces) is the one the site's own text gives. The rule fails it: its code never checks the
-king's neighbours, which is why its precision is 0.28.
+For **back-rank mate**, Lichess's definition (the king trapped on its back rank by its own pieces) is the one the
+site's own text gives, so the model decides that tag both ways. Even with its bug fixed, the rule scores 0.782
+against the model's 0.973.
 
 ## In the browser
 
@@ -275,7 +279,7 @@ king's neighbours, which is why its precision is 0.28.
   less information than that rule set had. "F1 against Lichess themes" is not the same as "a coach would agree".
 - **Puzzles are not games.** Every puzzle has a winning tactic by construction. In a real game most mistakes are
   quieter, so base rates differ, and precision on real blunders will be lower than on puzzles. On the 61,084 test
-  puzzles with none of the 15 themes, the model still names some theme for 16.6% of them (the rules: 11.5%). The
+  puzzles with none of the 15 themes, the model still names some theme for 16.6% of them (the rules: 9.6%). The
   site limits the damage by asking only when Stockfish's line shows material really changing hands.
 - **No evaluation on real blunders yet.** PLAN.md asks for ~100 of the owner's own blunders, labelled by hand. That
   is the evaluation that matters, but those games must not enter this repo, so it is left for the owner to run

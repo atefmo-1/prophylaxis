@@ -80,7 +80,8 @@ def fork_targets(board: chess.Board, move: chess.Move) -> list[chess.Square]:
 
 
 def _is_back_rank_mate(board: chess.Board, line: list[str]) -> bool:
-    """The line ends in mate by a rook or queen along the mated king's back rank."""
+    """The line ends in mate by a rook or queen along the mated king's back rank, with every square in front of
+    the king taken by its own pieces: the king is boxed in by them, not just mated on its first rank."""
     final = board.copy(stack=False)
     for uci in line:
         move = chess.Move.from_uci(uci)
@@ -93,9 +94,15 @@ def _is_back_rank_mate(board: chess.Board, line: list[str]) -> bool:
     last = final.peek()
     mater = final.piece_at(last.to_square)
     back_rank = 0 if final.turn == chess.WHITE else 7
+    if king is None or chess.square_rank(king) != back_rank:
+        return False
+    in_front = back_rank + (1 if final.turn == chess.WHITE else -1)
+    file = chess.square_file(king)
+    boxed_in = all(
+        final.color_at(chess.square(f, in_front)) == final.turn for f in range(max(0, file - 1), min(7, file + 1) + 1)
+    )
     return (
-        king is not None
-        and chess.square_rank(king) == back_rank
+        boxed_in
         and mater is not None
         and mater.piece_type in (chess.ROOK, chess.QUEEN)
         and chess.square_rank(last.to_square) == back_rank

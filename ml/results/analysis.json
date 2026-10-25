@@ -11,7 +11,7 @@
     "deflection": 0.0,
     "hangingPiece": 0.31942857142857145,
     "attraction": 0.0,
-    "backRankMate": 0.49598520200109303,
+    "backRankMate": 0.8033501293749148,
     "promotion": 0.0,
     "skewer": 0.0,
     "trappedPiece": 0.0,
@@ -49,7 +49,7 @@
     "deflection": 0.0,
     "hangingPiece": 0.622231778112234,
     "attraction": 0.0,
-    "backRankMate": 0.35594329334787345,
+    "backRankMate": 0.7627950455713951,
     "promotion": 0.0,
     "skewer": 0.0,
     "trappedPiece": 0.0,
@@ -87,7 +87,7 @@
     "deflection": 0.0,
     "hangingPiece": 0.6491180461329714,
     "attraction": 0.0,
-    "backRankMate": 0.1939817302525524,
+    "backRankMate": 0.596694214876033,
     "promotion": 0.0,
     "skewer": 0.0,
     "trappedPiece": 0.0,
@@ -118,7 +118,7 @@
  "no_theme": {
   "n": 61084,
   "model_names_one": 0.1664756728439526,
-  "rules_name_one": 0.11513653329840876
+  "rules_name_one": 0.09608080675790714
  },
  "rules_or_model": {
   "fork": {

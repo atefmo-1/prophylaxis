@@ -116,11 +116,11 @@
     "predicted": 0
    },
    "backRankMate": {
-    "precision": 0.2749921600055751,
+    "precision": 0.647150471504715,
     "recall": 0.9889724310776943,
-    "f1": 0.43032798058834754,
+    "f1": 0.7823543990086741,
     "support": 7980,
-    "predicted": 28699
+    "predicted": 12195
    },
    "promotion": {
     "precision": 0.0,
