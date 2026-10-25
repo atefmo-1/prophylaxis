@@ -10,6 +10,7 @@ import { href } from "../router";
 import type { MoveClass, Overview, Skill, Weakness } from "../types";
 import "./pages.css";
 import { NotEnough } from "../components/Progress";
+import { LoadError } from "../components/LoadError";
 
 const MIN_GAMES = 5;
 
@@ -53,7 +54,7 @@ function Focus({ w }: { w: Weakness }) {
     <section className="focus" aria-labelledby="focus-title">
       {ex && (
         <a className="focus-board" href={href({ name: "game", id: ex.game_id, ply: ex.ply })} aria-label="Open this position in the game review">
-          <Board fen={ex.fen} orientation={ex.color} arrows={arrows} coordinates={false} label={`You played ${ex.played}; ${ex.best} was better`} />
+          <Board fen={ex.fen} orientation={ex.color} arrows={arrows} label={`You played ${ex.played}; ${ex.best} was better`} />
         </a>
       )}
       <div className="focus-text">
@@ -171,6 +172,9 @@ function Trends({ data }: { data: Overview }) {
   const mid = Math.round((lo + hi) / 2 / 50) * 50;
   const recent = data.series.slice(-10).map((s) => s.accuracy).filter((a): a is number => a !== null);
   const recentAvg = recent.reduce((a, b) => a + b, 0) / Math.max(1, recent.length);
+  // The accuracy axis starts a little below the lowest game, so the trend isn't squashed into the top of the chart.
+  const accs = data.series.map((s) => s.accuracy).filter((a): a is number => a !== null);
+  const accLow = Math.max(0, Math.floor((Math.min(100, ...accs) - 5) / 10) * 10);
   return (
     <section className="block" aria-labelledby="trends-title">
       <h2 id="trends-title">Trends</h2>
@@ -209,8 +213,8 @@ function Trends({ data }: { data: Overview }) {
               { key: "game", kind: "dots", values: data.series.map((s) => s.accuracy) },
               { key: "avg", kind: "line", values: data.series.map((s) => s.accuracy_avg10) },
             ]}
-            domain={[0, 100]}
-            ticks={[0, 50, 100]}
+            domain={[accLow, 100]}
+            ticks={[accLow, Math.round((accLow + 100) / 2), 100]}
             format={pct0}
             tip={(i) => {
               const s = data.series[i];
@@ -316,7 +320,7 @@ function VersusAndResults({ data }: { data: Overview }) {
           <p className="bars-title">Losses ({p.loss})</p>
           <BarRows tone="loss" rows={losses.map((t) => ({ label: t.label, value: t.count }))} />
           <p className="bars-note">
-            {p.draw} draws. All {p.games} games, including {plural(p.unplayed, "game")} that ended before the first move.
+            {p.draw} draws.{p.unplayed > 0 && ` All ${p.games} games, including ${plural(p.unplayed, "game")} that ended before the first move.`}
           </p>
         </Card>
       </div>
@@ -408,7 +412,7 @@ function Method({ data }: { data: Overview }) {
 
 export function Habits() {
   const overview = useOverview();
-  if (overview.status === "error") return <p className="pstate">Couldn't load your stats ({overview.error}).</p>;
+  if (overview.status === "error") return <LoadError what="your stats" detail={overview.error} />;
   if (overview.status === "loading") return <div className="page" aria-busy="true" />;
   const data = overview.data;
   if (data.empty || data.player.played < MIN_GAMES) return <NotEnough title="Habits need a few games" when={`This page fills in once ${MIN_GAMES} are done.`} />;

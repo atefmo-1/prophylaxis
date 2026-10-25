@@ -1,12 +1,14 @@
 // How to play against someone, from their reviewed games: their costliest habits, the phase where they go wrong,
 // their clock, how they handle winning positions, and their openings. Every tip carries the evidence it rests on,
 // and a tip is only given when that evidence is solid enough (see the thresholds). Nothing here is guessed.
-import type { Interval, Overview } from "../types";
+import type { Example, Interval, Overview } from "../types";
 import { share } from "./format";
 
 export interface Tip {
   title: string;
   why: string;
+  /** A position from their games that shows it, for the tips about their habits. */
+  example?: Example | null;
 }
 
 const MIN_HABIT_GAMES = 3; // a habit has to show up in at least this many of their games
@@ -46,12 +48,15 @@ export function tipsAgainst(them: Overview, me: Overview | null, name: string): 
 
   // Their costliest habits, if they come up often enough.
   const used = new Set<string>();
+  const shown = new Set<string>(); // positions already beside a tip: the same move can show two habits
   for (const w of them.weaknesses.slice(0, 4)) {
     const k = w.games.k;
     const how = AGAINST[w.tag];
     if (!how || k < MIN_HABIT_GAMES || used.has(how.title)) continue;
     used.add(how.title);
-    tips.push({ title: how.title, why: `${name}: ${w.title.toLowerCase()} in ${k} of their last ${w.games.n} games. ${how.how}` });
+    const example = [w.latest, ...w.examples].find((e) => e && !shown.has(`${e.game_id}:${e.ply}`)) ?? null;
+    if (example) shown.add(`${example.game_id}:${example.ply}`);
+    tips.push({ title: how.title, why: `${name}: ${w.title.toLowerCase()} in ${k} of their last ${w.games.n} games. ${how.how}`, example });
   }
 
   // The phase where they make clearly more mistakes than you (the two ranges don't overlap). Their own worst phase

@@ -11,7 +11,7 @@ const NOTABLE: MoveClass[] = ["brilliant", "great", "inaccuracy", "mistake", "mi
 export function EvalBar({ whiteWin, orientation }: { whiteWin: number; orientation: Color }) {
   const pct = Math.round(whiteWin);
   return (
-    <div className={`evalbar evalbar--${orientation}`} title={`White ${pct}% · Black ${100 - pct}%`} aria-hidden="true">
+    <div className={`evalbar evalbar--${orientation}`} title={`White ${pct}% · Black ${100 - pct}%`} role="img" aria-label={`Winning chances: White ${pct}%, Black ${100 - pct}%`}>
       <span className="evalbar-white" style={{ "--w": whiteWin / 100 } as React.CSSProperties} />
       <span className="evalbar-mid" />
     </div>
@@ -39,7 +39,10 @@ export function PlayerStrip({
       <span className="strip-name">{name}</span>
       <span className="strip-rating num">{rating}</span>
       {change != null && change !== 0 && (
-        <span className={`strip-change num ${change > 0 ? "up" : "down"}`}>{change > 0 ? `+${change}` : change}</span>
+        <span className={`strip-change num ${change > 0 ? "up" : "down"}`}>
+          <span className="visually-hidden">rating change after this game: </span>
+          {change > 0 ? `+${change}` : change}
+        </span>
       )}
       {you && <span className="strip-you">you</span>}
       <span className="strip-acc">
@@ -91,14 +94,16 @@ export function Scoresheet({ moves, index, onSelect }: { moves: Move[]; index: n
     return () => observer.disconnect();
   }, [index]);
 
+  // A game from a set-up position with Black to move starts with an empty White cell.
+  const shift = moves[0]?.color === "black" ? 1 : 0;
   const rows = [];
-  for (let i = 0; i < moves.length; i += 2) rows.push(i);
+  for (let i = -shift; i < moves.length; i += 2) rows.push(i);
   return (
     <div className="sheet" ref={box}>
       <ol className="sheet-rows" aria-label="Moves">
         {rows.map((i) => (
           <li className="sheet-row" key={i}>
-            <span className="sheet-no num">{i / 2 + 1}</span>
+            <span className="sheet-no num">{(i + shift) / 2 + 1}</span>
             <Cell move={moves[i]} index={i} current={index === i} onSelect={onSelect} />
             <Cell move={moves[i + 1]} index={i + 1} current={index === i + 1} onSelect={onSelect} />
           </li>
@@ -189,7 +194,7 @@ export function Graph({
       <span className="g-label g-label--bottom">Losing</span>
       {hover !== null && width > 0 && (
         <div className="g-tip" style={{ left: Math.min(width - 64, Math.max(64, x(hover))) }}>
-          <b className="num">{Math.round(series[hover])}%</b> {hover === 0 ? "start" : moveLabel(hover, review.moves[hover - 1].san)}
+          <b className="num">{Math.round(series[hover])}%</b> {hover === 0 ? "start" : moveLabel(hover, review.moves[hover - 1].san, review.moves[hover - 1].color)}
         </div>
       )}
     </div>

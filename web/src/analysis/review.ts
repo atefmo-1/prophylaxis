@@ -63,7 +63,7 @@ export function openingParts(ecoUrl: string | undefined): { name: string; family
   const possessive: Record<string, string> = {
     Kings: "King's", Queens: "Queen's", Bishops: "Bishop's", Birds: "Bird's", Petrovs: "Petrov's", Alekhines: "Alekhine's", Owens: "Owen's", Larsens: "Larsen's",
   };
-  const words = slug.split("-").map((w) => possessive[w] ?? w).join(" ").replace("Van t ", "Van't ").split(" ");
+  const words = slug.split("-").map((w) => possessive[w] ?? w).join(" ").replace("Van t ", "Van't ").replace("Caro Kann", "Caro-Kann").split(" ");
   const cut = words.findIndex((w) => ["Opening", "Game", "Defense", "Gambit", "Attack", "System"].includes(w));
   const end = cut >= 0 ? cut + 1 : Math.min(2, words.length);
   const family = words.slice(0, end).join(" ");

@@ -1,5 +1,7 @@
-// End-to-end check of the review screen in a real browser: summary → key moment → wrong try → right try.
-// Usage: node scripts/check-review.mjs [baseUrl] [outDir]
+// End-to-end check of the review screen in a real browser, on the sample player's latest game:
+// summary → key moment → wrong try → right try → what the mistake allowed → the end of the key moments.
+// Usage: node scripts/check-review.mjs [baseUrl] [outDir] [wrongFrom wrongTo rightFrom rightTo]
+// Without moves, it takes the right answer from the sample's review and the worst-scoring other move as the wrong one.
 import puppeteer from "puppeteer-core";
 
 const base = process.argv[2] ?? "http://localhost:5173";
@@ -10,6 +12,7 @@ const browser = await puppeteer.launch({
   defaultViewport: { width: 1440, height: 900 },
 });
 const page = await browser.newPage();
+await page.evaluateOnNewDocument(() => localStorage.setItem("prophylaxis.player", "sample-player"));
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
@@ -47,7 +50,18 @@ await new Promise((r) => setTimeout(r, 500));
 console.log("MOMENT:", (await coach()).replace(/\n+/g, " | "));
 await page.screenshot({ path: `${out}/2-moment.png` });
 
-const [wrongFrom, wrongTo, rightFrom, rightTo] = process.argv.slice(4);
+let [wrongFrom, wrongTo, rightFrom, rightTo] = process.argv.slice(4);
+if (!wrongFrom) {
+  const moment = await page.evaluate(async () => {
+    const reviews = await (await fetch("sample/reviews.json")).json();
+    const review = reviews.sort((a, b) => b.review.game.t - a.review.game.t)[0].review;
+    const m = review.moves[review.key_moments[0] - 1];
+    const wins = m.retry?.wins ?? {};
+    const wrong = Object.keys(wins).filter((u) => !m.retry.accept.includes(u)).sort((a, b) => wins[a] - wins[b])[0];
+    return { right: m.retry?.accept[0] ?? m.best_uci, wrong };
+  });
+  if (moment.wrong && moment.right) [wrongFrom, wrongTo, rightFrom, rightTo] = [moment.wrong.slice(0, 2), moment.wrong.slice(2, 4), moment.right.slice(0, 2), moment.right.slice(2, 4)];
+}
 if (wrongFrom) {
   await play(wrongFrom, wrongTo);
   console.log("WRONG:", (await coach()).replace(/\n+/g, " | "));
@@ -78,7 +92,8 @@ if (wrongFrom) {
 await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
 await page.goto(`${base}/#/`, { waitUntil: "networkidle0" });
 await page.screenshot({ path: `${out}/6-phone-summary.png`, fullPage: true });
-const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+// A phone widens its layout to fit content that overflows, so compare with the screen width, not innerWidth.
+const overflow = await page.evaluate(() => document.documentElement.scrollWidth - 390);
 console.log("PHONE OVERFLOW:", overflow);
 console.log("ERRORS:", errors.length ? errors : "none");
 await browser.close();

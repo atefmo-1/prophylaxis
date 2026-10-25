@@ -94,6 +94,26 @@
   box-shadow: none;
 }
 
+.focus .board coords {
+  font-family: var(--c-font);
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.focus .board coords coord { color: var(--sq-dark) !important; }
+.focus .board coords coord:nth-child(even) { color: var(--sq-light) !important; }
+
+.focus .board coords.files {
+  left: 0;
+  bottom: 1px;
+  text-transform: none;
+}
+
+.focus .board coords.files coord {
+  padding-right: 3px;
+  text-align: right;
+}
+
 .focus .board-ground {
   width: 100%;
   height: 100%;
@@ -382,7 +402,7 @@
 .method-list {
   display: grid;
   gap: 8px;
-  max-width: 72ch;
+  max-width: 66ch;
   margin: 0;
   padding-left: 18px;
   color: var(--c-ink-2);
@@ -736,5 +756,45 @@
 @media (max-width: 640px) {
   .seg button {
     min-height: 40px;
+  }
+}
+
+/* What a practice session covered, position by position. */
+.session-recap {
+  display: grid;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.session-recap li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 18px;
+}
+
+.session-recap li + li {
+  border-top: 1px solid var(--c-line);
+}
+
+.session-recap a {
+  color: var(--c-accent-ink);
+  font-size: 14px;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .session-recap li {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .session-recap li > :nth-child(n + 3) {
+    grid-column: 2;
   }
 }

@@ -530,3 +530,55 @@ p {
 .board-type-error:empty {
   display: none;
 }
+
+/* A page whose data couldn't be read. */
+.load-error {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  max-width: 60ch;
+  margin: 48px auto;
+  padding: 0 24px;
+}
+
+.load-error p {
+  margin: 0;
+}
+
+.load-error-detail {
+  color: var(--c-ink-3);
+  font-size: 14px;
+}
+
+.load-error-retry {
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Thumb-sized targets on a phone: the scoresheet, game rows and the sample note's link. */
+@media (max-width: 640px) {
+  .rv .sheet-cell {
+    min-height: 40px;
+  }
+
+  .row-link {
+    padding: 10px 0;
+  }
+
+  .sample-note button {
+    padding: 8px 4px;
+  }
+}
+
+/* The theme switch on a laptop: small, but not a pinpoint. */
+.theme button {
+  min-height: 28px;
+}

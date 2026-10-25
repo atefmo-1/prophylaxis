@@ -26,7 +26,7 @@ def parse(eco_url: str | None) -> tuple[str, str]:
 
     words = [POSSESSIVES.get(w, w) for w in slug.split("-")]
     # "Van-t-Kruijs" is one name
-    text = " ".join(words).replace("Van t ", "Van't ")
+    text = " ".join(words).replace("Van t ", "Van't ").replace("Caro Kann", "Caro-Kann")
     words = text.split(" ")
 
     cut = next((i + 1 for i, w in enumerate(words) if w in FAMILY_ENDINGS), min(2, len(words)))

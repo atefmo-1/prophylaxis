@@ -6,6 +6,7 @@ import { useLibrary, useLibraryStatus } from "../library/Library";
 import { href } from "../router";
 import type { Color, Result } from "../types";
 import "./pages.css";
+import { LoadError } from "../components/LoadError";
 
 const RESULTS: { label: string; value: Result | "all" }[] = [
   { label: "All", value: "all" },
@@ -28,7 +29,7 @@ export function Games() {
   const [result, setResult] = useState<Result | "all">("all");
   const [color, setColor] = useState<Color | "all">("all");
 
-  if (games.status === "error") return <p className="pstate">Couldn't load your games ({games.error}).</p>;
+  if (games.status === "error") return <LoadError what="your games" detail={games.error} />;
   if (games.status === "loading") return <div className="page" aria-busy="true" />;
 
   const rows = games.data.filter((g) => (result === "all" || g.result === result) && (color === "all" || g.color === color));

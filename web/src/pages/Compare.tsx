@@ -1,6 +1,7 @@
 // You against another chess.com player: their latest games in your time control, reviewed in this browser like
 // yours, side by side with your own, with tips for playing them drawn from their numbers.
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Board, type Arrow } from "../components/Board";
 import { OpeningTree } from "../components/OpeningTree";
 import { NotEnough } from "../components/Progress";
 import { COMPARE_GAMES, COMPARE_MIN, latest, ownOverview, SAMPLE_RIVAL } from "../library/compare";
@@ -9,7 +10,7 @@ import { useLibrary } from "../library/Library";
 import { plural, share, timeLeft } from "../lib/format";
 import { tipsAgainst } from "../lib/tips";
 import { href } from "../router";
-import type { Interval, Overview, Skill } from "../types";
+import type { Example, Interval, Overview, Skill } from "../types";
 import "./compare.css";
 import "./pages.css";
 
@@ -76,6 +77,21 @@ function Picker({ suggestions, initial }: { suggestions: string[]; initial: stri
   );
 }
 
+/** The position behind a tip: from one of their games, their move in blue and the better one in green. */
+function TipBoard({ ex, name }: { ex: Example; name: string }) {
+  const arrows: Arrow[] = [{ uci: ex.played_uci, brush: "played" }];
+  if (ex.best_uci && ex.best_uci !== ex.played_uci) arrows.push({ uci: ex.best_uci, brush: "best" });
+  return (
+    <figure className="cmp-tip-board">
+      <Board fen={ex.fen} orientation={ex.color} arrows={arrows} coordinates={false} label={`${name} played ${ex.played}${ex.best ? `; ${ex.best} was better` : ""}`} />
+      <figcaption>
+        {name} played {ex.played}
+        {ex.best && <>, {ex.best} was better</>}
+      </figcaption>
+    </figure>
+  );
+}
+
 function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: string; h2h: { win: number; loss: number; draw: number } }) {
   const tips = tipsAgainst(them, me, name);
   const tc = me.player.rating_time_class;
@@ -112,9 +128,10 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
         {tips.length ? (
           <ol className="cmp-tips">
             {tips.map((t) => (
-              <li key={t.title}>
+              <li key={t.title} className={t.example ? "has-board" : undefined}>
                 <b>{t.title}</b>
                 <span>{t.why}</span>
+                {t.example && <TipBoard ex={t.example} name={name} />}
               </li>
             ))}
           </ol>

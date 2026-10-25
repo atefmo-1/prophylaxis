@@ -1,4 +1,4 @@
-import type { Interval, MoveClass, Result } from "../types";
+import type { Color, Interval, MoveClass, Result } from "../types";
 
 export const CLASS_META: Record<MoveClass, { label: string; mark: string; tone: string }> = {
   brilliant: { label: "Brilliant", mark: "!!", tone: "teal" },
@@ -44,7 +44,14 @@ export function clock(seconds: number | null): string {
 }
 
 export const moveNumber = (ply: number) => Math.ceil(ply / 2);
-export const moveLabel = (ply: number, san: string) => `${moveNumber(ply)}${ply % 2 === 1 ? "." : "…"} ${san}`;
+/**
+ * "12. Nf3" or "12… Nf6". Ply 1 is White's first move, unless the game started from a set-up position with Black to
+ * move: pass the mover's colour and the numbering follows it.
+ */
+export function moveLabel(ply: number, san: string, color?: Color): string {
+  const n = color && (ply % 2 === 1) !== (color === "white") ? ply + 1 : ply;
+  return `${moveNumber(n)}${n % 2 === 1 ? "." : "…"} ${san}`;
+}
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 

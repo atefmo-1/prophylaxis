@@ -6,10 +6,11 @@ import { Board, type Movable } from "../components/Board";
 import { IconNext } from "../components/Icons";
 import { useOverview } from "../data";
 import { levelFor, pickPuzzles, recordPuzzle, type Puzzle } from "../lib/puzzles";
-import { dragToUci, isCheck, isMate, legalDests, playUci, sanOf } from "../lib/rules";
+import { dragToUci, isCheck, isMate, legalDests, pieceAt, playUci, sanOf } from "../lib/rules";
 import { href } from "../router";
 import "../review/review.css";
 import "./pages.css";
+import { LoadError } from "../components/LoadError";
 
 const SESSION = 5;
 const OPPONENT_DELAY = 500;
@@ -33,7 +34,7 @@ export function Puzzles({ tag }: { tag: string | null }) {
     };
   }, [overview.status, tag, round, rating]);
 
-  if (error) return <p className="pstate">Couldn't load puzzles ({error}).</p>;
+  if (error) return <LoadError what="puzzles" detail={error} />;
   if (!session) return <div className="page" aria-busy="true" />;
   return <Session key={`${tag}-${round}`} {...session} tag={tag} rating={rating} onAgain={() => setRound((r) => r + 1)} />;
 }
@@ -102,6 +103,7 @@ function PuzzleBoard(props: {
   const [status, setStatus] = useState<Status>("opening");
   const [missed, setMissed] = useState<string | null>(null);
   const [wrongOnce, setWrongOnce] = useState(false);
+  const [hint, setHint] = useState<string | null>(null); // the square of the piece to look at, once asked
 
   // The opponent's moves (and, when shown, the whole answer) play by themselves.
   useEffect(() => {
@@ -137,6 +139,7 @@ function PuzzleBoard(props: {
       return;
     }
     setMissed(null);
+    setHint(null);
     setFen(next);
     setLastMove(uci);
     setPly(ply + 1);
@@ -157,12 +160,12 @@ function PuzzleBoard(props: {
   const answer = yourMoves.filter(Boolean).join(", then ");
 
   return (
-    <div className="rv">
+    <div className="rv rv--drill">
       <h1 className="visually-hidden">{title}</h1>
       <div className="rv-grid">
         <div className="rv-top strip">
           <span className="strip-name">Lichess puzzle, rated {puzzle.rating}</span>
-          <span className="strip-acc">your level {level}</span>
+          <span className="strip-acc" title="Lichess puzzle ratings run a few hundred points above chess.com game ratings">your puzzle level {level}</span>
         </div>
         <div className="rv-eval" />
         <div className="rv-board">
@@ -197,7 +200,15 @@ function PuzzleBoard(props: {
                     <p className="coach-feedback coach-feedback--no" key={missed}>Not this one: {sanOf(fen, missed)} doesn't work here. Try another move.</p>
                   )}
                   {ply > 1 && !missed && <p className="coach-feedback coach-feedback--yes">Good. Keep going: what's next?</p>}
+                  {hint && (
+                    <p className="coach-feedback">
+                      Hint: look at your {pieceAt(fen, hint)} on {hint}.
+                    </p>
+                  )}
                   <div className="coach-actions">
+                    <button type="button" className="btn" onClick={() => setHint(puzzle.moves[ply]?.slice(0, 2) ?? null)} disabled={!solving}>
+                      Hint
+                    </button>
                     <button type="button" className="btn" onClick={() => finish("shown")} disabled={status === "opening"}>
                       Show the answer
                     </button>

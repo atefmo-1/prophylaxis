@@ -20,6 +20,9 @@ import type {
 import { ENDINGS, TAG_INFO } from "./catalog";
 import { moveAccuracy, pov } from "./grading";
 
+/** Reviews saved before the hyphen was added say "Caro Kann". */
+const tidyOpening = (name: string) => name.replace("Caro Kann", "Caro-Kann");
+
 /** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier; 3: Brilliant and Book). */
 export const ANALYSIS_VERSION = 3;
 const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
@@ -244,8 +247,8 @@ function rowsOf(stored: StoredGame[]): { games: GameRow[]; moves: MoveRow[] } {
       result: g.result,
       my_code: facts.my_code,
       opp_code: facts.opp_code,
-      opening: g.opening,
-      family: facts.family,
+      opening: tidyOpening(g.opening),
+      family: tidyOpening(facts.family),
       my_accuracy: g.accuracy,
       opp_accuracy: g.opp_accuracy,
       chesscom_accuracy: g.chesscom_accuracy,
@@ -628,8 +631,8 @@ export function gameList(stored: StoredGame[]): GameSummary[] {
         habit: top ? { tag: top[0], title: TAG_INFO[top[0]].title } : null,
         result: r.game.result,
         ending: r.game.ending,
-        opening: r.game.opening,
-        family: facts.family,
+        opening: tidyOpening(r.game.opening),
+        family: tidyOpening(facts.family),
         time_control: r.game.time_control,
         accuracy: r.game.accuracy,
         opp_accuracy: r.game.opp_accuracy,

@@ -16,6 +16,7 @@ import { EvalBar } from "../review/parts";
 import type { Move, PracticePosition, TagInfo } from "../types";
 import "../review/review.css";
 import "./pages.css";
+import { LoadError } from "../components/LoadError";
 
 const SESSION = 5;
 
@@ -52,7 +53,7 @@ export function Practice({ tag }: { tag: string | null }) {
     // A new round rebuilds the session from what is due now.
   }, [pool.status, overview.status, tag, round, none]);
 
-  if (pool.status === "error") return <p className="pstate">Couldn't load practice positions ({pool.error}).</p>;
+  if (pool.status === "error") return <LoadError what="practice positions" detail={pool.error} />;
   if (!ready) return <div className="page" aria-busy="true" />;
   if (none) return <NotEnough title="Practice needs a few games" when="Positions appear here as soon as a reviewed game has a mistake to try again." />;
   return <Session key={`${tag}-${round}`} session={session} tag={tag} info={info} onAgain={() => setRound((r) => r + 1)} />;
@@ -93,8 +94,26 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
           <h1>
             Session done: {found} of {session.length} found
           </h1>
-          <p>Positions you found come back in a few days; the ones you missed come back tomorrow.</p>
+          <p>
+            {found === 0
+              ? "These are the positions that cost you games, so missing them at first is normal. Each one comes back tomorrow."
+              : found === session.length
+                ? "Every one found. They come back in a few days, to make them stick."
+                : "The ones you found come back in a few days; the ones you missed come back tomorrow."}
+          </p>
         </header>
+        <ol className="session-recap">
+          {session.map((s, i) => (
+            <li key={s.id}>
+              <ClassIcon cls={results[i] ? "best" : "miss"} size={18} />
+              <span>
+                <b>{moveLabel(s.ply, s.san, s.color)}</b> vs {s.opponent}
+              </span>
+              <span className="muted">{results[i] ? "found, back in a few days" : "back tomorrow"}</span>
+              <a href={href({ name: "game", id: s.game, ply: s.ply })}>See it in the game</a>
+            </li>
+          ))}
+        </ol>
         <div className="focus-actions">
           <button type="button" className="pbtn pbtn--primary" onClick={onAgain}>
             Another {SESSION}
@@ -127,6 +146,12 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
     setStep((s) => s + 1);
     setAttempt(fresh);
   };
+  // Skipping counts as a miss, so the position comes back tomorrow.
+  const skip = () => {
+    setResults((r) => [...r, false]);
+    recordAttempt(p.game, p.ply, false);
+    next();
+  };
 
   const trying = attempt.status === "trying";
   const movable: Movable | null = trying ? { color: p.color, dests: legalDests(p.fen), onMove } : null;
@@ -138,7 +163,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
   const whiteWin = p.color === "white" ? p.before : 100 - p.before;
 
   return (
-    <div className="rv">
+    <div className="rv rv--drill">
       <h1 className="visually-hidden">Practice: position {step + 1} of {session.length}</h1>
       <div className="rv-grid">
         <div className="rv-top strip">
@@ -185,7 +210,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
               {trying ? (
                 <>
                   <h2>
-                    In the game you played {moveLabel(p.ply, p.san)}. Find a better move for {p.color}.
+                    In the game you played {moveLabel(p.ply, p.san, p.color)}. Find a better move for {p.color}.
                   </h2>
                   {lastTry && (
                     <p className="coach-feedback coach-feedback--no" key={attempt.tries.length}>
@@ -203,6 +228,9 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
                     </button>
                     <button type="button" className="btn" onClick={() => finish("shown", p.best_uci)}>
                       Show the answer
+                    </button>
+                    <button type="button" className="btn btn--quiet" onClick={skip}>
+                      Skip
                     </button>
                   </div>
                 </>

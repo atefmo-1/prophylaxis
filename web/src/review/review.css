@@ -264,7 +264,7 @@
 }
 
 .panel-tabs button:hover:not(:disabled) { color: var(--c-ink); }
-.panel-tabs button[aria-pressed="true"] { color: var(--c-ink); box-shadow: inset 0 -2px 0 var(--c-accent-ink); }
+.panel-tabs button[aria-selected="true"] { color: var(--c-ink); box-shadow: inset 0 -2px 0 var(--c-accent-ink); }
 .panel-tabs button:disabled { opacity: 0.4; cursor: default; }
 
 .panel-body {
@@ -464,6 +464,30 @@
   display: grid;
   gap: 8px;
   margin-top: 16px;
+}
+
+/* The done screen's two next steps sit side by side, like the summary's. */
+.coach .summary-actions {
+  grid-template-columns: 1.6fr 1fr;
+}
+
+.coach-end {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--c-line);
+  color: var(--c-ink-2);
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent-ink);
+  font: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* Keep the next step in view even when the report card scrolls. */
@@ -782,6 +806,16 @@
     grid-template-rows: var(--strip) 8px var(--board) var(--strip) auto;
     grid-template-areas: "top" "eval" "board" "bottom" "panel";
     row-gap: 6px;
+  }
+
+  /* Practice and puzzles: the task comes before the board, so you read it before you move. */
+  .rv--drill .rv-grid {
+    grid-template-rows: auto var(--strip) 8px var(--board) var(--strip);
+    grid-template-areas: "panel" "top" "eval" "board" "bottom";
+  }
+
+  .rv--drill .rv-panel {
+    margin: 0 0 10px;
   }
 
   .rv-panel {

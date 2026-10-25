@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-React + Vite + TypeScript static site, hosted standalone (e.g. Vercel or GitHub Pages) and linked from the owner's portfolio website. Data comes from a Python pipeline (`coach export`) as static JSON under `web/public/data/`; in development the same JSON is served live by FastAPI (`coach serve`).
+React + Vite + TypeScript static site on GitHub Pages, linked from the owner's portfolio website, plus a Chrome extension built from the same code. Games come from chess.com's public API and are reviewed in the visitor's browser: Stockfish 19 Lite as WebAssembly, a small ONNX tactic model, reviews kept in IndexedDB. The Python pipeline (`coach`) is the reference implementation the browser analysis is tested against.
 
 ## Users
 
@@ -21,11 +21,11 @@ A personal chess coach that does what chess.com charges for (Game Review, move c
 
 ## Positioning
 
-It is built around one specific player's real games. Every insight links to a real position from a real game, every rate shows its uncertainty (n is small), and the grading is validated against chess.com's own accuracy numbers. Generic chess sites review one game at a time; this one looks across all games.
+It works for any chess.com player, on their own real games. Every insight links to a real position from a real game, every rate shows its uncertainty (n is small), and the grading is validated against chess.com's own accuracy numbers. Generic chess sites review one game at a time; this one looks across all games.
 
 ## Operating Context
 
-- After a playing session on chess.com: run `coach sync && coach analyze && coach export`, then open the site.
+- After a playing session on chess.com: open the site, which fetches and reviews the new games in the browser; or let the Chrome extension's side panel open by itself when a game ends.
 - Data: chess.com public API (games, clocks per move), Stockfish 19 evaluations, tactic detectors (hung pieces, forks, missed mates, time pressure, rushed moves).
 - Mostly viewed on a laptop; visitors may arrive on a phone from a portfolio link.
 
@@ -34,7 +34,7 @@ It is built around one specific player's real games. Every insight links to a re
 - Analyzes finished games only. It must never offer help during a live game (chess.com Fair Play policy).
 - Move classes follow chess.com's scale: great, best, excellent, good, inaccuracy, mistake, blunder.
 - Small samples (a player may have only a few dozen games): stats are shown with 90% intervals, never as falsely exact numbers.
-- Not yet built: LLM move explanations, coach chat agent, drills, ML tactic classifier, Chrome extension (see PLAN.md).
+- Built: review with retry puzzles, habits, practice from your own mistakes, Lichess puzzles per habit, the opening tree, Compare with tips against another player, the ML tactic classifier and the Chrome extension. Not built: LLM explanations or a chat coach; every sentence comes from the engine or a tested rule (see PLAN.md).
 
 ## Brand Commitments
 

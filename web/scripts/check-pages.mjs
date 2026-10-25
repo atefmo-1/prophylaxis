@@ -1,5 +1,5 @@
-// Screenshots of every page at desktop and phone size, plus one real practice attempt.
-// Usage: node scripts/check-pages.mjs [baseUrl] [outDir]
+// Screenshots of every page at desktop and phone size, with the sample player, plus one real practice attempt.
+// Usage: node scripts/check-pages.mjs [baseUrl] [outDir] [light|dark]
 import puppeteer from "puppeteer-core";
 
 const base = process.argv[2] ?? "http://localhost:5173";
@@ -12,6 +12,7 @@ const page = await browser.newPage();
 // Optional theme: node scripts/check-pages.mjs <base> <out> light|dark
 const theme = process.argv[4];
 if (theme) await page.evaluateOnNewDocument((t) => localStorage.setItem("coach.theme", t), theme);
+await page.evaluateOnNewDocument(() => localStorage.setItem("prophylaxis.player", "sample-player"));
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
@@ -19,11 +20,14 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 for (const [name, w, h, mobile] of [["desktop", 1440, 900, false], ["phone", 390, 844, true]]) {
   await page.setViewport({ width: w, height: h, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1 });
-  for (const route of ["", "patterns", "games", "practice"]) {
+  for (const route of ["", "patterns", "games", "practice", "puzzles/hanging_piece", "openings", "compare/sample-rival"]) {
     await page.goto(`${base}/#/${route}`, { waitUntil: "networkidle0" });
-    await wait(400);
-    await page.screenshot({ path: `${out}/${route || "review"}-${name}${theme ? `-${theme}` : ""}.png`, fullPage: route !== "practice" && route !== "" });
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    await page.reload({ waitUntil: "networkidle0" });
+    await wait(600);
+    const file = route.replace(/\//g, "-") || "review";
+    await page.screenshot({ path: `${out}/${file}-${name}${theme ? `-${theme}` : ""}.png`, fullPage: !["", "practice", "puzzles/hanging_piece"].includes(route) });
+    // A phone widens its layout to fit content that overflows, so compare with the screen width, not innerWidth.
+    const overflow = await page.evaluate((w) => document.documentElement.scrollWidth - w, w);
     if (overflow > 0) errors.push(`${route} ${name}: horizontal overflow ${overflow}px`);
   }
 }
@@ -32,12 +36,23 @@ for (const [name, w, h, mobile] of [["desktop", 1440, 900, false], ["phone", 390
 await page.setViewport({ width: 1440, height: 900 });
 await page.evaluate(() => localStorage.removeItem("coach.practice.v1"));
 await page.goto(`${base}/#/practice`, { waitUntil: "networkidle0" });
-const first = await page.evaluate(async () => {
-  const pool = await (await fetch("data/practice.json")).json();
-  return pool;
-});
+await page.reload({ waitUntil: "networkidle0" });
+// The position on screen, found among the sample's reviewed mistakes by its opponent and move.
 const prompt = await page.$eval(".coach h2", (el) => el.textContent);
-const target = first.find((p) => prompt.includes(`played ${p.ply % 2 ? Math.ceil(p.ply / 2) + "." : Math.ceil(p.ply / 2) + "…"} ${p.san}`));
+const opponent = await page.$eval(".rv-top .strip-name", (el) => el.textContent.replace("From your game vs", "").trim());
+const target = await page.evaluate(
+  async (prompt, opponent) => {
+    const reviews = await (await fetch("sample/reviews.json")).json();
+    for (const { review } of reviews) {
+      if (review.game.opponent !== opponent) continue;
+      const m = review.moves.find((m) => m.mine && m.retry && prompt.includes(` ${m.san}.`) && prompt.includes(`${Math.ceil(m.ply / 2)}${m.ply % 2 ? "." : "…"}`));
+      if (m) return { id: `${review.game.id}:${m.ply}`, accept: m.retry.accept };
+    }
+    return null;
+  },
+  prompt,
+  opponent,
+);
 console.log("PROMPT:", prompt, "| matched:", target?.id, "accept:", target?.accept?.[0]);
 if (target) {
   const uci = target.accept[0];

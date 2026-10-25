@@ -131,16 +131,29 @@
   color: var(--c-ink-3);
 }
 
+/* The sample is how most visitors see the coach: a real button, one step quieter than Review my games. */
+.start-sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
 .start-sample button {
-  padding: 0;
+  min-height: 40px;
+  padding: 0 16px;
   border: 0;
-  background: none;
-  color: var(--c-accent-ink);
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink);
   font: inherit;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
   cursor: pointer;
+  transition: background-color 150ms var(--c-ease);
+}
+
+.start-sample button:hover {
+  background: var(--c-line);
 }
 
 .start-board .board {
@@ -214,7 +227,7 @@
 }
 
 .start-note {
-  max-width: 72ch;
+  max-width: 65ch;
   margin: 40px 0 0;
   color: var(--c-ink-3);
   font-size: 14px;

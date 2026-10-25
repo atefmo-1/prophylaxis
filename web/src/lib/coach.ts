@@ -33,7 +33,7 @@ export function momentAt(review: GameReview, ply: number): Moment {
   const why =
     m.tags.map((t) => tagSentence(t, m)).find((s): s is string => !!s) ??
     (m.best ? `The best move was ${m.best}.` : `${CLASS_META[m.class].label}.`);
-  return { ply, index, label: moveLabel(ply, m.san), cls: m.class, before, after, loss: m.win_loss, why, best: m.best };
+  return { ply, index, label: moveLabel(ply, m.san, m.color), cls: m.class, before, after, loss: m.win_loss, why, best: m.best };
 }
 
 export function read(review: GameReview): CoachRead {
@@ -73,9 +73,9 @@ export function read(review: GameReview): CoachRead {
   const great = review.moves.filter((m) => m.mine && m.class === "great");
   const strengths =
     brilliant.length > 0
-      ? `${brilliant.length === 1 ? "A brilliant move" : `${brilliant.length} brilliant moves`}: ${moveLabel(brilliant[0].ply, brilliant[0].san)}.`
+      ? `${brilliant.length === 1 ? "A brilliant move" : `${brilliant.length} brilliant moves`}: ${moveLabel(brilliant[0].ply, brilliant[0].san, brilliant[0].color)}.`
       : great.length > 0
-        ? `${great.length === 1 ? "One great move" : `${great.length} great moves`}, including ${moveLabel(great[0].ply, great[0].san)}.`
+        ? `${great.length === 1 ? "One great move" : `${great.length} great moves`}, including ${moveLabel(great[0].ply, great[0].san, great[0].color)}.`
         : null;
 
   return { headline, story, lesson, moments, strengths };

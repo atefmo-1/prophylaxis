@@ -16,6 +16,7 @@ import { href, replacePly } from "../router";
 import type { GameReview as ReviewData, MoveClass, MoveTag } from "../types";
 import { EvalBar, Graph, PlayerStrip, Scoresheet } from "./parts";
 import "./review.css";
+import { LoadError } from "../components/LoadError";
 
 const BAD: MoveClass[] = ["inaccuracy", "mistake", "miss", "blunder"];
 const SUMMARY_CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
@@ -90,13 +91,23 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: ()
       </table>
 
       <ul className="summary-phases" aria-label="Your play by phase">
-        {review.phases.map((ph) => (
-          <li key={ph.phase}>
-            <ClassIcon cls={ph.mistakes ? ph.worst_class : "good"} size={16} />
-            <span>{PHASE_NAME[ph.phase]}</span>
-            <small className="num">{ph.mistakes ? plural(ph.mistakes, "mistake") : "clean"}</small>
-          </li>
-        ))}
+        {review.phases.map((ph) => {
+          const slips = review.moves.filter((m) => m.mine && m.phase === ph.phase && m.class === "inaccuracy").length;
+          const note = ph.mistakes
+            ? ph.mistakes === 1
+              ? `1 ${CLASS_META[ph.worst_class].label.toLowerCase()}`
+              : `${ph.mistakes} mistakes or worse`
+            : slips
+              ? plural(slips, "inaccuracy", "inaccuracies")
+              : "clean";
+          return (
+            <li key={ph.phase}>
+              <ClassIcon cls={ph.mistakes ? ph.worst_class : slips ? "inaccuracy" : "good"} size={16} />
+              <span>{PHASE_NAME[ph.phase]}</span>
+              <small className="num">{note}</small>
+            </li>
+          );
+        })}
       </ul>
 
       <div className="summary-actions">
@@ -122,9 +133,9 @@ export function Review({ id, ply }: { id: string | null; ply: number | null }) {
   const review = useGame(gameId);
   const { player } = useLibrary();
 
-  if (games.status === "error") return <p className="state">Couldn't load your games ({games.error}).</p>;
+  if (games.status === "error") return <LoadError what="your games" detail={games.error} />;
   if (games.status === "ready" && list.length === 0) return <FirstReview />;
-  if (review.status === "error") return <p className="state">Couldn't load this game ({review.error}).</p>;
+  if (review.status === "error") return <LoadError what="this game" detail={review.error} />;
   if (review.status === "loading") return <div className="rv rv--loading" aria-busy="true" />;
 
   const position = list.findIndex((g) => g.id === review.data.game.id);
@@ -280,7 +291,7 @@ export function ReviewView({
     mode.kind === "moments" && attempt.status === "trying"
       ? `Find a better move for ${g.color}`
       : move
-        ? `Position after ${moveLabel(move.ply, move.san)}`
+        ? `Position after ${moveLabel(move.ply, move.san, move.color)}`
         : "Starting position";
 
   return (
@@ -310,20 +321,27 @@ export function ReviewView({
                 {timeControl(g.time_control)} · {dayTime(g.t)}
               </small>
             </div>
-            <nav className="panel-tabs" aria-label="Review mode">
-              <button type="button" aria-pressed={mode.kind === "summary"} onClick={() => setMode({ kind: "summary" })}>
+            <div className="panel-tabs" role="tablist" aria-label="Review mode">
+              <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "summary"} onClick={() => setMode({ kind: "summary" })}>
                 Summary
               </button>
-              <button type="button" aria-pressed={mode.kind === "moments" || mode.kind === "done"} onClick={() => moments.length && startMoments(0)} disabled={!moments.length}>
+              <button
+                type="button"
+                role="tab"
+                aria-controls="review-panel"
+                aria-selected={mode.kind === "moments" || mode.kind === "done"}
+                onClick={() => moments.length && startMoments(0)}
+                disabled={!moments.length}
+              >
                 Key moments
               </button>
-              <button type="button" aria-pressed={mode.kind === "moves"} onClick={() => stepMoves(index)}>
+              <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "moves"} onClick={() => stepMoves(index)}>
                 Moves
               </button>
-            </nav>
+            </div>
           </header>
 
-          <div className="panel-body">
+          <div className="panel-body" id="review-panel" role="tabpanel">
             {mode.kind === "summary" && <Summary review={review} onStart={() => startMoments(0)} onMoves={() => stepMoves(-1)} />}
 
             {mode.kind === "moments" && moment && beforeFen && (
@@ -458,7 +476,7 @@ function MomentCard({
       {attempt.status === "trying" ? (
         <>
           <h2>
-            You played {moveLabel(ply, m.san)}. Find a better move for {g.color}.
+            You played {moveLabel(ply, m.san, m.color)}. Find a better move for {g.color}.
           </h2>
           {lastTry && (
             <p className="coach-feedback coach-feedback--no" key={attempt.tries.length}>
@@ -497,7 +515,19 @@ function MomentCard({
             <ClassIcon cls={m.class} size={20} />
             {m.san} was a {CLASS_META[m.class].label.toLowerCase()}: your chances went from {Math.round(before)}% to {Math.round(after)}%.
           </h2>
-          {why ? <p>{why}</p> : m.reply_line[0] && <p>It allowed {m.reply_line[0]}.</p>}
+          {why ? (
+            <p>{why}</p>
+          ) : (
+            m.reply_line[0] && (
+              <p>
+                It allowed{" "}
+                <button type="button" className="link-btn" onClick={onThreat}>
+                  {m.reply_line[0]}
+                </button>
+                .
+              </p>
+            )
+          )}
           <HabitLine review={review} tags={m.tags} />
           <div className="coach-actions">
             {m.reply_line[0] && (
@@ -545,6 +575,7 @@ function MoveNote({ review, index }: { review: ReviewData; index: number }) {
           {m.mine && BAD.includes(m.class) && <HabitLine review={review} tags={m.tags} />}
         </>
       )}
+      {index === review.moves.length - 1 && <p className="coach-end">Game over: {review.game.ending === "Resigned" ? "lost by resignation" : review.game.ending.charAt(0).toLowerCase() + review.game.ending.slice(1)}.</p>}
     </div>
   );
 }
