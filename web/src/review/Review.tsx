@@ -11,6 +11,7 @@ import { chancesAround, explain, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, plural, timeControl } from "../lib/format";
 import { recordAttempt } from "../lib/practice";
 import { dragToUci, legalDests, pieceAt, sanOf, uciOfSan } from "../lib/rules";
+import { tacticArrows } from "../lib/shapes";
 import { href, replacePly } from "../router";
 import type { GameReview as ReviewData, MoveClass, MoveTag } from "../types";
 import { EvalBar, Graph, PlayerStrip, Scoresheet } from "./parts";
@@ -246,17 +247,18 @@ export function ReviewView({
       lastMove = moment.uci;
       badge = { square: moment.uci.slice(2, 4), cls: moment.class };
       const reply = moment.reply_line[0] ? uciOfSan(moment.fen, moment.reply_line[0]) : null;
-      arrows = reply ? [{ uci: reply, brush: "threat" }] : [];
+      arrows = reply ? tacticArrows(moment.fen, reply, "threat") : [];
       check = /[+#]$/.test(moment.san);
     } else {
       fen = beforeFen;
       lastMove = prev?.uci ?? null;
       badge = null;
       const shown = attempt.status === "found" ? attempt.last : moment.best_uci;
-      arrows = shown ? [{ uci: shown, brush: "best" }] : [];
+      arrows = shown ? tacticArrows(beforeFen, shown, "best") : [];
     }
   } else if (mode.kind === "moves" && move && move.mine && BAD.includes(move.class) && !move.decided && move.best_uci && move.best_uci !== move.uci) {
-    arrows = [{ uci: move.best_uci, brush: "best" }];
+    const before = index >= 1 ? review.moves[index - 1].fen : review.start_fen;
+    arrows = tacticArrows(before, move.best_uci, "best");
   }
 
   // The eval bar follows the position on the board: before the mistake while you look for a better move.

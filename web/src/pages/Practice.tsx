@@ -9,6 +9,7 @@ import { tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
 import { loadPractice, recordAttempt } from "../lib/practice";
 import { hasPuzzles } from "../lib/puzzles";
+import { tacticArrows } from "../lib/shapes";
 import { dragToUci, legalDests, pieceAt, sanOf } from "../lib/rules";
 import { href } from "../router";
 import { EvalBar } from "../review/parts";
@@ -153,7 +154,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
             fen={p.fen}
             orientation={p.color}
             movable={movable}
-            arrows={!trying && shown ? [{ uci: shown, brush: "best" }] : []}
+            arrows={!trying && shown ? tacticArrows(p.fen, shown, "best") : []}
             label={trying ? `Find a better move for ${p.color}` : "Solution"}
           />
         </div>
