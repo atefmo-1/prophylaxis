@@ -72,7 +72,7 @@ Needs [uv](https://docs.astral.sh/uv/) and Stockfish on your `PATH` (or `STOCKFI
 
 ### The tactic classifier: `ml/`
 
-A small CNN, trained on 1.9 million Lichess puzzles (CC0), that names the tactic behind a move: fork, pin, skewer, discovered attack, back-rank mate and more. On held-out puzzles its macro F1 over 15 themes is 0.81, against 0.27 for the hand-written rules (which can name only 5 of them). The rules still win on mate-in-2. The rules still decide, from Stockfish's lines, whether material was really lost; the model names what they leave generic, using only themes where it beat them, and decides back-rank mates. It ships quantised to 0.78 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
+A small CNN, trained on 1.9 million Lichess puzzles (CC0), that names the tactic behind a move: fork, pin, skewer, discovered attack, back-rank mate and more. On held-out puzzles its macro F1 over 15 themes is 0.81, against 0.27 for the hand-written rules (which can name only 5 of them). The rules still win on mate-in-2. On 2,014 real blunders from low-rated Lichess rapid games it names pins, discovered attacks and trapped pieces with F1 0.63–0.71 (skewers are weaker, 0.45). The rules still decide, from Stockfish's lines, whether material was really lost; the model names what they leave generic, using only themes where it beat them, and decides back-rank mates. It ships quantised to 0.78 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
 
 ```bash
 cd ml && uv run tactics all   # download, build the splits, train LightGBM and the CNN, export, score

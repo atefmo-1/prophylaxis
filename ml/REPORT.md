@@ -16,8 +16,13 @@ skewers, discovered attacks and trapped pieces. It also decides back-rank mates,
 hanging, and leaves out forks whose forking piece can be taken. They are not wrong calls. On the sample player,
 letting the model veto those tags removed correct ones (see "Puzzles score a definition").
 
-Everything here is Lichess puzzle data and the synthetic sample player. No chess.com games were used, and none of
-the owner's.
+**On real beginner games** (2,014 blunders from Lichess rapid games between players rated 1300 or less, labelled
+by Lichess's own tagger) the model mostly holds up. It names pins (F1 0.70), discovered attacks (0.71), trapped
+pieces (0.63) and back-rank mates (0.89), where the rules name none of the first three. Skewers are the weak spot
+(0.45: about half the model's skewer calls are wrong). See "Real beginner games".
+
+Everything here is Lichess data (puzzles and games) and the synthetic sample player. No chess.com games were used,
+and none of the owner's.
 
 ## Reproduce
 
@@ -27,14 +32,15 @@ and the browser runtime.
 ```bash
 cd ml
 uv sync
-uv run tactics all     # fetch, data, rules, encode, lgbm, cnn, export, web, fixtures, report, analysis
+uv run tactics all     # fetch, data, rules, encode, lgbm, cnn, export, web, fixtures, report, analysis,
+                       # games, blunders, real
 uv run pytest
 ```
 
 `all` runs each step in its own process. Each step reads the previous step's output from `ml/data/`, which git
 ignores, so a single step can be re-run on its own (`uv run tactics cnn`). On an M5 MacBook the whole run takes
-about 45 minutes: 5 min of data and encoding, 7 min of LightGBM, 23 min for the CNN on MPS, and 6 min to score the
-model in onnxruntime-web. Seeds are fixed. LightGBM's macOS wheel links against Homebrew's OpenMP; if that is
+about 1 h 45 min: 5 min of data and encoding, 7 min of LightGBM, 23 min for the CNN on MPS, 6 min to score the model
+in onnxruntime-web, and about an hour of Stockfish (installed separately) for the real-game evaluation. Seeds are fixed. LightGBM's macOS wheel links against Homebrew's OpenMP; if that is
 missing, `tactics/gbm.py` re-runs the process with the copy that scikit-learn ships.
 
 What gets committed: the code, the shipped model (`web/public/models/tactics.onnx` and `tactics.json`), the
@@ -272,6 +278,60 @@ against the model's 0.973.
     them.
   - The `web` step scores the whole test split through the browser stack (the table's "In the browser" column).
 
+## Real beginner games
+
+The puzzle test answers "does the model learn Lichess's themes?" It doesn't answer "does it still work on the
+blunders beginners actually make?", because puzzles are curated positions. So the model was also scored on
+real games (`tactics/games.py`; `uv run tactics games blunders real`; numbers in `results/games.md` and
+`results/games.json`).
+
+- **Games.** The first 2,000 games in the September 2026 Lichess database that are rated rapid, between two
+  players rated 1300 or less, and ended normally or on time. Any game that produced a training puzzle was dropped
+  first. Lichess ratings run a few hundred points above chess.com's at this level, so this is roughly chess.com
+  600–1000. The blunders come from games with an average rating of 993.
+- **Blunders.** Stockfish 19 read every position at 50,000 nodes. A blunder is a move that loses at least 20 points
+  of winning chances and leaves the opponent at 70% or better. Each one then got a 1M-node search with two lines.
+  It was kept only if the best punishment is clearly better than the second (by 15 points of winning chances), and
+  if its line wins material or mates within 7 plies. Lichess builds its puzzles the same way. That gives
+  **2,014 blunders from 1,236 games**. 60% are punished in a single move, mostly a free piece.
+- **Labels.** Lichess's puzzle tagger (`cook.py` from lichess-puzzler, AGPL, downloaded at a pinned commit and
+  checked against pinned hashes; not committed). I checked it first on 5,000 of our test puzzles: it gives back
+  the database's own themes in all but 1 of 4,107 cases, and adds 28 that the database doesn't have. So these
+  labels mean what the training labels meant.
+- **Not a check by a person.** The labels still come from a program. What this tests is whether puzzle skill
+  carries over to real games, not whether a coach would agree.
+
+| Theme | Blunders | Rules F1 | Model F1 | Site F1 |
+|---|---:|---:|---:|---:|
+| mateIn1 | 118 | 1.00 | 1.00 | 1.00 |
+| mateIn2 | 34 | **1.00** | 0.78 (0.70–0.85) | 1.00 |
+| fork | 218 | 0.80 (0.76–0.83) | **0.84** (0.80–0.87) | 0.78 (0.74–0.81) |
+| hangingPiece | 734 | 0.85 (0.83–0.86) | **0.92** (0.90–0.93) | 0.85 (0.83–0.87) |
+| pin | 82 | 0 | **0.70** (0.62–0.77) | 0.70 |
+| discoveredAttack | 63 | 0 | **0.71** (0.62–0.78) | 0.71 |
+| trappedPiece | 82 | 0 | **0.63** (0.54–0.70) | 0.63 |
+| backRankMate | 12 | 0.73 (0.55–0.86) | **0.89** (0.75–0.97) | 0.89 |
+| skewer | 23 | 0 | 0.45 (0.27–0.61) | 0.45 |
+| deflection | 24 | 0 | 0.56 (0.33–0.73) | not shown |
+| promotion | 23 | 0 | 0.65 (0.50–0.78) | not shown |
+
+The intervals are 90%, from resampling whole games. Themes with fewer than 10 blunders are in `results/games.md`.
+
+What it shows:
+
+- **Most of the puzzle skill carries over, a little lower.** Against the puzzle test: fork 0.88 → 0.84, pin
+  0.76 → 0.70, discovered attack 0.78 → 0.71, trapped piece 0.68 → 0.63, back-rank mate 0.97 → 0.89. Hanging piece
+  goes *up* (0.83 → 0.92), because beginners' hanging pieces are the plain kind.
+- **Skewer drops from 0.75 to 0.45** (precision 0.53, recall 0.39, from only 23 cases). It is the one name the site
+  shows that is wrong about as often as it is right on real games. Removing it from the names the site uses
+  (`NAMED` in `web/src/analysis/tactics.ts`) is a one-line change, and worth considering.
+- **The rules stay perfect on mates.** On real games too, mates are best left to the engine.
+- **The site's fork and hanging-piece tags score lower than the model alone** (0.78 and 0.85, against 0.84 and
+  0.92). That is the definition choice described above: the site counts forks whose piece can be taken, and
+  pieces taken by something cheaper; Lichess's labels don't.
+- **When there is nothing to name:** 681 of the blunders have none of the 15 themes, and the model names one for
+  15% of them, close to its rate on puzzles (16.6%).
+
 ## Honest limits
 
 - **The labels come from Lichess's own tagger.** Lichess themes are computed by a hand-written program
@@ -281,10 +341,10 @@ against the model's 0.973.
   quieter, so base rates differ, and precision on real blunders will be lower than on puzzles. On the 61,084 test
   puzzles with none of the 15 themes, the model still names some theme for 16.6% of them (the rules: 9.6%). The
   site limits the damage by asking only when Stockfish's line shows material really changing hands.
-- **No evaluation on real blunders yet.** PLAN.md asks for ~100 of the owner's own blunders, labelled by hand. That
-  is the evaluation that matters, but those games must not enter this repo, so it is left for the owner to run
-  locally. The only chess.com-like data used here is the synthetic sample player, and its reviews were
-  re-generated with the model (below), with no ground truth for them.
+- **Real games, but labels from a program.** The real-game evaluation above uses Lichess's tagger, not a person. A
+  hand check of the cases where the model and the rules disagree (PLAN.md asked for about 100) would still add
+  something, and it can be done with simple yes/no questions about the board, without chess expertise. The
+  games are Lichess's, not chess.com's; none of the owner's games were used.
 - **Position plus one move.** The model doesn't see the engine line, so it can't know that a mate is forced or
   that a fork wins material two moves later. In the site, the engine line still gates every tag.
 - **Thresholds and the trusted list were chosen on puzzle splits**, and the trusted list on test (as asked).
