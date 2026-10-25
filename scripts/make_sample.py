@@ -6,8 +6,10 @@ then it plays any legal move instead, which is how hung pieces and missed tactic
 little steadier over the games, so the habit trends have something to show. Games start from common openings, carry
 clock times, and end the way real ones do: checkmate, resignation, time, or a draw.
 
-Writes web/public/sample/games.json in chess.com's archive format.
+Writes web/public/sample/games.json in chess.com's archive format. With --rival, writes a second made-up player for
+the sample player to compare with (web/public/sample/rival-games.json): a quicker player with a few favourite openings.
 Usage: uv run python scripts/make_sample.py [--games 36] [--seed 7]
+       uv run python scripts/make_sample.py --rival
 """
 
 import argparse
@@ -24,9 +26,23 @@ import chess.pgn
 
 from coach import config
 
-OUT = Path(__file__).resolve().parents[1] / "web" / "public" / "sample" / "games.json"
-PLAYER = "sample-player"
+SAMPLE = Path(__file__).resolve().parents[1] / "web" / "public" / "sample"
 BASE_S = 600
+
+# Who is generated: the sample player, or the rival it can be compared with.
+PROFILES = {
+    "player": {
+        "name": "sample-player", "out": "games.json", "games": 36, "seed": 7, "rating": 412, "ids": "s", "opponents": "",
+        "wild": (0.11, 0.06), "think": 1.0, "favourites": None,
+    },
+    # Quicker and less careful, and loyal to a few openings, so a comparison has something to say.
+    "rival": {
+        "name": "sample-rival", "out": "rival-games.json", "games": 30, "seed": 11, "rating": 430, "ids": "r", "opponents": "r",
+        "wild": (0.10, 0.10), "think": 0.45,
+        "favourites": {chess.WHITE: ["Italian-Game-Two-Knights-Defense", "Kings-Pawn-Opening-Kings-Knight-Variation"],
+                       chess.BLACK: ["French-Defense-Advance-Variation", "Caro-Kann-Defense"]},
+    },
+}
 
 # (chess.com opening page, first moves): real openings so the names and families read like chess.com's.
 OPENINGS = [
@@ -43,21 +59,23 @@ OPENINGS = [
 ]
 
 
-def choose(board: chess.Board, engine: chess.engine.SimpleEngine, wild: float, rng: random.Random) -> tuple[chess.Move, float]:
+def choose(board: chess.Board, engine: chess.engine.SimpleEngine, wild: float, rng: random.Random, think: float = 1.0) -> tuple[chess.Move, float]:
     """A move for the side to play, and how long it took to think (seconds)."""
     if rng.random() < wild:
         # Any move at all: the source of most beginner blunders. Played fast more often than not.
-        return rng.choice(list(board.legal_moves)), rng.choice([1.2, 2.0, 3.5, 6.0, 15.0])
+        return rng.choice(list(board.legal_moves)), rng.choice([1.2, 2.0, 3.5, 6.0, 15.0]) * think
     infos = engine.analyse(board, chess.engine.Limit(depth=6), multipv=6)
     scored = [(i["pv"][0], i["score"].pov(board.turn).score(mate_score=3000)) for i in infos if i.get("pv")]
     top = max(s for _, s in scored)
     weights = [math.exp((s - top) / 90) for _, s in scored]
     move = rng.choices([m for m, _ in scored], weights)[0]
-    return move, max(0.8, rng.lognormvariate(2.1, 0.8))
+    return move, max(0.8, rng.lognormvariate(2.1, 0.8) * think)
 
 
-def play(engine: chess.engine.SimpleEngine, rng: random.Random, my_wild: float, their_wild: float, my_color: chess.Color):
-    slug, line = rng.choice(OPENINGS)
+def play(engine: chess.engine.SimpleEngine, rng: random.Random, my_wild: float, their_wild: float, my_color: chess.Color,
+         think: float = 1.0, favourites: list[str] | None = None):
+    pool = [o for o in OPENINGS if o[0] in favourites] if favourites and rng.random() < 0.8 else OPENINGS
+    slug, line = rng.choice(pool)
     board = chess.Board()
     clocks = {chess.WHITE: float(BASE_S), chess.BLACK: float(BASE_S)}
     moves: list[tuple[chess.Move, float]] = []
@@ -91,7 +109,7 @@ def play(engine: chess.engine.SimpleEngine, rng: random.Random, my_wild: float, 
             break
         side = board.turn
         wild = my_wild if side == my_color else their_wild
-        move, spent = choose(board, engine, wild, rng)
+        move, spent = choose(board, engine, wild, rng, think if side == my_color else 1.0)
         clocks[side] -= spent
         if clocks[side] <= 0:
             result = (not side, "timeout", "win")
@@ -126,25 +144,30 @@ def to_pgn(moves, headers: dict[str, str]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--games", type=int, default=36)
-    parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--rival", action="store_true", help="the made-up player the sample player compares with")
+    parser.add_argument("--games", type=int)
+    parser.add_argument("--seed", type=int)
     args = parser.parse_args()
-    rng = random.Random(args.seed)
+    profile = PROFILES["rival" if args.rival else "player"]
+    games = args.games or profile["games"]
+    rng = random.Random(args.seed if args.seed is not None else profile["seed"])
+    player, wild_start, wild_end = profile["name"], *profile["wild"]
 
-    rating = 412
+    rating = profile["rating"]
     when = datetime(2026, 10, 1, 18, 0, tzinfo=UTC)
     archive = []
     with chess.engine.SimpleEngine.popen_uci(config.stockfish_path()) as engine:
         engine.configure({"Threads": 1, "Hash": 32})
-        for i in range(args.games):
+        for i in range(games):
             # The sample player steadies over the month; opponents stay as they are.
-            my_wild = 0.11 - 0.05 * i / max(1, args.games - 1)
+            my_wild = wild_start - (wild_start - wild_end) * i / max(1, games - 1)
             their_wild = rng.uniform(0.07, 0.11)
             my_color = chess.WHITE if i % 2 == 0 else chess.BLACK
-            slug, moves, (winner, loser_code, winner_code) = play(engine, rng, my_wild, their_wild, my_color)
+            favourites = profile["favourites"][my_color] if profile["favourites"] else None
+            slug, moves, (winner, loser_code, winner_code) = play(engine, rng, my_wild, their_wild, my_color, profile["think"], favourites)
 
             opp_rating = rating + rng.randint(-45, 45)
-            names = {my_color: PLAYER, not my_color: f"opponent-{i + 1:02d}"}
+            names = {my_color: player, not my_color: f"opponent-{profile['opponents']}{i + 1:02d}"}
             ratings = {my_color: rating, not my_color: opp_rating}
             if winner is None:
                 codes = {chess.WHITE: loser_code, chess.BLACK: loser_code}
@@ -161,7 +184,7 @@ def main() -> None:
                 "TimeControl": str(BASE_S), "ECOUrl": f"https://www.chess.com/openings/{slug}",
             }
             archive.append({
-                "url": f"https://prophylaxis.invalid/sample/s{i + 1:02d}",
+                "url": f"https://prophylaxis.invalid/sample/{profile['ids']}{i + 1:02d}",
                 "pgn": to_pgn(moves, headers),
                 "time_control": str(BASE_S),
                 "time_class": "rapid",
@@ -178,9 +201,10 @@ def main() -> None:
             when = end + (timedelta(minutes=rng.randint(2, 10)) if rng.random() < 0.7 else timedelta(days=rng.randint(1, 2), hours=rng.randint(-2, 2)))
             print(f"{i + 1:2d} {slug:46s} {len(moves):3d} plies  {mine}")
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"games": archive}, indent=0))
-    print(f"{len(archive)} games -> {OUT}")
+    out = SAMPLE / profile["out"]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"games": archive}, indent=0))
+    print(f"{len(archive)} games -> {out}")
 
 
 if __name__ == "__main__":

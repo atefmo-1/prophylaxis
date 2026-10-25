@@ -14,6 +14,30 @@ import { loadGames, saveGame } from "./store";
 
 /** Games compared on each side: enough for the ranges to separate real differences, about 2–3 minutes on a laptop. */
 export const COMPARE_GAMES = 30;
+/**
+ * The made-up player the sample player compares with (scripts/make_sample.py --rival). Their games and reviews ship
+ * with the site, like the sample player's, so anyone can try Compare without an account.
+ */
+export const SAMPLE_RIVAL = "sample-rival";
+const sampleFile = (name: string) => `${import.meta.env.BASE_URL}sample/${name}`;
+
+async function rivalGames(): Promise<ChessComGame[]> {
+  const res = await fetch(sampleFile("rival-games.json"));
+  if (!res.ok) throw new Error("The sample rival's games are missing.");
+  return ((await res.json()).games as ChessComGame[]).sort((a, b) => b.end_time - a.end_time);
+}
+
+async function rivalReviews(): Promise<StoredGame[]> {
+  try {
+    const res = await fetch(sampleFile("rival-reviews.json"));
+    // A dev server answers a missing file with the page itself, so check it really is JSON.
+    if (!res.ok || !res.headers.get("content-type")?.includes("json")) return [];
+    return (await res.json()) as StoredGame[];
+  } catch {
+    return [];
+  }
+}
+
 /** Results appear once this many of their games are reviewed. */
 export const COMPARE_MIN = 10;
 const MONTHS = 12;
@@ -36,7 +60,7 @@ export function latest(stored: StoredGame[], timeClass: string, n = COMPARE_GAME
     .slice(0, n);
 }
 
-export function useComparison(name: string | null, timeClass: string | null) {
+export function useComparison(name: string | null, timeClass: string | null, sample = false) {
   const own = useLibraryStatus();
   const busy = own.kind === "analysing" || own.kind === "checking";
   const [status, setStatus] = useState<CompareStatus>({ kind: "idle" });
@@ -55,17 +79,19 @@ export function useComparison(name: string | null, timeClass: string | null) {
     setTodo(null);
     setChosen([]);
     if (!name || !timeClass) return void setStatus({ kind: "idle" });
+    const rival = sample && name.toLowerCase() === SAMPLE_RIVAL;
     (async () => {
-      setStatus({ kind: "loading", step: "Finding the player on chess.com…" });
-      const who = await findPlayer(name);
+      setStatus({ kind: "loading", step: rival ? "Loading the sample rival…" : "Finding the player on chess.com…" });
+      const who = rival ? SAMPLE_RIVAL : await findPlayer(name);
       if (!live()) return;
       setPlayer(who);
-      remember(who);
-      const have = await loadGames(who.toLowerCase()).catch(() => [] as StoredGame[]);
+      if (!rival) remember(who);
+      const shipped = rival ? await rivalReviews() : [];
+      const have = [...shipped, ...(await loadGames(who.toLowerCase()).catch(() => [] as StoredGame[]))];
       if (!live()) return;
       setStored(have);
       setStatus({ kind: "loading", step: `Loading ${who}'s games…` });
-      const games = (await fetchGames(who, MONTHS, 300))
+      const games = (rival ? await rivalGames() : await fetchGames(who, MONTHS, 300))
         .filter((g) => g.time_class === timeClass && (g as ChessComGame & { rated?: boolean }).rated !== false)
         .slice(0, COMPARE_GAMES);
       if (!live()) return;
@@ -74,7 +100,7 @@ export function useComparison(name: string | null, timeClass: string | null) {
       setTodo(games.filter((g) => !done.has(gameId(g))));
       if (!games.length) setStatus({ kind: "error", message: `${who} has no rated ${timeClass} games in the last year.` });
     })().catch((e: Error) => live() && setStatus({ kind: "error", message: e.message }));
-  }, [name, timeClass]);
+  }, [name, timeClass, sample]);
 
   // Review what's missing, one game per pass, once the player's own games are done. Each pass removes the game it
   // reviewed from the list, so a pass cut short (the page closed, the player's own queue started) loses nothing.

@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { OpeningTree } from "../components/OpeningTree";
 import { NotEnough } from "../components/Progress";
-import { COMPARE_GAMES, COMPARE_MIN, latest, ownOverview, useComparison } from "../library/compare";
+import { COMPARE_GAMES, COMPARE_MIN, latest, ownOverview, SAMPLE_RIVAL, useComparison } from "../library/compare";
 import { useLibrary } from "../library/Library";
 import { plural, share, timeLeft } from "../lib/format";
 import { tipsAgainst } from "../lib/tips";
@@ -63,7 +63,7 @@ function Picker({ suggestions, initial }: { suggestions: string[]; initial: stri
       </form>
       {suggestions.length > 0 && (
         <p className="cmp-suggest">
-          <span className="muted">Players you've met most:</span>
+          <span className="muted">{suggestions[0] === SAMPLE_RIVAL ? "Try it with a made-up rival:" : "Players you've met most:"}</span>
           {suggestions.map((s) => (
             <button key={s} type="button" className="cmp-chip" onClick={() => go(s)}>
               {s}
@@ -210,7 +210,7 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
 export function Compare({ player }: { player: string | null }) {
   const lib = useLibrary();
   const tc = lib.overview.empty ? null : lib.overview.player.rating_time_class;
-  const { status, player: them, theirs, overview, total } = useComparison(player, tc);
+  const { status, player: them, theirs, overview, total } = useComparison(player, tc, lib.isSample);
   const own = useMemo(() => (tc ? ownOverview(lib.stored, lib.player ?? "you", tc) : null), [lib.stored, lib.player, tc]);
   if (!lib.loaded) return <div className="page" aria-busy="true" />;
   if (lib.overview.empty || lib.overview.player.played < MIN_OWN)
@@ -218,7 +218,8 @@ export function Compare({ player }: { player: string | null }) {
 
   const counts = new Map<string, number>();
   for (const g of lib.games) counts.set(g.opponent, (counts.get(g.opponent) ?? 0) + 1);
-  const suggestions = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([n]) => n);
+  // The sample player's opponents are made up; it compares with the sample rival, which ships with the site.
+  const suggestions = lib.isSample ? [SAMPLE_RIVAL] : [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([n]) => n);
   const name = them ?? player ?? "";
   const vs = lib.games.filter((g) => g.opponent.toLowerCase() === name.toLowerCase());
   const h2h = { win: vs.filter((g) => g.result === "win").length, loss: vs.filter((g) => g.result === "loss").length, draw: vs.filter((g) => g.result === "draw").length };
