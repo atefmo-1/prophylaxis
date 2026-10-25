@@ -4,7 +4,7 @@ in order, each in its own process (LightGBM and PyTorch each bring their own Ope
 import subprocess
 import sys
 
-STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis", "games", "blunders", "real"]
+STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis", "games", "blunders", "real", "bundle"]
 
 
 def _print_scores(scores: dict) -> None:
@@ -86,6 +86,10 @@ def run(step: str) -> None:
         for theme, m in result["themes"].items():
             print(f"  {theme:18s} n={m['support']:4d}  rules {m['rules']['f1']:.3f}  model {m['model']['f1']:.3f}"
                   f"  site {m['site']['f1']:.3f}")
+    elif step == "bundle":
+        from .bundle import build
+
+        print(build())
     else:
         sys.exit(f"usage: tactics {{{'|'.join(STEPS + ['all'])}}}")
 

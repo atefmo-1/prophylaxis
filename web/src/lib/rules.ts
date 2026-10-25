@@ -1,7 +1,7 @@
 // Chess rules in the browser (chessops, Lichess's library): legal moves for the retry board, SAN <-> UCI.
-import { Chess } from "chessops/chess";
+import { Chess, normalizeMove } from "chessops/chess";
 import { chessgroundDests } from "chessops/compat";
-import { parseFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { makeUci, parseSquare, parseUci } from "chessops/util";
 import type { Key } from "chessground/types";
@@ -24,6 +24,20 @@ export function dragToUci(fen: string, orig: string, dest: string): string {
   const promote = piece?.role === "pawn" && (dest[1] === "8" || dest[1] === "1") ? "q" : "";
   return `${orig}${to}${promote}`;
 }
+
+/** The position after a UCI move (castling as the king's two-square move), or null if it isn't legal. */
+export function playUci(fen: string, uci: string): string | null {
+  const pos = position(fen);
+  const move = parseUci(uci);
+  if (!move) return null;
+  const normal = normalizeMove(pos, move);
+  if (!pos.isLegal(normal)) return null;
+  pos.play(normal);
+  return makeFen(pos.toSetup());
+}
+
+export const isMate = (fen: string) => position(fen).isCheckmate();
+export const isCheck = (fen: string) => position(fen).isCheck();
 
 export function sanOf(fen: string, uci: string): string {
   const move = parseUci(uci);

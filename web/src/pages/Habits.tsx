@@ -5,6 +5,7 @@ import { BarRows, GameChart, Legend, PairedBars, RateRows, Scatter } from "../co
 import { ClassIcon } from "../components/ClassIcon";
 import { useOverview } from "../data";
 import { CLASS_META, RESULT_META, day, plural, share } from "../lib/format";
+import { hasPuzzles } from "../lib/puzzles";
 import { href } from "../router";
 import type { MoveClass, Overview, Skill, Weakness } from "../types";
 import "./pages.css";
@@ -66,6 +67,11 @@ function Focus({ w }: { w: Weakness }) {
           <a className="pbtn pbtn--primary" href={href({ name: "practice", tag: w.tag })}>
             Practise 5 of these
           </a>
+          {hasPuzzles(w.tag) && (
+            <a className="pbtn" href={href({ name: "puzzles", tag: w.tag })}>
+              Puzzles like these
+            </a>
+          )}
         </div>
         {ex && (
           <p className="focus-caption">
@@ -130,8 +136,8 @@ function AllHabits({ list }: { list: Weakness[] }) {
               <b className="num">−{Math.round(w.avg_loss)}%</b>
               <span>chances each time</span>
             </div>
-            <a className="pbtn" href={href({ name: "practice", tag: w.tag })}>
-              Practise
+            <a className="pbtn" href={href({ name: hasPuzzles(w.tag) ? "puzzles" : "practice", tag: w.tag })}>
+              {hasPuzzles(w.tag) ? "Puzzles" : "Practise"}
             </a>
           </li>
         ))}

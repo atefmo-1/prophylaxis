@@ -8,6 +8,7 @@ import { useOverview, usePractice } from "../data";
 import { tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
 import { loadPractice, recordAttempt } from "../lib/practice";
+import { hasPuzzles } from "../lib/puzzles";
 import { dragToUci, legalDests, pieceAt, sanOf } from "../lib/rules";
 import { href } from "../router";
 import { EvalBar } from "../review/parts";
@@ -97,6 +98,11 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
           <button type="button" className="pbtn pbtn--primary" onClick={onAgain}>
             Another {SESSION}
           </button>
+          {hasPuzzles(tag) && (
+            <a className="pbtn" href={href({ name: "puzzles", tag })}>
+              {SESSION} puzzles like these
+            </a>
+          )}
           <a className="pbtn" href={href({ name: "patterns" })}>
             Back to habits
           </a>
