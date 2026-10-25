@@ -5,4 +5,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "./",
   plugins: [react()],
+  // The tactic classifier's worker loads onnxruntime-web, which needs an ES module worker.
+  worker: { format: "es" },
 });

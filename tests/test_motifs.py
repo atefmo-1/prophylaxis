@@ -62,6 +62,23 @@ def test_allowed_back_rank_mate():
     assert "back_rank_mate" in tags
 
 
+def test_mate_on_the_back_rank_without_a_box_is_not_back_rank_mate():
+    # Rd1 is mate on white's first rank, but f2 is empty and held by the e4 knight: the king is not boxed in by
+    # its own pieces.
+    fen = "3r2k1/8/8/8/4n3/8/6PP/R5K1 w - - 0 1"
+    board = chess.Board(fen)
+    board.push_uci("a1a7")
+    board.push_uci("d8d1")
+    assert board.is_checkmate()
+    tags = tags_for(
+        fen, "a1a7",
+        before=[line(["h2h3", "d8d1"], cp=-300)],
+        after=[line(["d8d1"], mate=-1)],
+    )
+    assert tags["allowed_mate"] == {"in": 1}
+    assert "back_rank_mate" not in tags
+
+
 def test_missed_mate():
     # Ra8 is mate (the f7/g7/h7 pawns box the black king in).
     tags = tags_for(

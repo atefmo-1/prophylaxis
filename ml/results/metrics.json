@@ -1,0 +1,724 @@
+{
+ "split": {
+  "train": 1536603,
+  "val": 192076,
+  "test": 192067
+ },
+ "themes_per_split": {
+  "train": {
+   "mateIn1": 280046,
+   "fork": 211803,
+   "mateIn2": 248372,
+   "hangingPiece": 57735,
+   "promotion": 35314,
+   "pin": 84246,
+   "discoveredAttack": 79233,
+   "trappedPiece": 16584,
+   "deflection": 64703,
+   "attraction": 51796,
+   "doubleCheck": 7768,
+   "capturingDefender": 10032,
+   "backRankMate": 63784,
+   "smotheredMate": 7679,
+   "skewer": 36952
+  },
+  "val": {
+   "discoveredAttack": 9864,
+   "deflection": 8033,
+   "mateIn2": 31022,
+   "fork": 26586,
+   "backRankMate": 7994,
+   "promotion": 4410,
+   "mateIn1": 35013,
+   "skewer": 4614,
+   "hangingPiece": 7226,
+   "attraction": 6485,
+   "pin": 10508,
+   "doubleCheck": 969,
+   "trappedPiece": 2069,
+   "smotheredMate": 960,
+   "capturingDefender": 1254
+  },
+  "test": {
+   "pin": 10537,
+   "fork": 26490,
+   "deflection": 8077,
+   "mateIn1": 34920,
+   "mateIn2": 30968,
+   "skewer": 4632,
+   "trappedPiece": 2071,
+   "discoveredAttack": 9877,
+   "doubleCheck": 982,
+   "hangingPiece": 7218,
+   "attraction": 6496,
+   "backRankMate": 7980,
+   "promotion": 4414,
+   "capturingDefender": 1253,
+   "smotheredMate": 959
+  }
+ },
+ "test": {
+  "rules": {
+   "mateIn1": {
+    "precision": 0.9954389965792474,
+    "recall": 1.0,
+    "f1": 0.9977142857142857,
+    "support": 34920,
+    "predicted": 35080
+   },
+   "mateIn2": {
+    "precision": 0.9959477712742009,
+    "recall": 1.0,
+    "f1": 0.9979697721633206,
+    "support": 30968,
+    "predicted": 31094
+   },
+   "fork": {
+    "precision": 0.7681172911333488,
+    "recall": 0.6229898074745187,
+    "f1": 0.6879833246482543,
+    "support": 26490,
+    "predicted": 21485
+   },
+   "pin": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 10537,
+    "predicted": 0
+   },
+   "discoveredAttack": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 9877,
+    "predicted": 0
+   },
+   "deflection": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 8077,
+    "predicted": 0
+   },
+   "hangingPiece": {
+    "precision": 0.5296880645549801,
+    "recall": 0.6093100581878637,
+    "f1": 0.5667160621094001,
+    "support": 7218,
+    "predicted": 8303
+   },
+   "attraction": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 6496,
+    "predicted": 0
+   },
+   "backRankMate": {
+    "precision": 0.647150471504715,
+    "recall": 0.9889724310776943,
+    "f1": 0.7823543990086741,
+    "support": 7980,
+    "predicted": 12195
+   },
+   "promotion": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 4414,
+    "predicted": 0
+   },
+   "skewer": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 4632,
+    "predicted": 0
+   },
+   "trappedPiece": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 2071,
+    "predicted": 0
+   },
+   "capturingDefender": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 1253,
+    "predicted": 0
+   },
+   "doubleCheck": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 982,
+    "predicted": 0
+   },
+   "smotheredMate": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 959,
+    "predicted": 0
+   }
+  },
+  "lgbm": {
+   "mateIn1": {
+    "precision": 0.9954389965792474,
+    "recall": 1.0,
+    "f1": 0.9977142857142857,
+    "support": 34920,
+    "predicted": 35080
+   },
+   "mateIn2": {
+    "precision": 0.8080362293757932,
+    "recall": 0.9045789201756652,
+    "f1": 0.8535864464623073,
+    "support": 30968,
+    "predicted": 34668
+   },
+   "fork": {
+    "precision": 0.9252701963917742,
+    "recall": 0.8305775764439411,
+    "f1": 0.8753705066740933,
+    "support": 26490,
+    "predicted": 23779
+   },
+   "pin": {
+    "precision": 0.9010668021336042,
+    "recall": 0.6733415583183069,
+    "f1": 0.770734886752485,
+    "support": 10537,
+    "predicted": 7874
+   },
+   "discoveredAttack": {
+    "precision": 0.8346806330411022,
+    "recall": 0.7422294218892376,
+    "f1": 0.7857449088960344,
+    "support": 9877,
+    "predicted": 8783
+   },
+   "deflection": {
+    "precision": 0.6038748527294149,
+    "recall": 0.5711278940200569,
+    "f1": 0.5870450496309494,
+    "support": 8077,
+    "predicted": 7639
+   },
+   "hangingPiece": {
+    "precision": 0.8519401403787578,
+    "recall": 0.8912441119423663,
+    "f1": 0.8711490283702349,
+    "support": 7218,
+    "predicted": 7551
+   },
+   "attraction": {
+    "precision": 0.8424387737626305,
+    "recall": 0.7572352216748769,
+    "f1": 0.7975678962302393,
+    "support": 6496,
+    "predicted": 5839
+   },
+   "backRankMate": {
+    "precision": 0.8903905765654061,
+    "recall": 0.8998746867167919,
+    "f1": 0.8951075101277656,
+    "support": 7980,
+    "predicted": 8065
+   },
+   "promotion": {
+    "precision": 0.7062328139321723,
+    "recall": 0.6982328953330312,
+    "f1": 0.7022100706311232,
+    "support": 4414,
+    "predicted": 4364
+   },
+   "skewer": {
+    "precision": 0.7592991913746631,
+    "recall": 0.6081606217616581,
+    "f1": 0.6753776072884201,
+    "support": 4632,
+    "predicted": 3710
+   },
+   "trappedPiece": {
+    "precision": 0.6653061224489796,
+    "recall": 0.7083534524384355,
+    "f1": 0.686155285313377,
+    "support": 2071,
+    "predicted": 2205
+   },
+   "capturingDefender": {
+    "precision": 0.548704200178731,
+    "recall": 0.49002394253790904,
+    "f1": 0.5177065767284992,
+    "support": 1253,
+    "predicted": 1119
+   },
+   "doubleCheck": {
+    "precision": 0.9566265060240964,
+    "recall": 0.8085539714867617,
+    "f1": 0.8763796909492274,
+    "support": 982,
+    "predicted": 830
+   },
+   "smotheredMate": {
+    "precision": 0.9840425531914894,
+    "recall": 0.9645464025026069,
+    "f1": 0.9741969457609267,
+    "support": 959,
+    "predicted": 940
+   }
+  },
+  "cnn": {
+   "mateIn1": {
+    "precision": 0.9954389965792474,
+    "recall": 1.0,
+    "f1": 0.9977142857142857,
+    "support": 34920,
+    "predicted": 35080
+   },
+   "mateIn2": {
+    "precision": 0.9124215489502692,
+    "recall": 0.9248256264531128,
+    "f1": 0.9185817149638372,
+    "support": 30968,
+    "predicted": 31389
+   },
+   "fork": {
+    "precision": 0.9276828661469564,
+    "recall": 0.8445451113627784,
+    "f1": 0.8841639331304588,
+    "support": 26490,
+    "predicted": 24116
+   },
+   "pin": {
+    "precision": 0.8647660818713451,
+    "recall": 0.6736262693366233,
+    "f1": 0.7573219525206721,
+    "support": 10537,
+    "predicted": 8208
+   },
+   "discoveredAttack": {
+    "precision": 0.8264565858082068,
+    "recall": 0.7381796091930748,
+    "f1": 0.7798277982779828,
+    "support": 9877,
+    "predicted": 8822
+   },
+   "deflection": {
+    "precision": 0.6978706307754118,
+    "recall": 0.6451652841401511,
+    "f1": 0.6704837879567679,
+    "support": 8077,
+    "predicted": 7467
+   },
+   "hangingPiece": {
+    "precision": 0.7649143532191376,
+    "recall": 0.8970628983097811,
+    "f1": 0.8257348721545623,
+    "support": 7218,
+    "predicted": 8465
+   },
+   "attraction": {
+    "precision": 0.8737795135806853,
+    "recall": 0.7576970443349754,
+    "f1": 0.8116085415120785,
+    "support": 6496,
+    "predicted": 5633
+   },
+   "backRankMate": {
+    "precision": 0.9765418085508891,
+    "recall": 0.9703007518796992,
+    "f1": 0.9734112766358665,
+    "support": 7980,
+    "predicted": 7929
+   },
+   "promotion": {
+    "precision": 0.6772273017223049,
+    "recall": 0.7215677390122338,
+    "f1": 0.698694746078754,
+    "support": 4414,
+    "predicted": 4703
+   },
+   "skewer": {
+    "precision": 0.8186998186998187,
+    "recall": 0.6824265975820379,
+    "f1": 0.7443777228305662,
+    "support": 4632,
+    "predicted": 3861
+   },
+   "trappedPiece": {
+    "precision": 0.6435686444348203,
+    "recall": 0.7175277643650411,
+    "f1": 0.6785388127853882,
+    "support": 2071,
+    "predicted": 2309
+   },
+   "capturingDefender": {
+    "precision": 0.48253968253968255,
+    "recall": 0.4852354349561053,
+    "f1": 0.4838838042180661,
+    "support": 1253,
+    "predicted": 1260
+   },
+   "doubleCheck": {
+    "precision": 0.9733656174334141,
+    "recall": 0.8187372708757638,
+    "f1": 0.8893805309734513,
+    "support": 982,
+    "predicted": 826
+   },
+   "smotheredMate": {
+    "precision": 0.9753086419753086,
+    "recall": 0.9885297184567258,
+    "f1": 0.9818746763335059,
+    "support": 959,
+    "predicted": 972
+   }
+  },
+  "cnn_int8": {
+   "mateIn1": {
+    "precision": 0.9954389965792474,
+    "recall": 1.0,
+    "f1": 0.9977142857142857,
+    "support": 34920,
+    "predicted": 35080
+   },
+   "mateIn2": {
+    "precision": 0.9105737496826606,
+    "recall": 0.926569361921984,
+    "f1": 0.9185019206145967,
+    "support": 30968,
+    "predicted": 31512
+   },
+   "fork": {
+    "precision": 0.9343752625829762,
+    "recall": 0.8395620989052472,
+    "f1": 0.8844349001829317,
+    "support": 26490,
+    "predicted": 23802
+   },
+   "pin": {
+    "precision": 0.8609903381642512,
+    "recall": 0.6765682831925596,
+    "f1": 0.7577190838071958,
+    "support": 10537,
+    "predicted": 8280
+   },
+   "discoveredAttack": {
+    "precision": 0.8314387415317488,
+    "recall": 0.7331173433228713,
+    "f1": 0.7791886366081997,
+    "support": 9877,
+    "predicted": 8709
+   },
+   "deflection": {
+    "precision": 0.6807692307692308,
+    "recall": 0.6574223102637118,
+    "f1": 0.6688921080808716,
+    "support": 8077,
+    "predicted": 7800
+   },
+   "hangingPiece": {
+    "precision": 0.7671982861223519,
+    "recall": 0.8930451648656137,
+    "f1": 0.8253521126760563,
+    "support": 7218,
+    "predicted": 8402
+   },
+   "attraction": {
+    "precision": 0.8561200136379133,
+    "recall": 0.7730911330049262,
+    "f1": 0.8124898883675781,
+    "support": 6496,
+    "predicted": 5866
+   },
+   "backRankMate": {
+    "precision": 0.9746231155778895,
+    "recall": 0.9721804511278196,
+    "f1": 0.9734002509410289,
+    "support": 7980,
+    "predicted": 7960
+   },
+   "promotion": {
+    "precision": 0.6765704584040747,
+    "recall": 0.7222473946533756,
+    "f1": 0.6986631602016218,
+    "support": 4414,
+    "predicted": 4712
+   },
+   "skewer": {
+    "precision": 0.793488824101069,
+    "recall": 0.7050949913644214,
+    "f1": 0.7466849565614999,
+    "support": 4632,
+    "predicted": 4116
+   },
+   "trappedPiece": {
+    "precision": 0.6393162393162393,
+    "recall": 0.7223563495895703,
+    "f1": 0.6783042394014963,
+    "support": 2071,
+    "predicted": 2340
+   },
+   "capturingDefender": {
+    "precision": 0.49622799664710815,
+    "recall": 0.47246608140462887,
+    "f1": 0.48405560098119377,
+    "support": 1253,
+    "predicted": 1193
+   },
+   "doubleCheck": {
+    "precision": 0.9676646706586827,
+    "recall": 0.8228105906313645,
+    "f1": 0.8893780957622455,
+    "support": 982,
+    "predicted": 835
+   },
+   "smotheredMate": {
+    "precision": 0.9803312629399586,
+    "recall": 0.9874869655891554,
+    "f1": 0.9838961038961039,
+    "support": 959,
+    "predicted": 966
+   }
+  }
+ },
+ "browser": {
+  "mateIn1": {
+   "precision": 0.9954389965792474,
+   "recall": 1.0,
+   "f1": 0.9977142857142857,
+   "support": 34920,
+   "predicted": 35080
+  },
+  "mateIn2": {
+   "precision": 0.9105448545044902,
+   "recall": 0.926569361921984,
+   "f1": 0.918487220114915,
+   "support": 30968,
+   "predicted": 31513
+  },
+  "fork": {
+   "precision": 0.9344145203983026,
+   "recall": 0.8395620989052472,
+   "f1": 0.8844524865284047,
+   "support": 26490,
+   "predicted": 23801
+  },
+  "pin": {
+   "precision": 0.8610943350646213,
+   "recall": 0.6765682831925596,
+   "f1": 0.7577593537414966,
+   "support": 10537,
+   "predicted": 8279
+  },
+  "discoveredAttack": {
+   "precision": 0.8314193844740468,
+   "recall": 0.7330160980054673,
+   "f1": 0.7791229486144741,
+   "support": 9877,
+   "predicted": 8708
+  },
+  "deflection": {
+   "precision": 0.6808565200666752,
+   "recall": 0.6574223102637118,
+   "f1": 0.6689342403628118,
+   "support": 8077,
+   "predicted": 7799
+  },
+  "hangingPiece": {
+   "precision": 0.76713469776297,
+   "recall": 0.8931837073981712,
+   "f1": 0.8253744718986045,
+   "support": 7218,
+   "predicted": 8404
+  },
+  "attraction": {
+   "precision": 0.8559740923811147,
+   "recall": 0.7730911330049262,
+   "f1": 0.812424168891046,
+   "support": 6496,
+   "predicted": 5867
+  },
+  "backRankMate": {
+   "precision": 0.9746231155778895,
+   "recall": 0.9721804511278196,
+   "f1": 0.9734002509410289,
+   "support": 7980,
+   "predicted": 7960
+  },
+  "promotion": {
+   "precision": 0.6765704584040747,
+   "recall": 0.7222473946533756,
+   "f1": 0.6986631602016218,
+   "support": 4414,
+   "predicted": 4712
+  },
+  "skewer": {
+   "precision": 0.793488824101069,
+   "recall": 0.7050949913644214,
+   "f1": 0.7466849565614999,
+   "support": 4632,
+   "predicted": 4116
+  },
+  "trappedPiece": {
+   "precision": 0.6390431439555745,
+   "recall": 0.7223563495895703,
+   "f1": 0.6781504986400725,
+   "support": 2071,
+   "predicted": 2341
+  },
+  "capturingDefender": {
+   "precision": 0.49622799664710815,
+   "recall": 0.47246608140462887,
+   "f1": 0.48405560098119377,
+   "support": 1253,
+   "predicted": 1193
+  },
+  "doubleCheck": {
+   "precision": 0.9676646706586827,
+   "recall": 0.8228105906313645,
+   "f1": 0.8893780957622455,
+   "support": 982,
+   "predicted": 835
+  },
+  "smotheredMate": {
+   "precision": 0.9803312629399586,
+   "recall": 0.9874869655891554,
+   "f1": 0.9838961038961039,
+   "support": 959,
+   "predicted": 966
+  }
+ },
+ "browser_decisions_differing": 9,
+ "trusted": [
+  "fork",
+  "pin",
+  "discoveredAttack",
+  "deflection",
+  "hangingPiece",
+  "attraction",
+  "backRankMate",
+  "promotion",
+  "skewer",
+  "trappedPiece",
+  "capturingDefender",
+  "doubleCheck",
+  "smotheredMate"
+ ],
+ "lgbm_top_features": {
+  "mateIn1": [
+   "checkmate",
+   "replies",
+   "king_replies",
+   "to_cheapest_attacker",
+   "total_material"
+  ],
+  "mateIn2": [
+   "replies",
+   "checkmate",
+   "king_replies",
+   "their_king_pressure",
+   "their_king_escapes"
+  ],
+  "fork": [
+   "hits_winnable",
+   "threat_after_best",
+   "to_attackers",
+   "hits_king",
+   "checkmate"
+  ],
+  "pin": [
+   "their_pinned_after",
+   "pin_lines",
+   "their_pinned_before",
+   "to_attackers",
+   "replies"
+  ],
+  "discoveredAttack": [
+   "discovered_value",
+   "discovered",
+   "replies",
+   "check",
+   "threat_against_best"
+  ],
+  "deflection": [
+   "threat_after_value",
+   "their_king_pressure",
+   "threat_after_best",
+   "replies",
+   "checkmate"
+  ],
+  "hangingPiece": [
+   "captured_loose",
+   "captured_value",
+   "threat_before_best",
+   "captured_p",
+   "balance"
+  ],
+  "attraction": [
+   "to_cheapest_attacker",
+   "threat_against_best",
+   "to_defenders",
+   "replies",
+   "replies_capturing_moved"
+  ],
+  "backRankMate": [
+   "their_king_pressure",
+   "to_rank",
+   "their_king_sealed",
+   "their_king_shield",
+   "king_replies"
+  ],
+  "promotion": [
+   "my_pawns_7th",
+   "total_material",
+   "promotion",
+   "to_rank",
+   "replies"
+  ],
+  "skewer": [
+   "moved_skewer_lines",
+   "total_material",
+   "skewer_lines",
+   "king_replies",
+   "their_king_escapes"
+  ],
+  "trappedPiece": [
+   "check",
+   "threat_before_value",
+   "trapped_after",
+   "replies",
+   "threat_after_best"
+  ],
+  "capturingDefender": [
+   "replies",
+   "captured_was_sole_defender",
+   "threat_before_best",
+   "to_defenders",
+   "threat_against_value"
+  ],
+  "doubleCheck": [
+   "checkers",
+   "their_king_pressure",
+   "total_material",
+   "replies",
+   "to_rank"
+  ],
+  "smotheredMate": [
+   "their_king_shield",
+   "threat_before_best",
+   "checkmate",
+   "their_king_back_rank",
+   "to_rank"
+  ]
+ },
+ "onnx_bytes": {
+  "fp32": 2923418,
+  "int8": 781358
+ }
+}

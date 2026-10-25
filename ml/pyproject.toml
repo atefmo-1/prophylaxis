@@ -1,0 +1,46 @@
+[project]
+name = "tactics"
+version = "0.1.0"
+description = "Tactic classifier for Prophylaxis: trained on the Lichess puzzle database, compared with the hand-written motif rules."
+authors = [
+    { name = "atefmo-1", email = "228411487+atefmo-1@users.noreply.github.com" }
+]
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
+dependencies = [
+    "coach",
+    "chess>=1.11.2",
+    "httpx>=0.28.1",
+    "zstandard>=0.23",
+    "numpy>=2.1",
+    "lightgbm>=4.5",
+    "scikit-learn>=1.5",
+    "torch>=2.6",
+    "onnx>=1.17",
+    "onnxruntime>=1.20",
+    "onnxscript>=0.2",
+]
+
+[project.scripts]
+tactics = "tactics.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.uv.sources]
+coach = { path = "..", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

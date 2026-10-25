@@ -27,8 +27,14 @@ const HABIT_WINDOW = 10;
 const RECENT_GAMES = 20;
 const SKILL_RECENT = 20;
 const SESSION_GAP_S = 30 * 60;
-const SAFETY_TAGS = ["hanging_piece", "allowed_fork", "lost_material", "allowed_mate"];
-const MISSED_TAGS = ["missed_free_piece", "missed_fork", "missed_mate", "missed_tactic"];
+const SAFETY_TAGS = [
+  "hanging_piece", "allowed_fork", "lost_material", "allowed_mate",
+  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece",
+];
+const MISSED_TAGS = [
+  "missed_free_piece", "missed_fork", "missed_mate", "missed_tactic",
+  "missed_discovered_attack", "missed_pin", "missed_skewer", "missed_trapped_piece",
+];
 
 /** What a review doesn't carry but the statistics need, taken from the chess.com archive entry. */
 export interface GameFacts {

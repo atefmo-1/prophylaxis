@@ -14,7 +14,17 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
     case "hanging_piece":
       return `It left your ${str(d.piece)} on ${str(d.square)} where it could be taken for free or by a cheaper piece.`;
     case "allowed_fork":
-      return `It allowed a ${str(d.by)} fork of your ${list((d.targets as string[]) ?? [])}.`;
+      return (d.targets as string[] | undefined)?.length
+        ? `It allowed a ${str(d.by)} fork of your ${list(d.targets as string[])}.`
+        : `It allowed a fork that wins about ${str(d.amount)} points of material.`;
+    case "allowed_discovered_attack":
+      return `It allowed a discovered attack: one enemy piece moves and uncovers another, winning about ${str(d.amount)} points of material.`;
+    case "allowed_pin":
+      return `It allowed a pin that wins about ${str(d.amount)} points of material.`;
+    case "allowed_skewer":
+      return `It allowed a skewer that wins about ${str(d.amount)} points of material.`;
+    case "trapped_piece":
+      return `It left one of your pieces trapped, and it can be won: about ${str(d.amount)} points of material.`;
     case "allowed_mate":
       return Number(d.in) === 1 ? "It allowed checkmate on the next move." : `It allowed a forced checkmate in ${str(d.in)}.`;
     case "back_rank_mate":
@@ -26,7 +36,17 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
     case "missed_free_piece":
       return `${best} would have won a ${str(d.piece)}.`;
     case "missed_fork":
-      return `${best} was a ${str(d.by)} fork of their ${list((d.targets as string[]) ?? [])}.`;
+      return (d.targets as string[] | undefined)?.length
+        ? `${best} was a ${str(d.by)} fork of their ${list(d.targets as string[])}.`
+        : `${best} started a fork, winning about ${str(d.amount)} points of material.`;
+    case "missed_discovered_attack":
+      return `${best} started a discovered attack, winning about ${str(d.amount)} points of material.`;
+    case "missed_pin":
+      return `${best} started a pin, winning about ${str(d.amount)} points of material.`;
+    case "missed_skewer":
+      return `${best} started a skewer, winning about ${str(d.amount)} points of material.`;
+    case "missed_trapped_piece":
+      return `${best} started winning a trapped piece: about ${str(d.amount)} points of material.`;
     case "missed_mate":
       return Number(d.in) === 1 ? `${best} was checkmate.` : `${best} started a forced checkmate in ${str(d.in)}.`;
     case "missed_tactic":
