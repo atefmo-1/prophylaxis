@@ -57,6 +57,24 @@ h1 { font: 700 clamp(26px, 4vw, 34px)/1.1 var(--display); margin: 0; text-wrap: 
 .where { font: 600 13px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .line { font: 500 15px/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
 .question { font: 600 21px/1.4 var(--body); margin: 0; text-wrap: pretty; }
+.steps { display: grid; gap: 8px; }
+.steps h2, .howto summary { font: 600 13px/1.2 var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.steps ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.steps li button {
+  width: 100%; text-align: left; font: 400 16px/1.4 var(--body); color: var(--ink); background: transparent;
+  border: 1px solid transparent; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: grid;
+  grid-template-columns: 1.6em minmax(0, 1fr); gap: 6px;
+}
+.steps li button:hover { border-color: var(--line); }
+.steps li button[aria-current="true"] { border-color: var(--move); background: var(--surface); }
+.steps li b { font: 500 14px/1.5 var(--mono); color: var(--muted); }
+.stepper { display: flex; gap: 8px; flex-wrap: wrap; }
+.stepper button { font: 600 14px/1 var(--body); padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.stepper button:disabled { opacity: .4; cursor: default; }
+.viewing { font-size: 14px; color: var(--muted); }
+.howto { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; max-width: 72ch; }
+.howto summary { cursor: pointer; }
+.howto ul { margin: 10px 0 2px; padding-left: 1.2em; display: grid; gap: 4px; }
 .answers { display: flex; flex-wrap: wrap; gap: 10px; }
 .answers button {
   font: 600 17px/1 var(--body); padding: 14px 22px; border-radius: 8px; cursor: pointer; min-width: 96px;
@@ -97,8 +115,18 @@ textarea { width: 100%; min-height: 80px; font: 13px var(--mono); background: va
 <div class="wrap">
   <header>
     <h1>Tactic check</h1>
-    <p class="intro">Positions from real beginner games. Each one asks a single question about what you can see on the board, so no chess expertise is needed: follow the arrows and count. Answer <b>Not sure</b> whenever you can't tell. Answers save as you go.</p>
+    <p class="intro">Positions from real beginner games. Each one asks a single question about what you can see on the board, so no chess expertise is needed: read what happens in plain words, follow the arrows and count. Answer <b>Not sure</b> whenever you can't tell. Answers save as you go.</p>
     <div class="progress"><div class="bar" aria-hidden="true"><i id="fill"></i></div><span id="count">0 of 0 answered</span></div>
+    <details class="howto" id="howto">
+      <summary>How to read the board</summary>
+      <ul>
+        <li>White's pieces are the light ones, Black's the dark ones. The board is turned so the side making the move is at the bottom.</li>
+        <li>Squares are named by column letter (a to h) and row number (1 to 8), as printed along the edges: e4 is column e, row 4.</li>
+        <li>Pieces: ♚ king, ♛ queen, ♜ rook, ♝ bishop, ♞ knight, ♟ pawn. Bishops, rooks and queens attack in straight lines until something blocks them.</li>
+        <li><b>Check</b> means the king is attacked. <b>Checkmate</b> means it is attacked and can't escape: the game is over.</li>
+        <li>Under each question, "What happens" tells the moves in plain words. Click a move, or use <b>Play the moves</b>, to see it on the board.</li>
+      </ul>
+    </details>
   </header>
 
   <section class="main" aria-label="Current position">
@@ -106,7 +134,16 @@ textarea { width: 100%; min-height: 80px; font: 13px var(--mono); background: va
     <div class="panel">
       <div class="where" id="where">Position 1</div>
       <p class="question" id="question"></p>
-      <div class="line" id="line"></div>
+      <section class="steps" aria-label="What happens">
+        <h2>What happens</h2>
+        <ol id="steps"></ol>
+        <div class="stepper">
+          <button type="button" id="play">Play the moves ▶</button>
+          <button type="button" id="back">Back to the question</button>
+        </div>
+        <div class="viewing" id="viewing"></div>
+        <div class="line" id="line"></div>
+      </section>
       <div class="answers" role="group" aria-label="Your answer">
         <button type="button" id="ans-yes" data-a="yes" aria-pressed="false">Yes<kbd>Y</kbd></button>
         <button type="button" id="ans-no" data-a="no" aria-pressed="false">No<kbd>N</kbd></button>
@@ -141,6 +178,7 @@ const QUESTIONS = __QUESTIONS__;
 const GLYPH = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
 const answers = {};
 let index = 0;
+let view = null; // null: the question's own position; -1: before the first move; k: after move k of the line
 let db = null;
 
 const $ = (id) => document.getElementById(id);
@@ -162,7 +200,7 @@ function parseFen(fen) {
   return board;
 }
 
-function drawBoard(q) {
+function drawBoard(q, fen, arrowList) {
   const S = 60, flip = q.orientation === "black";
   const xy = (file, rank) => flip ? [(7 - file) * S, rank * S] : [file * S, (7 - rank) * S];
   const center = (sq) => { const [x, y] = xy(sq.charCodeAt(0) - 97, Number(sq[1]) - 1); return [x + S / 2, y + S / 2]; };
@@ -181,12 +219,12 @@ function drawBoard(q) {
     svg += `<text x="${fx + S - 4}" y="${flip ? S - 4 : 8 * S - 4}" font-size="11" text-anchor="end" fill="#3b4237" style="font-family:var(--mono)" opacity=".7">${file}</text>`;
     svg += `<text x="3" y="${ry + 12}" font-size="11" fill="#3b4237" style="font-family:var(--mono)" opacity=".7">${rank}</text>`;
   }
-  for (const { rank, file, piece } of parseFen(q.fen)) {
+  for (const { rank, file, piece } of parseFen(fen)) {
     const [x, y] = xy(file, rank), white = piece === piece.toUpperCase();
     svg += `<text x="${x + S / 2}" y="${y + S * 0.8}" font-size="${S * 0.8}" text-anchor="middle" style="font-family:var(--pieces)"
       fill="${white ? "#fbfaf6" : "#151814"}" stroke="${white ? "#151814" : "#fbfaf6"}" stroke-width="${white ? 1.6 : 0.6}" paint-order="stroke">${GLYPH[piece.toLowerCase()]}</text>`;
   }
-  for (const [from, to, kind] of q.arrows) {
+  for (const [from, to, kind] of arrowList) {
     const [x1, y1] = center(from), [x2, y2] = center(to);
     const len = Math.hypot(x2 - x1, y2 - y1), cut = S * 0.32;
     const ex = x2 - ((x2 - x1) / len) * cut, ey = y2 - ((y2 - y1) / len) * cut;
@@ -200,10 +238,27 @@ function drawBoard(q) {
 
 function render() {
   const q = QUESTIONS[index];
-  drawBoard(q);
+  if (view === null) drawBoard(q, q.fen, q.arrows);
+  else if (view < 0) drawBoard(q, q.start, []);
+  else drawBoard(q, q.steps[view].fen, [[...q.steps[view].arrow, "move"]]);
+  $("viewing").textContent = view === null ? "Showing the position the question is about."
+    : view < 0 ? "Showing the position before the first move." : `Showing the board after move ${view + 1}.`;
+  $("steps").innerHTML = "";
+  q.steps.forEach((step, k) => {
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button";
+    const n = document.createElement("b"); n.textContent = `${k + 1}.`;
+    const t = document.createElement("span"); t.textContent = step.text;
+    b.append(n, t);
+    if (view === k) b.setAttribute("aria-current", "true");
+    b.onclick = () => { view = k; render(); };
+    li.appendChild(b); $("steps").appendChild(li);
+  });
+  $("play").textContent = view === null || view < 0 ? "Play the moves ▶" : view < q.steps.length - 1 ? "Next move ▶" : "Play again ▶";
+  $("back").disabled = view === null;
   $("where").textContent = `Position ${index + 1} of ${QUESTIONS.length}`;
   $("question").textContent = q.question;
-  $("line").textContent = `The line: ${q.line}`;
+  $("line").textContent = `In chess notation: ${q.line}`;
   for (const a of ["yes", "no", "unsure"]) $(`ans-${a}`).setAttribute("aria-pressed", String(answers[q.id] === a));
   $("prev").disabled = index === 0;
   $("next").disabled = index === QUESTIONS.length - 1;
@@ -217,7 +272,7 @@ function render() {
     if (answers[x.id]) b.dataset.a = answers[x.id];
     if (i === index) b.setAttribute("aria-current", "true");
     b.setAttribute("aria-label", `Position ${i + 1}${answers[x.id] ? `, answered ${answers[x.id]}` : ""}`);
-    b.onclick = () => { index = i; render(); };
+    b.onclick = () => { index = i; view = null; render(); };
     $("chips").appendChild(b);
   });
   const all = done === QUESTIONS.length;
@@ -232,7 +287,7 @@ async function answer(a) {
   answers[q.id] = a;
   keepLocal();
   render();
-  if (index < QUESTIONS.length - 1) setTimeout(() => { index++; render(); }, 220);
+  if (index < QUESTIONS.length - 1) setTimeout(() => { index++; view = null; render(); }, 220);
   if (!db) { $("status").textContent = "Saved in this browser."; return; }
   try {
     await db.collection("answers").doc(q.id).set({ answer: a, at: Date.now() });
@@ -243,8 +298,21 @@ async function answer(a) {
 }
 
 for (const a of ["yes", "no", "unsure"]) $(`ans-${a}`).onclick = () => answer(a);
-$("prev").onclick = () => { if (index > 0) { index--; render(); } };
-$("next").onclick = () => { if (index < QUESTIONS.length - 1) { index++; render(); } };
+$("prev").onclick = () => { if (index > 0) { index--; view = null; render(); } };
+$("next").onclick = () => { if (index < QUESTIONS.length - 1) { index++; view = null; render(); } };
+$("play").onclick = () => {
+  const n = QUESTIONS[index].steps.length;
+  // From the question (or the end of the line), start over: the position before the first move, then move 1.
+  if (view === null || view >= n - 1) {
+    view = -1;
+    render();
+    setTimeout(() => { if (view === -1) { view = 0; render(); } }, 700);
+  } else {
+    view++;
+    render();
+  }
+};
+$("back").onclick = () => { view = null; render(); };
 document.addEventListener("keydown", (e) => {
   if (e.target.closest && e.target.closest("textarea")) return;
   const k = e.key.toLowerCase();

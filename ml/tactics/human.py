@@ -78,44 +78,77 @@ def _trapped_piece(after: chess.Board, me: chess.Color) -> chess.Square | None:
     return None
 
 
+def _english(board: chess.Board, move: chess.Move) -> str:
+    """One move in plain English, for someone new to chess notation."""
+    side, piece = _side(board.turn), NAMES[board.piece_type_at(move.from_square)]
+    other = _side(not board.turn)
+    if board.is_castling(move):
+        text = f"{side} castles: the king moves two squares towards a rook, and the rook jumps over to its other side"
+    elif board.is_en_passant(move):
+        text = f"{side}'s pawn on {chess.square_name(move.from_square)} takes {other}'s pawn en passant (a special pawn capture)"
+    elif board.is_capture(move):
+        victim = NAMES[board.piece_type_at(move.to_square)]
+        text = f"{side}'s {piece} on {chess.square_name(move.from_square)} takes {other}'s {victim} on {chess.square_name(move.to_square)}"
+    else:
+        text = f"{side}'s {piece} moves from {chess.square_name(move.from_square)} to {chess.square_name(move.to_square)}"
+    if move.promotion:
+        text += f", and the pawn turns into a {NAMES[move.promotion]}"
+    after = board.copy(stack=False)
+    after.push(move)
+    if after.is_checkmate():
+        text += ". That is checkmate: the king is attacked and can't escape, so the game is over"
+    elif after.is_check():
+        text += ", attacking the king (check)"
+    return text + "."
+
+
 def _question(ex: dict, theme: str) -> dict:
     board = chess.Board(ex["fen"])
     line = model_line(board, [chess.Move.from_uci(u) for u in ex["line"]])
     me, them = _side(board.turn), _side(not board.turn)
     key = line[0]
-    sans, b = [], board.copy(stack=False)
+    sans, steps, b = [], [], board.copy(stack=False)
     for move in line:
         sans.append(b.san(move))
+        text = _english(b, move)
         b.push(move)
+        steps.append({"fen": b.fen(), "arrow": [chess.square_name(move.from_square), chess.square_name(move.to_square)],
+                      "text": text})
     after = board.copy(stack=False)
     after.push(key)
     moved = NAMES[after.piece_type_at(key.to_square)]
-    shown, arrows = board.fen(), _arrows(board, key)
+    shown, arrows, auto = board.fen(), _arrows(board, key), None
     to = chess.square_name(key.to_square)
     if theme == "fork":
-        ask = (f"{me} plays the {moved} to {to} (blue arrow). After that move, does this one {moved} attack two or more of "
-               f"{them}'s pieces at the same time (counting a check on the king)?")
+        ask = (f"{me}'s {moved} moves to {to} (blue arrow). Look at the red arrows that start from that {moved}: does it "
+               f"now attack two or more of {them}'s pieces at the same time? (Attacking the king counts.)")
     elif theme == "pin":
-        ask = (f"{me} plays {sans[0]} (blue arrow). Does a {me} bishop, rook or queen now attack a {them} piece that can't "
-               f"move away without leaving a more valuable {them} piece (or the king) behind it open to capture?")
+        ask = (f"After {me}'s move (blue arrow), is there a {me} bishop, rook or queen lined up with two of {them}'s pieces "
+               f"in a row, so that the front one can't move away without leaving the one behind it (more valuable, or the "
+               f"king) open to capture?")
     elif theme == "skewer":
-        ask = (f"{me} plays {sans[0]} (blue arrow). Does a {me} bishop, rook or queen now attack a valuable {them} piece "
-               f"(or give check) with another {them} piece behind it on the same line, so that when the front piece moves "
-               f"away, the one behind can be taken?")
+        ask = (f"After {me}'s move (blue arrow), does a {me} bishop, rook or queen attack a valuable {them} piece (or the "
+               f"king) with another {them} piece directly behind it on the same line, so that when the front piece "
+               f"steps away, the one behind can be taken?")
     elif theme == "discoveredAttack":
-        ask = (f"{me} plays {sans[0]} (blue arrow). Did that move get out of the way of another {me} piece, so that the "
-               f"other piece now attacks something of {them}'s (or gives check) that it was blocked from before?")
+        ask = (f"{me}'s move (blue arrow) gets a piece out of the way. Does a different {me} piece, the one that was behind "
+               f"it, now attack one of {them}'s pieces (or the king) that it couldn't reach before?")
     elif theme == "trappedPiece":
         square = _trapped_piece(after, board.turn)
-        piece = f"the {them} {NAMES[after.piece_type_at(square)]} on {chess.square_name(square)}" if square else f"one of {them}'s pieces"
-        ask = (f"{me} plays {sans[0]} (blue arrow). Is {piece} now attacked with no safe square to escape to, so it is "
-               f"going to be lost?")
+        piece = (f"{them}'s {NAMES[after.piece_type_at(square)]} on {chess.square_name(square)}" if square
+                 else f"one of {them}'s pieces")
+        ask = (f"After {me}'s move (blue arrow), is {piece} under attack with no safe square to run to, so {them} is "
+               f"going to lose it?")
     else:  # backRankMate
         shown, arrows = b.fen(), []
-        ask = (f"This is the position at the end of the line {' '.join(sans)}. Is the {them} king checkmated on its own "
-               f"back row (the row it started on), with its escape squares blocked by its own pieces?")
+        row = "8 (the top row from White's side)" if them == "Black" else "1 (the bottom row from White's side)"
+        if not b.is_checkmate():
+            # Not checkmate at all, so not a back-rank mate: that is a fact, not something to ask a person.
+            auto = "no"
+        ask = (f"This is the end of the line, and it is checkmate. Is {them}'s king on its own back row, row {row}, with "
+               f"the squares just in front of it filled by {them}'s own pieces, so it was boxed in by them?")
     return {"fen": shown, "orientation": "white" if board.turn == chess.WHITE else "black", "arrows": arrows,
-            "line": " ".join(sans), "question": ask}
+            "line": " ".join(sans), "steps": steps, "start": board.fen(), "question": ask, "auto": auto}
 
 
 def build(seed: int = 7) -> dict:
@@ -144,20 +177,22 @@ def build(seed: int = 7) -> dict:
     rng.shuffle(questions)
     HUMAN.mkdir(parents=True, exist_ok=True)
     (HUMAN / "questions.json").write_text(json.dumps(questions, indent=1))
-    page = [{k: q[k] for k in ("id", "fen", "orientation", "arrows", "line", "question")} for q in questions]
+    page = [{k: q[k] for k in ("id", "fen", "orientation", "arrows", "line", "steps", "start", "question")}
+            for q in questions if not q["auto"]]
     (HUMAN / "page.json").write_text(json.dumps(page, separators=(",", ":")))
     return {"questions": len(questions), "by_group": {g: sum(q["group"] == g for q in questions) for g in PER_GROUP}}
 
 
 def score(answers_path: str) -> dict:
-    """answers.json: {question id: "yes" | "no" | "unsure"}. Per theme and group, how often the person said yes."""
+    """answers.json: {question id: "yes" | "no" | "unsure"}. Per theme and group, how often the answer was yes.
+    Back-rank questions whose line isn't checkmate are answered "no" automatically and never shown."""
     from .report import RESULTS
 
     questions = json.loads((HUMAN / "questions.json").read_text())
     answers = json.loads(Path(answers_path).read_text())
     table: dict = {}
     for q in questions:
-        a = answers.get(q["id"])
+        a = q["auto"] or answers.get(q["id"])
         if a not in ("yes", "no"):
             continue
         cell = table.setdefault(q["theme"], {}).setdefault(q["group"], {"yes": 0, "no": 0})
@@ -165,7 +200,8 @@ def score(answers_path: str) -> dict:
     totals = {g: {"yes": sum(t.get(g, {}).get("yes", 0) for t in table.values()),
                   "no": sum(t.get(g, {}).get("no", 0) for t in table.values())} for g in PER_GROUP}
     result = {"answered": sum(a in ("yes", "no") for a in answers.values()), "unsure": sum(a == "unsure" for a in answers.values()),
-              "questions": len(questions), "by_theme": table, "by_group": totals}
+              "automatic": sum(bool(q["auto"]) for q in questions), "questions": len(questions), "by_theme": table,
+              "by_group": totals}
     (RESULTS / "human.json").write_text(json.dumps(result, indent=1))
     return result
 
