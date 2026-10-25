@@ -23,22 +23,20 @@ import httpx
 import numpy as np
 import zstandard
 from coach import config, grading
-from coach.motifs import material
 
 from .dataset import THEMES
 from .fetch import DATA, RAW
+from .planes import tactic_line
 
 GAMES_URL = "https://database.lichess.org/standard/lichess_db_standard_rated_2026-09.pgn.zst"
 OUT = DATA / "games"
 MAX_ELO = 1300          # both players; Lichess ratings run a few hundred points above chess.com's at this level
-N_GAMES = 2000          # the first games in the month's file that pass the filters
+N_GAMES = 10_000        # the first games in the month's file that pass the filters
 SCAN_NODES = 50_000     # every position, to find the blunders
 LINE_NODES = 1_000_000  # the position after each blunder, for the punishing line
 BLUNDER = 20.0          # win % the mover loses
 SOLVER_WINS = 70.0      # the punisher's winning chances after the blunder, and after their best move
 ONLY_MOVE = 15.0        # the best punishment must beat the second best by this much (win %)
-MAX_PLIES = 7           # longest punishing line, ending on the punisher's move
-MATE_PLIES = 5          # mates up to mate in 3
 
 # Lichess's puzzle tagger: the commit before 2026-10-23 changed how forks are tagged, so it matches the labels of
 # the puzzle database the model was trained on (released 2026-10-02). Only the pure python-chess files are used.
@@ -140,26 +138,6 @@ def _win(board: chess.Board, info: dict) -> float:
     return grading.pov(win_white, board.turn)
 
 
-def _punishing_line(board: chess.Board, pv: list[chess.Move]) -> list[str] | None:
-    """The engine's best line for the punisher, cut where the tactic is over: at mate, or at the first punisher
-    move after which they are at least 2 points up and still are after the reply. None if neither happens."""
-    me = board.turn
-    start = material(board, me)
-    b = board.copy(stack=False)
-    for i, move in enumerate(pv[:MAX_PLIES]):
-        b.push(move)
-        if b.is_checkmate():
-            return [m.uci() for m in pv[:i + 1]] if i < MATE_PLIES else None
-        if i % 2 == 0 and material(b, me) - start >= 2:
-            if i + 1 >= len(pv):
-                return [m.uci() for m in pv[:i + 1]]
-            reply = b.copy(stack=False)
-            reply.push(pv[i + 1])
-            if material(reply, me) - start >= 2:
-                return [m.uci() for m in pv[:i + 1]]
-    return None
-
-
 def _blunders(text: str) -> list[dict]:
     """Every blunder in one game that has a single clear punishment, as a puzzle-shaped example."""
     game = chess.pgn.read_game(io.StringIO(text))
@@ -190,9 +168,10 @@ def _blunders(text: str) -> list[dict]:
         second = _win(after, infos[1]) if len(infos) > 1 else 0.0
         if top < SOLVER_WINS or top - second < ONLY_MOVE:
             continue
-        line = _punishing_line(after, infos[0]["pv"])
+        line = tactic_line(after, infos[0]["pv"])
         if not line:
             continue
+        line = [m.uci() for m in line]
         score = infos[0]["score"].pov(after.turn)
         out.append({
             "id": f"{gid}-{ply + 1}", "game": gid, "rating": rating,
@@ -202,13 +181,33 @@ def _blunders(text: str) -> list[dict]:
     return out
 
 
-def find_blunders() -> Path:
+def _game_id(text: str) -> str:
+    return dict(HEADER.findall(text))["Site"].rsplit("/", 1)[-1]
+
+
+def find_blunders(workers: int = max(1, (os.cpu_count() or 2) - 3)) -> Path:
+    """Scan every game once. Results are cached per game in scanned.jsonl, so an interrupted run resumes and a
+    larger sample only scans the new games."""
     games = (OUT / "games.pgn").read_text().split("\n\n[Event ")
     games = [g if g.startswith("[Event ") else "[Event " + g for g in games]
-    with Pool(max(1, (os.cpu_count() or 2) - 1), initializer=_start) as pool:
-        found = [ex for exs in pool.imap(_blunders, games) for ex in exs]
+    cache = OUT / "scanned.jsonl"
+    done = {}
+    if cache.exists():
+        for line in cache.open():
+            row = json.loads(line)
+            done[row["game"]] = row["blunders"]
+    todo = [g for g in games if _game_id(g) not in done]
+    print(f"  {len(done)} games already scanned, {len(todo)} to go", flush=True)
+    with cache.open("a") as f, Pool(workers, initializer=_start) as pool:
+        for i, (text, found) in enumerate(zip(todo, pool.imap(_blunders, todo)), 1):
+            done[_game_id(text)] = found
+            f.write(json.dumps({"game": _game_id(text), "blunders": found}, separators=(",", ":")) + "\n")
+            f.flush()
+            if i % 250 == 0:
+                print(f"  scanned {i} / {len(todo)}", flush=True)
     cook = tagger()
     out = OUT / "blunders.jsonl"
+    found = [ex for g in games for ex in done[_game_id(g)]]
     with out.open("w") as f:
         for ex in found:
             ex["themes"] = label(cook, ex, ex["cp"])
@@ -231,37 +230,102 @@ def _bootstrap_f1(y: np.ndarray, pred: np.ndarray, games: np.ndarray, rounds: in
     return float(np.percentile(scores, 5)), float(np.percentile(scores, 95))
 
 
+# The tags the site can name from the model (web/src/analysis/tactics.ts, NAMED), in its order.
+NAMED = ["hangingPiece", "fork", "discoveredAttack", "pin", "skewer", "trappedPiece"]
+SHIP_MIN_CASES = 20      # a theme needs this many real blunders in the deciding half to be judged at all
+SHIP_MIN_PRECISION = 0.6  # a name the site shows should be right more often than not, comfortably
+
+
+def half(game: str) -> str:
+    """Which half of the real games a game belongs to: "val" decides what ships, "test" is reported."""
+    return "val" if hashlib.blake2b(game.encode(), digest_size=1).digest()[0] < 128 else "test"
+
+
+def _site(rule: np.ndarray, model: np.ndarray, trusted: set[str]) -> np.ndarray:
+    """What the site shows per theme: the rules for mates; for forks and hanging pieces the rules' tag, plus the
+    model's where the rules found none; back-rank mates and the other named themes from the model, if trusted."""
+    site = np.zeros_like(rule)
+    for i, t in enumerate(THEMES):
+        if t in ("mateIn1", "mateIn2"):
+            site[:, i] = rule[:, i]
+        elif t in ("fork", "hangingPiece"):
+            site[:, i] = rule[:, i] | (model[:, i] if t in trusted else 0)
+        elif t == "backRankMate":
+            site[:, i] = model[:, i] if t in trusted else rule[:, i]
+        elif t in NAMED and t in trusted:
+            site[:, i] = model[:, i]
+    return site
+
+
+def _evaluate(y: np.ndarray, preds: dict[str, np.ndarray], games: np.ndarray, shown: set[str]) -> dict:
+    from .metrics import per_theme
+
+    result = {"n": len(y), "games": len(set(games)), "themes": {}}
+    for name, pred in preds.items():
+        scores = per_theme(y, pred)
+        for i, t in enumerate(THEMES):
+            entry = result["themes"].setdefault(t, {"support": scores[t]["support"], "site_shows": t in shown})
+            low, high = _bootstrap_f1(y[:, i], pred[:, i], games)
+            entry[name] = {**{k: scores[t][k] for k in ("precision", "recall", "f1")}, "f1_90": [low, high]}
+    none = y.sum(1) == 0
+    result["no_theme"] = {"n": int(none.sum()), "model_names_one": float(preds["model"][none].any(1).mean())}
+    return result
+
+
 def score() -> dict:
-    """Rules, model and the site's combination on the real blunders, with 90% intervals."""
+    """Score the shipped model on the real blunders and decide what the site may name from it: a theme the model
+    beat the rules on in the puzzle test also has to beat them on the "val" half of the real games, with precision
+    of at least SHIP_MIN_PRECISION on at least SHIP_MIN_CASES blunders. The "test" half is reported."""
     from .export import WEB_MODELS, run
     from .metrics import from_sets, labels, per_theme
-    from .planes import encode
+    from .planes import encode, model_line
     from .rules import predict
 
     examples = [json.loads(line) for line in (OUT / "blunders.jsonl").open()]
     y = labels(examples)
     with Pool() as pool:
         rule = from_sets(pool.map(predict, examples, chunksize=200))
-    meta = json.loads((WEB_MODELS / "tactics.json").read_text())
-    planes = np.stack([encode(chess.Board(ex["fen"]), chess.Move.from_uci(ex["line"][0])) for ex in examples])
+    meta_path = WEB_MODELS / "tactics.json"
+    meta = json.loads(meta_path.read_text())
+
+    def planes_of(ex: dict) -> np.ndarray:
+        board = chess.Board(ex["fen"])
+        return encode(board, model_line(board, [chess.Move.from_uci(u) for u in ex["line"]]))
+
+    planes = np.stack([planes_of(ex) for ex in examples])
     model = (run(WEB_MODELS / "tactics.onnx", planes) >= np.array(meta["thresholds"])).astype(np.uint8)
-    # What the site shows for each theme (web/src/analysis/tactics.ts): the rules for mates; for forks and hanging
-    # pieces the rules' tag, plus the model's where the rules found none; the model for the themes it names.
-    site = np.zeros_like(y)
-    shown = {"mateIn1": "rules", "mateIn2": "rules", "fork": "both", "hangingPiece": "both", "backRankMate": "model",
-             "discoveredAttack": "model", "pin": "model", "skewer": "model", "trappedPiece": "model"}
-    for i, t in enumerate(THEMES):
-        source = shown.get(t)
-        site[:, i] = rule[:, i] if source == "rules" else model[:, i] if source == "model" else rule[:, i] | model[:, i] if source else 0
     games = np.array([ex["game"] for ex in examples])
-    result = {"n": len(examples), "games": len(set(games)), "themes": {}}
-    for name, pred in (("rules", rule), ("model", model), ("site", site)):
-        scores = per_theme(y, pred)
-        for i, t in enumerate(THEMES):
-            entry = result["themes"].setdefault(t, {"support": scores[t]["support"], "site_shows": t in shown})
-            low, high = _bootstrap_f1(y[:, i], pred[:, i], games)
-            entry[name] = {**{k: scores[t][k] for k in ("precision", "recall", "f1")}, "f1_90": [low, high]}
-    result["no_theme"] = {"n": int((y.sum(1) == 0).sum()), "model_names_one": float(model[y.sum(1) == 0].any(1).mean())}
+    val = np.array([half(g) == "val" for g in games])
+
+    puzzle_trusted = json.loads((DATA / "results" / "onnx.json").read_text())["trusted"]
+    on_val_rules, on_val_model = per_theme(y[val], rule[val]), per_theme(y[val], model[val])
+    decisions = {}
+    for t in puzzle_trusted:
+        m, r = on_val_model[t], on_val_rules[t]
+        if m["support"] < SHIP_MIN_CASES:
+            decisions[t] = f"not shipped: only {m['support']} real blunders to judge it on"
+        elif m["precision"] < SHIP_MIN_PRECISION:
+            decisions[t] = f"not shipped: precision {m['precision']:.2f} on real blunders"
+        elif m["f1"] <= r["f1"]:
+            decisions[t] = f"not shipped: F1 {m['f1']:.2f}, rules {r['f1']:.2f} on real blunders"
+        else:
+            decisions[t] = f"shipped: F1 {m['f1']:.2f} (rules {r['f1']:.2f}), precision {m['precision']:.2f}"
+    trusted = [t for t in puzzle_trusted if decisions[t].startswith("shipped")]
+    meta["trusted"] = trusted
+    meta_path.write_text(json.dumps(meta, indent=1) + "\n")
+
+    site = _site(rule, model, set(trusted))
+    shown = {t for t in THEMES if site.any(0)[THEMES.index(t)] or t in ("mateIn1", "mateIn2")}
+
+    def preds(mask: np.ndarray) -> dict[str, np.ndarray]:
+        return {"rules": rule[mask], "model": model[mask], "site": site[mask]}
+
+    result = {
+        "decisions": decisions,
+        "trusted": trusted,
+        "val": _evaluate(y[val], preds(val), games[val], shown),
+        "test": _evaluate(y[~val], preds(~val), games[~val], shown),
+    }
     (DATA / "results" / "games.json").write_text(json.dumps(result, indent=1))
     _table(result)
     return result
@@ -275,17 +339,21 @@ def _table(result: dict) -> None:
         low, high = m["f1_90"]
         return f"{m['f1']:.2f} ({low:.2f}–{high:.2f})"
 
+    test = result["test"]
     lines = [
-        (f"{result['n']:,} blunders with one clear punishment, from {result['games']:,} Lichess rapid games between "
-         f"players rated {MAX_ELO} or less. F1 with a 90% interval (games resampled)."),
+        (f"Test half: {test['n']:,} blunders with one clear punishment, from {test['games']:,} Lichess rapid games "
+         f"between players rated {MAX_ELO} or less. F1 with a 90% interval (games resampled)."),
         "",
-        "| Theme | Blunders | Rules F1 | Model F1 | Site F1 |",
+        "| Theme | Blunders | Rules F1 | Model F1; precision, recall | Site F1 |",
         "|---|---:|---:|---:|---:|",
     ]
-    for t, m in result["themes"].items():
+    for t, m in test["themes"].items():
         if m["support"]:
             site = cell(m["site"]) if m["site_shows"] else "not shown"
-            lines.append(f"| {t} | {m['support']} | {cell(m['rules'])} | {cell(m['model'])} | {site} |")
+            model = f"{cell(m['model'])}; P {m['model']['precision']:.2f}, R {m['model']['recall']:.2f}"
+            lines.append(f"| {t} | {m['support']} | {cell(m['rules'])} | {model} | {site} |")
+    lines += ["", f"What ships, decided on the other half ({result['val']['n']:,} blunders):", ""]
+    lines += [f"- {t}: {why}" for t, why in result["decisions"].items()]
     RESULTS.mkdir(exist_ok=True)
     (RESULTS / "games.md").write_text("\n".join(lines) + "\n")
     (RESULTS / "games.json").write_text(json.dumps(result, indent=1))

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Engine, workerTransport } from "../analysis/engine";
 import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
-import { loadTacticModel, type TacticModel } from "../analysis/tactics";
+import { loadTacticModel, retagReview, type TacticModel } from "../analysis/tactics";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
@@ -129,6 +129,22 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         }
         have = [...have, ...imported];
       }
+      // Reviews named by an older tactic model (or none) are re-tagged from the engine lines they kept.
+      const model = await getTactics();
+      if (model) {
+        const stale = have.filter((s) => s.version === ANALYSIS_VERSION && s.tagged !== model.version);
+        const fresh = new Map<string, StoredGame>();
+        for (const entry of stale) {
+          if (!live()) return;
+          const review = await retagReview(model, entry.review).catch(() => null);
+          if (!review) continue; // left as it was; tried again next visit
+          const next = { ...entry, review, tagged: model.version };
+          await saveGame(who.toLowerCase(), next);
+          fresh.set(next.review.game.id, next);
+        }
+        if (fresh.size && live()) setStored((s) => s.map((x) => fresh.get(x.review.game.id) ?? x));
+        have = have.map((x) => fresh.get(x.review.game.id) ?? x);
+      }
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
       const all = who === SAMPLE ? await sampleGames() : await fetchGames(who, MONTHS, MAX_GAMES);
       todo = all.slice(0, MAX_GAMES).filter((g) => !done.has(gameId(g)));
@@ -153,7 +169,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current } });
         }, model);
-        const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION };
+        const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION, tagged: model?.version };
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
         setStored((s) => [...s.filter((x) => x.review.game.id !== review.game.id), entry]);

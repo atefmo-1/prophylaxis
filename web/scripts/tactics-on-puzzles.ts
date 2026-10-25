@@ -7,7 +7,7 @@ import { createInterface } from "node:readline";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
 import * as ort from "onnxruntime-web";
-import { encode, PLANES } from "../src/analysis/planes.ts";
+import { encode, modelLine, PLANES } from "../src/analysis/planes.ts";
 
 const BATCH = 2048;
 const meta = JSON.parse(readFileSync(resolve(import.meta.dirname, "../public/models/tactics.json"), "utf8")) as { themes: string[]; thresholds: number[] };
@@ -29,7 +29,8 @@ async function flush() {
 
 for await (const text of createInterface({ input: createReadStream(process.argv[2]) })) {
   const ex = JSON.parse(text) as { id: string; fen: string; line: string[] };
-  encode(Chess.fromSetup(parseFen(ex.fen).unwrap()).unwrap(), ex.line[0], planes, ids.length * PLANES * 64);
+  const pos = Chess.fromSetup(parseFen(ex.fen).unwrap()).unwrap();
+  encode(pos, modelLine(pos, ex.line), planes, ids.length * PLANES * 64);
   ids.push(ex.id);
   if (ids.length === BATCH) await flush();
 }

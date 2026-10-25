@@ -9,15 +9,15 @@ import torch
 from torch import nn
 
 from .dataset import THEMES
-from .encode import arrays
+from .encode import Planes, arrays
 from .fetch import DATA
 from .metrics import best_thresholds, per_theme
 from .planes import PLANES
 
 MODELS = Path(__file__).resolve().parent.parent / "models"
 CHANNELS = 64
-BLOCKS = 6
-EPOCHS = 10
+BLOCKS = 8
+EPOCHS = 6
 BATCH = 1024
 LR = 2e-3
 SEED = 7
@@ -59,7 +59,7 @@ def predict(model: nn.Module, planes: np.ndarray, dev: torch.device, batch: int 
     model.eval()
     out = []
     for i in range(0, len(planes), batch):
-        x = torch.from_numpy(np.asarray(planes[i:i + batch], np.float32)).to(dev)
+        x = torch.from_numpy(planes[i:i + batch]).to(dev)
         out.append(torch.sigmoid(model(x)).float().cpu().numpy())
     return np.concatenate(out)
 
@@ -68,9 +68,9 @@ def train(epochs: int = EPOCHS) -> dict:
     torch.manual_seed(SEED)
     rng = np.random.default_rng(SEED)
     dev = device()
-    x_train, y_train = arrays("train", "planes"), arrays("train", "labels").astype(np.float32)
-    x_val, y_val = arrays("val", "planes"), arrays("val", "labels")
-    x_test, y_test = arrays("test", "planes"), arrays("test", "labels")
+    x_train, y_train = Planes("train"), arrays("train", "labels").astype(np.float32)
+    x_val, y_val = Planes("val"), arrays("val", "labels")
+    x_test, y_test = Planes("test"), arrays("test", "labels")
     model = TacticNet().to(dev)
     steps = epochs * (len(x_train) // BATCH)
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
@@ -83,7 +83,7 @@ def train(epochs: int = EPOCHS) -> dict:
         start, total = time.time(), 0.0
         for b in range(len(x_train) // BATCH):
             idx = np.sort(order[b * BATCH:(b + 1) * BATCH])
-            x = x_train[idx].astype(np.float32)
+            x = x_train[idx]
             # A tactic mirrored left to right is the same tactic (the planes carry no castling rights).
             mirror = rng.random(len(idx)) < 0.5
             x[mirror] = x[mirror][..., ::-1]

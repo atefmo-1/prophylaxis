@@ -7,16 +7,19 @@ import { resolve } from "node:path";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
 import * as ort from "onnxruntime-web";
-import { encode, PLANES } from "../src/analysis/planes.ts";
+import { encode, modelLine, PLANES } from "../src/analysis/planes.ts";
 
-const fixtures = JSON.parse(readFileSync(process.argv[2], "utf8")) as { fen: string; uci: string; probabilities?: number[] }[];
+const fixtures = JSON.parse(readFileSync(process.argv[2], "utf8")) as { fen: string; line: string[]; probabilities?: number[] }[];
 const cases = fixtures.filter((f) => f.probabilities);
 if (!cases.length) throw new Error("no probabilities in the fixtures: run `uv run tactics fixtures` after `export`");
 ort.env.wasm.numThreads = 1;
 const model = readFileSync(resolve(import.meta.dirname, "../public/models/tactics.onnx"));
 const session = await ort.InferenceSession.create(model, { executionProviders: ["wasm"] });
 const planes = new Float32Array(cases.length * PLANES * 64);
-cases.forEach((f, i) => encode(Chess.fromSetup(parseFen(f.fen).unwrap()).unwrap(), f.uci, planes, i * PLANES * 64));
+cases.forEach((f, i) => {
+  const pos = Chess.fromSetup(parseFen(f.fen).unwrap()).unwrap();
+  encode(pos, modelLine(pos, f.line), planes, i * PLANES * 64);
+});
 const out = await session.run({ planes: new ort.Tensor("float32", planes, [cases.length, PLANES, 8, 8]) });
 const probs = out.probabilities.data as Float32Array;
 const k = cases[0].probabilities!.length;

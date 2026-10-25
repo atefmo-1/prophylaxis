@@ -50,6 +50,8 @@ export interface StoredGame {
   review: GameReview;
   facts: GameFacts;
   version: number;
+  /** The tactic model that named its tags (tactics.json "version"), if any. */
+  tagged?: string;
 }
 
 // ---------- numbers ----------

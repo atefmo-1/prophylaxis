@@ -82,10 +82,13 @@ def run(step: str) -> None:
         from .games import score
 
         result = score()
-        print(f"  {result['n']} blunders from {result['games']} games")
-        for theme, m in result["themes"].items():
+        test = result["test"]
+        print(f"  test half: {test['n']} blunders from {test['games']} games")
+        for theme, m in test["themes"].items():
             print(f"  {theme:18s} n={m['support']:4d}  rules {m['rules']['f1']:.3f}  model {m['model']['f1']:.3f}"
                   f"  site {m['site']['f1']:.3f}")
+        for theme, why in result["decisions"].items():
+            print(f"  {theme}: {why}")
     elif step == "bundle":
         from .bundle import build
 

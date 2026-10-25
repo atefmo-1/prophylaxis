@@ -3,11 +3,12 @@
 import chess
 
 from tactics import games
+from tactics.planes import tactic_line
 
 
 def line(fen: str, ucis: str) -> list[str] | None:
-    board = chess.Board(fen)
-    return games._punishing_line(board, [chess.Move.from_uci(u) for u in ucis.split()])
+    found = tactic_line(chess.Board(fen), [chess.Move.from_uci(u) for u in ucis.split()])
+    return None if found is None else [m.uci() for m in found]
 
 
 def test_line_stops_at_mate():
