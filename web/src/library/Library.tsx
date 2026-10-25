@@ -65,17 +65,22 @@ const writeTarget = (who: string, n: number | null) => {
   }
 };
 
-/** How many games from `from` on fit in one budget on this device, and about how long they take; done games are free. */
+/**
+ * How far from `from` one budget on this device reaches (`span`, done games are free), how many of those games still
+ * need a review (`games`), and about how long that takes.
+ */
 function fit(games: ChessComGame[], from: number, done: Set<string>, device: Device) {
   let eta = 0;
+  let todo = 0;
   let i = from;
   for (; i < games.length; i++) {
     if (done.has(gameId(games[i]))) continue;
     const ms = device.estimate(pliesOf(games[i].pgn));
-    if (eta + ms > BUDGET_MS && i - from >= MIN_GAMES) break;
+    if (eta + ms > BUDGET_MS && todo >= MIN_GAMES) break;
     eta += ms;
+    todo++;
   }
-  return { games: i - from, eta };
+  return { span: i - from, games: todo, eta };
 }
 
 export interface Current {
@@ -107,7 +112,7 @@ interface LibraryValue {
   practice: PracticePosition[];
   isSample: boolean;
   /** The next games that could be reviewed after these, and about how long they'd take; null when there are none. */
-  more: { games: number; eta: number } | null;
+  more: { games: number; eta: number; span: number } | null;
   reviewMore: () => void;
   pause: () => void;
   resume: () => void;
@@ -211,7 +216,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       const games = all.slice(0, MAX_GAMES);
       let target = who === SAMPLE ? games.length : readTarget(who);
       if (target === null) {
-        target = fit(games, 0, done, dev).games;
+        target = fit(games, 0, done, dev).span;
         writeTarget(who, target);
       }
       if (!live()) return;
@@ -362,7 +367,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const reviewMore = useCallback(() => {
     const p = plan.current;
     if (!player || !p || !more || statusRef.current.kind !== "idle") return;
-    writeTarget(player, p.target + more.games);
+    writeTarget(player, p.target + more.span);
     setMore(null);
     sync(player, run.current, storedRef.current);
   }, [player, more, sync]);
