@@ -1,12 +1,13 @@
 // The player's library: which chess.com player this browser follows, their analysed games, and the background work
-// that finds new games and analyses them with Stockfish in a Web Worker, newest first. Every page reads from here.
+// that finds new games and analyses them with Stockfish, newest first, on as many engines as the device can spare
+// (device.ts). Every page reads from here.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Engine, workerTransport } from "../analysis/engine";
 import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
 import { fetchGames, findPlayer, gameId } from "./chesscom";
+import { getDevice, pliesOf, type Device } from "./device";
 import { forget, loadGames, saveGame } from "./store";
 
 const PLAYER_KEY = "prophylaxis.player";
@@ -33,10 +34,47 @@ async function sampleReviews(): Promise<StoredGame[] | null> {
     return null;
   }
 }
-/** The most recent games analysed per player; enough for habits, and about 40 minutes of work the first time. */
+/** The most games analysed per player; how many of them are reviewed depends on the device (BUDGET_MS). */
 export const MAX_GAMES = 100;
 const MONTHS = 24;
 const RECHECK_MS = 2 * 60 * 1000;
+// The first visit reviews as many of the newest games as this device gets through in about five minutes, and at
+// least the 5 that Habits needs, however slow the device; "Review more" adds the same again. Every game is read at
+// the same depth on every device.
+const BUDGET_MS = 5 * 60 * 1000;
+const MIN_GAMES = 5;
+const LOW_BATTERY = 0.2;
+
+const targetKey = (who: string) => `prophylaxis.target.${who.toLowerCase()}`;
+const readTarget = (who: string) => {
+  try {
+    const n = Number(localStorage.getItem(targetKey(who)));
+    return n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+};
+const writeTarget = (who: string, n: number | null) => {
+  try {
+    if (n) localStorage.setItem(targetKey(who), String(n));
+    else localStorage.removeItem(targetKey(who));
+  } catch {
+    // Without storage, the budget is worked out again next visit.
+  }
+};
+
+/** How many games from `from` on fit in one budget on this device, and about how long they take; done games are free. */
+function fit(games: ChessComGame[], from: number, done: Set<string>, device: Device) {
+  let eta = 0;
+  let i = from;
+  for (; i < games.length; i++) {
+    if (done.has(gameId(games[i]))) continue;
+    const ms = device.estimate(pliesOf(games[i].pgn));
+    if (eta + ms > BUDGET_MS && i - from >= MIN_GAMES) break;
+    eta += ms;
+  }
+  return { games: i - from, eta };
+}
 
 export interface Current {
   id: string;
@@ -46,12 +84,16 @@ export interface Current {
   percent: number;
   fen: string | null;
   wins: number[]; // white's winning chances, position by position
+  eta: number; // ms until this game's review is ready
 }
+
+/** Why the reviews are on hold: the player paused them, or the battery is low and not charging. */
+export type Paused = null | "you" | "battery";
 
 export type LibraryStatus =
   | { kind: "idle" }
   | { kind: "checking" }
-  | { kind: "analysing"; done: number; total: number; current: Current | null }
+  | { kind: "analysing"; done: number; total: number; current: Current | null; eta: number; paused: Paused }
   | { kind: "error"; message: string };
 
 interface LibraryValue {
@@ -62,6 +104,11 @@ interface LibraryValue {
   games: GameSummary[];
   practice: PracticePosition[];
   isSample: boolean;
+  /** The next games that could be reviewed after these, and about how long they'd take; null when there are none. */
+  more: { games: number; eta: number } | null;
+  reviewMore: () => void;
+  pause: () => void;
+  resume: () => void;
   start: (username: string) => Promise<void>;
   startSample: () => void;
   leave: () => void;
@@ -81,10 +128,6 @@ export function useLibrary(): LibraryValue {
 
 export const useLibraryStatus = () => useContext(StatusContext);
 
-let engine: Engine | null = null;
-const getEngine = () =>
-  (engine ??= new Engine(workerTransport(new Worker(`${import.meta.env.BASE_URL}engine/stockfish-19-lite-single.js`))));
-
 const readPlayer = () => {
   try {
     return localStorage.getItem(PLAYER_KEY);
@@ -101,19 +144,30 @@ const writePlayer = (player: string | null) => {
   }
 };
 
+interface BatteryLike extends EventTarget {
+  charging: boolean;
+  level: number;
+}
+
 export function LibraryProvider({ children }: { children: ReactNode }) {
   const [player, setPlayer] = useState<string | null>(readPlayer);
   const [stored, setStored] = useState<StoredGame[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState<LibraryStatus>({ kind: "idle" });
+  const [more, setMore] = useState<LibraryValue["more"]>(null);
   const run = useRef(0); // bumps when the player changes, so a stale analysis loop stops
   const lastCheck = useRef(0);
+  const device = useRef<Device | null>(null);
+  const paused = useRef<Paused>(null);
+  const pauses = useRef(0); // counts pauses, so a game that was paused doesn't teach the speed estimate
+  const plan = useRef<{ games: ChessComGame[]; target: number } | null>(null);
 
   const sync = useCallback(async (who: string, token: number, have: StoredGame[]) => {
     const live = () => run.current === token;
     lastCheck.current = Date.now();
     setStatus({ kind: "checking" });
     let todo: ChessComGame[];
+    let dev: Device;
     try {
       // Games the Chrome extension already reviewed come over as they are, instead of being analysed again.
       if (who !== SAMPLE) {
@@ -127,19 +181,40 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         have = [...have, ...imported];
       }
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
+      const ready = getDevice(); // a second's speed check the first time, while chess.com answers
       const all = who === SAMPLE ? await sampleGames() : await fetchGames(who, MONTHS, MAX_GAMES);
-      todo = all.slice(0, MAX_GAMES).filter((g) => !done.has(gameId(g)));
+      dev = device.current = await ready;
+      if (paused.current) dev.pool.pause();
+      const games = all.slice(0, MAX_GAMES);
+      let target = who === SAMPLE ? games.length : readTarget(who);
+      if (target === null) {
+        target = fit(games, 0, done, dev).games;
+        writeTarget(who, target);
+      }
+      if (!live()) return;
+      plan.current = { games, target };
+      todo = games.slice(0, target).filter((g) => !done.has(gameId(g)));
     } catch (e) {
       if (live()) setStatus({ kind: "error", message: (e as Error).message });
       return;
     }
+    const plies = todo.map((g) => pliesOf(g.pgn));
+    // What's left: the rest of this game, then every game after it.
+    const etaFrom = (i: number, percent: number) =>
+      dev.estimate(plies[i]) * (1 - percent / 100) + plies.slice(i + 1).reduce((a, p) => a + dev.estimate(p), 0);
     for (let i = 0; i < todo.length && live(); i++) {
       const game = todo[i];
       const color: Color = game.white.username.toLowerCase() === who.toLowerCase() ? "white" : "black";
-      const current: Current = { id: gameId(game), opponent: game[color === "white" ? "black" : "white"].username, color, plies: 0, percent: 0, fen: null, wins: [] };
-      setStatus({ kind: "analysing", done: i, total: todo.length, current });
+      const current: Current = { id: gameId(game), opponent: game[color === "white" ? "black" : "white"].username, color, plies: plies[i], percent: 0, fen: null, wins: [], eta: dev.estimate(plies[i]) };
+      const show = () => {
+        current.eta = dev.estimate(plies[i]) * (1 - current.percent / 100);
+        setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current }, eta: etaFrom(i, current.percent), paused: paused.current });
+      };
+      show();
+      const started = performance.now();
+      const pausesBefore = pauses.current;
       try {
-        const review = await buildReview(game, who, getEngine(), null, (n, total, stage, frame?: Frame) => {
+        const review = await buildReview(game, who, dev.pool, null, (n, total, stage, frame?: Frame) => {
           if (!live()) return;
           if (frame) {
             current.fen = frame.fen;
@@ -147,22 +222,68 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           }
           current.plies = stage === "positions" ? total : current.plies;
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
-          setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current } });
+          show();
         });
+        if (pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
         const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION };
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
         setStored((s) => [...s.filter((x) => x.review.game.id !== review.game.id), entry]);
       } catch {
-        // A game the analysis can't read (a broken PGN, a variant that slipped through) is skipped.
+        // A game the analysis can't read (a broken PGN, a variant that slipped through) is skipped; so is one
+        // stopped because the player changed.
       }
     }
-    if (live()) setStatus({ kind: "idle" });
+    if (!live()) return;
+    const p = plan.current;
+    const doneNow = new Set([...have.map((s) => s.review.game.id), ...todo.map(gameId)]);
+    const next = p && p.target < p.games.length ? fit(p.games, p.target, doneNow, dev) : null;
+    setMore(next && next.games > 0 ? next : null);
+    setStatus({ kind: "idle" });
   }, []);
+
+  const setPaused = useCallback((reason: Paused) => {
+    if (paused.current === reason) return;
+    paused.current = reason;
+    if (reason) pauses.current++;
+    if (reason) device.current?.pool.pause();
+    else device.current?.pool.resume();
+    setStatus((s) => (s.kind === "analysing" ? { ...s, paused: reason } : s));
+  }, []);
+  const pause = useCallback(() => setPaused("you"), [setPaused]);
+  const resume = useCallback(() => setPaused(null), [setPaused]);
+
+  // A phone or laptop running low, and not charging, waits until it's charging again.
+  useEffect(() => {
+    let battery: BatteryLike | null = null;
+    const check = () => {
+      if (!battery) return;
+      const low = !battery.charging && battery.level <= LOW_BATTERY;
+      if (low && paused.current === null) setPaused("battery");
+      else if (!low && paused.current === "battery") setPaused(null);
+    };
+    (navigator as Navigator & { getBattery?: () => Promise<BatteryLike> })
+      .getBattery?.()
+      .then((b) => {
+        battery = b;
+        check();
+        b.addEventListener("chargingchange", check);
+        b.addEventListener("levelchange", check);
+      })
+      .catch(() => undefined);
+    return () => {
+      battery?.removeEventListener("chargingchange", check);
+      battery?.removeEventListener("levelchange", check);
+    };
+  }, [setPaused]);
 
   // Load the player's saved games, then look for new ones.
   useEffect(() => {
     const token = ++run.current;
+    device.current?.pool.cancel(); // the last player's searches that haven't started
+    if (paused.current === "you") setPaused(null);
+    plan.current = null;
+    setMore(null);
     setLoaded(false);
     setStored([]);
     setStatus({ kind: "idle" });
@@ -188,7 +309,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setStored(reviews);
       setLoaded(true);
     });
-  }, [player, sync]);
+  }, [player, sync, setPaused]);
 
   // Coming back to the tab after a while: check chess.com for games played since.
   const storedRef = useRef(stored);
@@ -212,6 +333,15 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     setPlayer(name);
   }, []);
 
+  // Another budget's worth of older games, once the current ones are done.
+  const reviewMore = useCallback(() => {
+    const p = plan.current;
+    if (!player || !p || !more || statusRef.current.kind !== "idle") return;
+    writeTarget(player, p.target + more.games);
+    setMore(null);
+    sync(player, run.current, storedRef.current);
+  }, [player, more, sync]);
+
   const startSample = useCallback(() => {
     writePlayer(SAMPLE);
     setPlayer(SAMPLE);
@@ -225,6 +355,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const forgetPlayer = useCallback(async () => {
     if (!player) return;
     run.current++;
+    device.current?.pool.cancel();
+    writeTarget(player, null);
     await forget(player.toLowerCase());
     writePlayer(null);
     setPlayer(null);
@@ -247,8 +379,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   }, [player, derived.overview]);
 
   const value = useMemo<LibraryValue>(
-    () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, start, startSample, leave, forgetPlayer }),
-    [player, loaded, stored, derived, start, startSample, leave, forgetPlayer],
+    () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, more, reviewMore, pause, resume, start, startSample, leave, forgetPlayer }),
+    [player, loaded, stored, derived, more, reviewMore, pause, resume, start, startSample, leave, forgetPlayer],
   );
 
   return (

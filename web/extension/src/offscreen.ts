@@ -1,12 +1,18 @@
 // Offscreen page: hosts Stockfish (WebAssembly, in a worker) and turns a finished game into a review.
 import { parsePgn } from "chessops/pgn";
 import { Engine, workerTransport } from "../../src/analysis/engine";
+import { EnginePool } from "../../src/analysis/pool";
 import { buildReview, gameFacts } from "../../src/analysis/review";
 import { ANALYSIS_VERSION } from "../../src/analysis/stats";
 import type { Overview } from "../../src/types";
 import { findGame, type Message, type SiteHabits } from "./shared";
 
-const engine = new Engine(workerTransport(new Worker(chrome.runtime.getURL("engine/stockfish-19-lite-single.js"))));
+// The game just ended and the next may already be starting on chess.com, so the review takes half the cores (at
+// most 4) and leaves the rest for the page.
+const engines = Math.min(Math.max(Math.floor((navigator.hardwareConcurrency || 2) / 2), 1), 4);
+const engine = new EnginePool(
+  Array.from({ length: engines }, () => new Engine(workerTransport(new Worker(chrome.runtime.getURL("engine/stockfish-19-lite-single.js"))))),
+);
 let queue: Promise<void> = Promise.resolve();
 
 async function run(id: string, username: string, habits: SiteHabits | null) {

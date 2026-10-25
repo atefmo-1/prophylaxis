@@ -31,3 +31,13 @@ export const IconLast = () => (
     <path d="M15 4v12M5 4l6 6-6 6" />
   </svg>
 );
+export const IconPause = () => (
+  <svg {...base}>
+    <path d="M7.5 5v10M12.5 5v10" />
+  </svg>
+);
+export const IconPlay = () => (
+  <svg {...base}>
+    <path d="M7 4.5v11l8.5-5.5z" />
+  </svg>
+);

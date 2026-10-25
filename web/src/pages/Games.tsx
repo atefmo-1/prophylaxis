@@ -1,7 +1,8 @@
 // Every game: a sortable-by-date table with the result, accuracy and the habit that cost the most.
 import { useState } from "react";
 import { useGames, useOverview } from "../data";
-import { RESULT_META, accuracy, day, plural, timeControl } from "../lib/format";
+import { RESULT_META, accuracy, day, plural, timeControl, timeLeft } from "../lib/format";
+import { useLibrary, useLibraryStatus } from "../library/Library";
 import { href } from "../router";
 import type { Color, Result } from "../types";
 import "./pages.css";
@@ -21,6 +22,8 @@ const COLORS: { label: string; value: Color | "all" }[] = [
 export function Games() {
   const games = useGames();
   const overview = useOverview();
+  const { more, reviewMore } = useLibrary();
+  const status = useLibraryStatus();
   const [result, setResult] = useState<Result | "all">("all");
   const [color, setColor] = useState<Color | "all">("all");
 
@@ -38,6 +41,14 @@ export function Games() {
           {games.data.length} games, newest first.
           {unplayed > 0 && ` ${plural(unplayed, "more game")} ended before the first move.`}
         </p>
+        {more && status.kind === "idle" && (
+          <p className="games-more">
+            Older games aren't reviewed yet.{" "}
+            <button type="button" className="pbtn" onClick={reviewMore}>
+              Review {plural(more.games, "more game")} · {timeLeft(more.eta)}
+            </button>
+          </p>
+        )}
       </header>
 
       <div className="filters">

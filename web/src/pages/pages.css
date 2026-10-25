@@ -22,6 +22,14 @@
   color: var(--c-ink-2);
 }
 
+.page-top .games-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .pstate {
   padding: 48px 24px;
   color: var(--c-ink-2);

@@ -1,12 +1,15 @@
 // How the background review is going: a compact line in the top bar, and a full view for when there's nothing to
 // show yet (your first game replays on the board as Stockfish reads it).
+import { timeLeft } from "../lib/format";
 import { useLibrary, useLibraryStatus } from "../library/Library";
 import { Board } from "./Board";
+import { IconPause, IconPlay } from "./Icons";
 import "./progress.css";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function ProgressPill() {
+  const { pause, resume } = useLibrary();
   const status = useLibraryStatus();
   if (status.kind === "checking") return <span className="pill">Checking chess.com for new games…</span>;
   if (status.kind === "error")
@@ -18,18 +21,32 @@ export function ProgressPill() {
   if (status.kind !== "analysing") return null;
   const share = (status.done + (status.current?.percent ?? 0) / 100) / status.total;
   return (
-    <span className="pill" aria-live="polite">
-      Reviewing game {status.done + 1} of {status.total}
+    <span className="pill">
+      <span aria-live="polite">
+        Reviewing game {status.done + 1} of {status.total}
+        <span className="pill-eta">{status.paused ? ` · ${pausedLabel(status.paused)}` : ` · ${timeLeft(status.eta)} left`}</span>
+      </span>
       <span className="pill-bar" aria-hidden="true">
         <span style={{ transform: `scaleX(${share})` }} />
       </span>
+      <button
+        type="button"
+        className="pill-btn"
+        onClick={status.paused ? resume : pause}
+        aria-label={status.paused ? "Resume reviewing" : "Pause reviewing"}
+        title={status.paused ? "Resume reviewing" : "Pause reviewing"}
+      >
+        {status.paused ? <IconPlay /> : <IconPause />}
+      </button>
     </span>
   );
 }
 
+export const pausedLabel = (reason: "you" | "battery") => (reason === "battery" ? "paused while the battery is low" : "paused");
+
 /** Shown while the player has no reviewed games yet. */
 export function FirstReview() {
-  const { player } = useLibrary();
+  const { player, resume } = useLibrary();
   const status = useLibraryStatus();
 
   if (status.kind === "error")
@@ -79,8 +96,16 @@ export function FirstReview() {
       </svg>
       <p className="first-foot">
         <span className="num">{c.percent < 85 ? `Position ${wins.length} of ${plies + 1}` : "Scoring better moves for your mistakes"}</span>
-        <span className="num">{c.percent}%</span>
+        <span className="num">{status.paused ? `${c.percent}%` : `${timeLeft(c.eta)} left`}</span>
       </p>
+      {status.paused && (
+        <p className="first-paused">
+          Reviewing is {pausedLabel(status.paused)}.{" "}
+          <button type="button" onClick={resume}>
+            Resume
+          </button>
+        </p>
+      )}
     </div>
   );
 }

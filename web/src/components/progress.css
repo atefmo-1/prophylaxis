@@ -9,6 +9,34 @@
   white-space: nowrap;
 }
 
+.pill-eta {
+  font-weight: 450;
+}
+
+.pill-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--c-ink-2);
+  cursor: pointer;
+}
+
+.pill-btn:hover {
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
+.pill-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .pill--error {
   color: var(--c-loss);
 }
@@ -131,4 +159,26 @@
     border-radius: 0;
     background: transparent;
   }
+
+  /* On a phone, pausing lives in the player menu. */
+  .pill-btn {
+    display: none;
+  }
+}
+
+.first-paused {
+  margin: 12px 0 0;
+  color: var(--c-ink-2);
+}
+
+.first-paused button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }

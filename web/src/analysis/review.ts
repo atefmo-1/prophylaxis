@@ -9,7 +9,7 @@ import type { NormalMove } from "chessops/types";
 import type { Color, GameReview, Move, MoveClass, MoveTag, Overview, Result } from "../types";
 import type { GameFacts } from "./stats";
 import { ENDINGS, TAG_INFO } from "./catalog";
-import type { Engine } from "./engine";
+import type { Analyser } from "./engine";
 import { classify, gameAccuracy, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
 import { detect, toMove } from "./motifs";
 
@@ -39,6 +39,7 @@ export interface Frame {
   win: number; // white's winning chances
 }
 
+/** `done` counts finished searches; frames come in game order, so a live replay never skips back. */
 export type Progress = (done: number, total: number, stage: "positions" | "retries", frame?: Frame) => void;
 
 const terminal = (p: Position) => p.isCheckmate() || p.isStalemate() || p.isInsufficientMaterial();
@@ -76,7 +77,7 @@ export function gameFacts(game: ChessComGame, username: string): GameFacts {
 export async function buildReview(
   game: ChessComGame,
   username: string,
-  engine: Engine,
+  engine: Analyser,
   overview: Overview | null,
   progress?: Progress,
 ): Promise<GameReview> {
@@ -101,13 +102,25 @@ export async function buildReview(
   }
   const n = sans.length;
 
-  // Evaluate every distinct position once
+  // Evaluate every distinct position once. Each lane (one engine) takes a run of consecutive positions, which share
+  // most of what the engine learns reading them.
   const lines = new Map<string, Line[]>();
-  const todo = [...new Set(positions.filter((p) => !terminal(p)).map(fenOf))];
+  const todo = [...new Map(positions.filter((p) => !terminal(p)).map((p) => [epd(fenOf(p)), fenOf(p)])).values()];
+  const lanes = Math.min(engine.lanes, Math.max(todo.length, 1));
+  const laneOf = (i: number) => Math.floor((i * lanes) / todo.length);
+  for (let l = 0; l < lanes; l++) engine.newGame(l);
+  let finished = 0;
+  const searches = todo.map((fen, i) =>
+    engine.analyse(fen, 2, NODES, laneOf(i)).then((found) => {
+      progress?.(++finished, todo.length, "positions");
+      return found;
+    }),
+  );
+  for (const s of searches) s.catch(() => undefined); // if one fails (stopped), the first await below reports it
   for (let i = 0; i < todo.length; i++) {
-    if (!lines.has(epd(todo[i]))) lines.set(epd(todo[i]), await engine.analyse(todo[i], 2, NODES));
-    const top = lines.get(epd(todo[i]))![0];
-    progress?.(i + 1, todo.length, "positions", { fen: todo[i], win: top ? lineWinWhite(top) : 50 });
+    const found = await searches[i];
+    lines.set(epd(todo[i]), found);
+    progress?.(finished, todo.length, "positions", { fen: todo[i], win: found[0] ? lineWinWhite(found[0]) : 50 });
   }
   const linesAt = (p: Position) => (terminal(p) ? null : lines.get(epd(fenOf(p))) ?? []);
   const winWhite = positions.map((p) =>
@@ -190,19 +203,23 @@ export async function buildReview(
   }
 
   // Retry answers: every legal move scored where you went wrong
+  // (on the lane that read the position, where the engine already knows it).
   const retries = moves.filter((m) => m.mine && BAD.includes(m.class) && !m.decided);
-  for (let i = 0; i < retries.length; i++) {
-    const m = retries[i];
-    const before = positions[m.ply - 1];
-    const count = [...before.allDests().values()].reduce((a, d) => a + d.size(), 0);
-    const all = await engine.analyse(fenOf(before), Math.min(count, 60), RETRY_NODES);
-    const wins: Record<string, number> = {};
-    for (const l of all) if (l.pv[0]) wins[l.pv[0]] = Math.round(pov(lineWinWhite(l), m.color === "white") * 10) / 10;
-    const best = Math.max(...Object.values(wins));
-    const accept = Object.keys(wins).filter((u) => wins[u] >= best - RETRY_TOLERANCE && u !== m.uci).sort((a, b) => wins[b] - wins[a]);
-    m.retry = { accept: accept.length ? accept : m.best_uci ? [m.best_uci] : [], wins };
-    progress?.(i + 1, retries.length, "retries");
-  }
+  const laneAt = new Map(todo.map((fen, i) => [epd(fen), laneOf(i)]));
+  let retried = 0;
+  await Promise.all(
+    retries.map(async (m) => {
+      const before = positions[m.ply - 1];
+      const count = [...before.allDests().values()].reduce((a, d) => a + d.size(), 0);
+      const all = await engine.analyse(fenOf(before), Math.min(count, 60), RETRY_NODES, laneAt.get(epd(fenOf(before))) ?? 0);
+      const wins: Record<string, number> = {};
+      for (const l of all) if (l.pv[0]) wins[l.pv[0]] = Math.round(pov(lineWinWhite(l), m.color === "white") * 10) / 10;
+      const best = Math.max(...Object.values(wins));
+      const accept = Object.keys(wins).filter((u) => wins[u] >= best - RETRY_TOLERANCE && u !== m.uci).sort((a, b) => wins[b] - wins[a]);
+      m.retry = { accept: accept.length ? accept : m.best_uci ? [m.best_uci] : [], wins };
+      progress?.(++retried, retries.length, "retries");
+    }),
+  );
 
   // Summary
   const [accWhite, accBlack] = gameAccuracy(winWhite);

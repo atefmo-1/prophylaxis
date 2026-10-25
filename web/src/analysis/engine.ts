@@ -15,8 +15,20 @@ export function workerTransport(worker: Worker): UciTransport {
   };
 }
 
+/**
+ * Anything that reads positions: one engine, or several side by side (pool.ts). A game's searches are split into
+ * `lanes`; each lane's searches run in order on one engine, which starts the game cleared, so the same game gets the
+ * same answers every time on the same device.
+ */
+export interface Analyser {
+  readonly lanes: number;
+  newGame(lane: number): void;
+  analyse(fen: string, multipv: number, nodes: number, lane?: number): Promise<Line[]>;
+}
+
 /** Serialises searches; each resolves with the final line per MultiPV slot, scores from white's side. */
-export class Engine {
+export class Engine implements Analyser {
+  readonly lanes = 1;
   private queue: Promise<unknown> = Promise.resolve();
   private listener: ((line: string) => void) | null = null;
   readonly ready: Promise<void>;
@@ -35,8 +47,17 @@ export class Engine {
     });
   }
 
+  /** Forgets what earlier games taught the engine. */
+  newGame() {
+    this.enqueue(async () => {
+      await this.ready;
+      this.io.send("ucinewgame");
+      await this.waitFor("readyok", "isready");
+    });
+  }
+
   analyse(fen: string, multipv: number, nodes: number): Promise<Line[]> {
-    const run = async () => {
+    return this.enqueue(async () => {
       await this.ready;
       const whiteToMove = fen.split(" ")[1] === "w";
       const lines = new Map<number, Line>();
@@ -62,7 +83,10 @@ export class Engine {
       this.io.send(`go nodes ${nodes}`);
       await done;
       return [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([, l]) => l);
-    };
+    });
+  }
+
+  private enqueue<T>(run: () => Promise<T>): Promise<T> {
     const result = this.queue.then(run, run);
     this.queue = result.catch(() => undefined);
     return result;

@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { ProgressPill } from "./components/Progress";
+import { pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
+import { timeLeft } from "./lib/format";
 import { useTheme, type ThemeChoice } from "./lib/theme";
-import { LibraryProvider, useLibrary } from "./library/Library";
+import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library";
 import { Games } from "./pages/Games";
 import { Habits } from "./pages/Habits";
 import { Practice } from "./pages/Practice";
@@ -38,7 +39,8 @@ function ThemeSwitch() {
 
 /** The player this browser follows, with switching and deleting their data. */
 function PlayerMenu({ player }: { player: string }) {
-  const { leave, forgetPlayer, isSample } = useLibrary();
+  const { leave, forgetPlayer, isSample, pause, resume } = useLibrary();
+  const status = useLibraryStatus();
   const overview = useOverview();
   const rating = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
   const menu = useRef<HTMLDetailsElement>(null);
@@ -52,6 +54,14 @@ function PlayerMenu({ player }: { player: string }) {
         <div className="me-theme">
           Theme <ThemeSwitch />
         </div>
+        {status.kind === "analysing" && (
+          <button type="button" onClick={status.paused ? resume : pause}>
+            {status.paused ? "Resume reviewing" : "Pause reviewing"}
+            <span className="me-note">
+              Game {status.done + 1} of {status.total} · {status.paused ? pausedLabel(status.paused) : `${timeLeft(status.eta)} left`}
+            </span>
+          </button>
+        )}
         {!isSample && (
           <a href={`https://www.chess.com/member/${player}`} target="_blank" rel="noreferrer" onClick={close}>
             Profile on chess.com

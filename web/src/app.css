@@ -329,6 +329,14 @@ p {
   cursor: pointer;
 }
 
+.me-note {
+  display: block;
+  margin-top: 2px;
+  color: var(--c-ink-3);
+  font-size: 13px;
+  font-weight: 450;
+}
+
 .me-menu a:hover,
 .me-menu button:hover {
   background: var(--c-panel-2);

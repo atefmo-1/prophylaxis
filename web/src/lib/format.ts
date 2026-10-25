@@ -45,3 +45,14 @@ export const moveNumber = (ply: number) => Math.ceil(ply / 2);
 export const moveLabel = (ply: number, san: string) => `${moveNumber(ply)}${ply % 2 === 1 ? "." : "…"} ${san}`;
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** A rough time left: "about 15 s", "about 4 min", "about 1 h 20 min". */
+export function timeLeft(ms: number): string {
+  const s = Math.max(ms, 0) / 1000;
+  if (s < 55) return `about ${Math.max(5, Math.round(s / 5) * 5)} s`;
+  const min = Math.max(1, Math.round(s / 60));
+  if (min < 60) return `about ${min} min`;
+  const h = Math.floor(min / 60);
+  const rest = Math.round((min % 60) / 10) * 10;
+  return rest && rest < 60 ? `about ${h} h ${rest} min` : `about ${rest === 60 ? h + 1 : h} h`;
+}
