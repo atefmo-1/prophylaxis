@@ -140,6 +140,8 @@ export const useLibraryStatus = () => useContext(StatusContext);
 
 
 const readPlayer = () => {
+  // "?demo" in the address opens straight on the sample player (the live demo embedded in the case study).
+  if (new URLSearchParams(window.location.search).has("demo")) return SAMPLE;
   try {
     return localStorage.getItem(PLAYER_KEY);
   } catch {

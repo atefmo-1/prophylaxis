@@ -2,7 +2,7 @@
 
 In chess, *prophylaxis* means seeing a problem coming and stopping it before it happens. This does that for your own habits.
 
-**Try it: [atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Enter your chess.com username; nothing to install, no account.
+**Try it: [atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Enter your chess.com username; nothing to install, no account. Or open [the sample player](https://atefmo-1.github.io/prophylaxis/?demo) straight away.
 
 A free chess coach for anyone who plays on chess.com. It covers what chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across all your games to rank the habits that cost you the most.
 
