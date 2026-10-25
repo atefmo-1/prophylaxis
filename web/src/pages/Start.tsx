@@ -44,8 +44,8 @@ export function Start() {
         <div className="start-copy">
           <h1>A free chess coach for your chess.com games</h1>
           <p className="start-lede">
-            Stockfish reviews every game, finds the habits that cost you the most, and turns your own mistakes into
-            practice. It runs in your browser: no account, nothing uploaded.
+            Stockfish reviews your recent games, finds the habits that cost you the most, and turns your own mistakes
+            into practice. It runs in your browser: no account, nothing uploaded.
           </p>
           {known && (
             <div className="start-known">
@@ -107,20 +107,21 @@ export function Start() {
         <li>
           <h2>Get your first review in seconds</h2>
           <p>
-            Your latest game comes first, on every core your device can spare. The rest are reviewed in the background while
-            you read, newest first.
+            Your latest game comes first. Then about five minutes' worth of your recent games are reviewed in the
+            background while you read, newest first, and Games can review more.
           </p>
         </li>
         <li>
           <h2>Add the Chrome extension, if you like</h2>
           <p>
-            After every game on chess.com, the review opens beside the board. <a href={`${REPO}#the-chrome-extension`}>How to install it</a>
+            After each game you finish on chess.com, the review opens in a side panel beside the board.{" "}
+            <a href={`${REPO}#the-chrome-extension-optional`}>How to install it</a>
           </p>
         </li>
       </ol>
 
       <p className="start-note">
-        Your games are public on chess.com already. Your analysis stays in this browser, and you can delete it at any time.
+        Your games are public on chess.com already. Your analysis stays in this browser, and you can delete your reviews at any time.
         Analysis of finished games only, never during play. <a href={REPO}>Open source</a>.
       </p>
     </div>

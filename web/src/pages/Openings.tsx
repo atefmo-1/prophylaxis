@@ -14,7 +14,7 @@ export function Openings() {
       <header className="page-top">
         <h1>Openings</h1>
         <p>
-          Your first ten moves across {plural(played.length, "reviewed game")}, merged into one tree. Click a move to follow
+          Your first ten moves across {plural(played.length, "reviewed game")}, merged into one tree for each colour. Click a move to follow
           it; each one shows how those games went.
         </p>
       </header>

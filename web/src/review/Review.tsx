@@ -6,7 +6,7 @@ import { IconFirst, IconLast, IconNext, IconPrev } from "../components/Icons";
 import { FirstReview } from "../components/Progress";
 import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
-import { read } from "../lib/coach";
+import { keyMoments, read } from "../lib/coach";
 import { chancesAround, explain, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, plural, timeControl } from "../lib/format";
 import { recordAttempt } from "../lib/practice";
@@ -41,7 +41,7 @@ function HabitLine({ review, tags }: { review: ReviewData; tags: MoveTag[] }) {
       {info.title}
       {habit.rank ? ` is your #${habit.rank} habit` : ""}: it shows up in{" "}
       <b>
-        {habit.recent_games} of your last {habit.window} games
+        {habit.recent_games} of the {habit.window} games up to this one
       </b>
       . <a href={href({ name: "patterns" })}>See the pattern</a>
     </p>
@@ -52,7 +52,7 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: ()
   const coach = read(review);
   const g = review.game;
   const count = (side: "mine" | "theirs", c: MoveClass) => review.summary[side][c] ?? 0;
-  const k = review.key_moments.length;
+  const k = keyMoments(review).length;
   return (
     <div className="summary">
       {/* Reviews saved before "Lost by resignation" said only "Resigned". */}
@@ -162,7 +162,7 @@ export function ReviewView({
 }) {
   const g = review.game;
   const n = review.moves.length;
-  const moments = review.key_moments;
+  const moments = keyMoments(review);
   const openOnMoments = startMode === "moments" && initialPly === null && moments.length > 0;
   const [mode, setMode] = useState<Mode>(
     initialPly !== null ? { kind: "moves" } : openOnMoments ? { kind: "moments", step: 0 } : { kind: "summary" },
@@ -370,7 +370,7 @@ export function ReviewView({
                 </h2>
                 <p>
                   {moments.every((p) => attempts[p]?.status === "found")
-                    ? "You found every one. They come back in practice in a few days, to make them stick."
+                    ? "You found every one. They come back in practice later, to make them stick."
                     : "The positions you didn't find come back in practice tomorrow."}
                 </p>
                 <div className="summary-actions">
@@ -453,7 +453,7 @@ function MomentCard({
 }) {
   const m = review.moves[ply - 1];
   const g = review.game;
-  const total = review.key_moments.length;
+  const total = keyMoments(review).length;
   const [before, after] = chancesAround(review, ply - 1);
   const wins = m.retry?.wins ?? {};
   const lastTry = attempt.tries[attempt.tries.length - 1];
@@ -467,7 +467,7 @@ function MomentCard({
       <p className="coach-step">
         Key moment {step + 1} of {total}
         <span className="coach-dots" aria-hidden="true">
-          {review.key_moments.map((p, i) => (
+          {keyMoments(review).map((p, i) => (
             <i key={p} data-on={i <= step || undefined} />
           ))}
         </span>

@@ -29,9 +29,9 @@ const AGAINST: Record<string, { title: string; how: string }> = {
   time_pressure: { title: "Make it a long game", how: "Keep pieces on and the position busy, so their clock runs down." },
   rushed: { title: "Give them something to think about", how: "Quiet positions with a trap in them reward patience; they play fast." },
   missed_free_piece: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
-  missed_fork: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
-  missed_tactic: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
-  missed_mate: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_fork: { title: "They miss chances", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_tactic: { title: "They miss chances", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_mate: { title: "They miss chances", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
 };
 
 const PHASE_TIP: Record<string, string> = {
@@ -52,8 +52,9 @@ export function tipsAgainst(them: Overview, me: Overview | null, name: string): 
   for (const w of them.weaknesses.slice(0, 4)) {
     const k = w.games.k;
     const how = AGAINST[w.tag];
-    if (!how || k < MIN_HABIT_GAMES || used.has(how.title)) continue;
-    used.add(how.title);
+    // Habits with the same advice (the "missed" ones) make one tip, from the costliest of them.
+    if (!how || k < MIN_HABIT_GAMES || used.has(how.how)) continue;
+    used.add(how.how);
     const example = [w.latest, ...w.examples].find((e) => e && !shown.has(`${e.game_id}:${e.ply}`)) ?? null;
     if (example) shown.add(`${example.game_id}:${example.ply}`);
     tips.push({ title: how.title, why: `${name}: ${w.title.toLowerCase()} in ${k} of their last ${w.games.n} games. ${how.how}`, example });
@@ -75,7 +76,7 @@ export function tipsAgainst(them: Overview, me: Overview | null, name: string): 
 
   // The clock.
   const lostOnTime = them.clock.lost_on_time;
-  if (lostOnTime >= 2 && lostOnTime / games >= 0.1 && !used.has(AGAINST.time_pressure.title)) {
+  if (lostOnTime >= 2 && lostOnTime / games >= 0.1 && !used.has(AGAINST.time_pressure.how)) {
     tips.push({ title: "Don't rush the end", why: `${name} lost ${lostOnTime} of ${games} games on time. If the position is level, keep playing.` });
   }
 

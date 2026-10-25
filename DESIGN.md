@@ -15,10 +15,12 @@ colors:
   current-move: "rgb(61 124 201 / 0.32)"
   square-light: "#f0d9b5"
   square-dark: "#b58863"
+  grade-brilliant: "#1baca6"
   grade-great: "#5b8baf"
   grade-best: "#81b64c"
   grade-excellent: "#96bc4b"
   grade-good: "#95a88a"
+  grade-book: "#a88865"
   grade-inaccuracy: "#f0b93a"
   grade-mistake: "#e5872b"
   grade-miss: "#e8613a"
@@ -143,7 +145,7 @@ components:
 
 A chess-native review room. Everything a player already knows from chess.com and lichess stays where they expect it: the board first and as large as the viewport allows, an eval bar on its edge, player strips above and below, a two-column scoresheet, an advantage graph, and chess.com's move-grade names and colour ramp. The chrome around that is deliberately quiet: three near-black greys, warm off-white ink in three strengths, one blue.
 
-Colour has a job here. The board is the only large warm surface, and the grade ramp (great blue through blunder red) is the only chromatic vocabulary; the chrome never competes with either. Density is that of a tool, not a page: 15px body, tight rows, numbers in tabular figures, sections separated by hairlines and tonal steps rather than ornament. There is no decorative layer, no invented layout, no costume styling.
+Colour has a job here. The board is the only large warm surface, and the grade ramp (brilliant teal and great blue through blunder red, with a brown for book moves) is the only chromatic vocabulary; the chrome never competes with either. Density is that of a tool, not a page: 15px body, tight rows, numbers in tabular figures, sections separated by hairlines and tonal steps rather than ornament. There is no decorative layer, no invented layout, no costume styling.
 
 **Key Characteristics:**
 - Dark, flat, tonal chrome in three steps (page, panel, raised).
@@ -157,7 +159,7 @@ Colour has a job here. The board is the only large warm surface, and the grade r
 A near-neutral dark scale with a faint cool cast, warm off-white ink, one mid blue, a brown board, and chess.com's grade ramp as the only other colour.
 
 ### Primary
-- **Move Blue** (accent): primary buttons ("Play it", "Next"), the skip link, text selection. Lifts to **Move Blue Hover** on hover.
+- **Move Blue** (accent): primary buttons ("Review the key moment", "Next position", "Finish"), the skip link, text selection. Lifts to **Move Blue Hover** on hover.
 - **Pale Move Blue** (accent-ink): the light form of the accent where it sits on dark as a line or text: focus rings, the active-tab underline, the graph cursor, coach progress dots, inline links.
 - **Current Move Wash** (current-move): the translucent blue behind the scoresheet cell of the move being shown.
 
@@ -165,7 +167,7 @@ A near-neutral dark scale with a faint cool cast, warm off-white ink, one mid bl
 - **Classic Board** (square-light, square-dark): the cream and mid-brown board squares. The dark square also backs the board frame and colours the coordinates on light squares; the light square colours them on dark squares.
 
 ### Tertiary: the grade ramp
-- **Great** (grade-great), **Best** (grade-best), **Excellent** (grade-excellent), **Good** (grade-good), **Inaccuracy** (grade-inaccuracy), **Mistake** (grade-mistake), **Miss** (grade-miss), **Blunder** (grade-blunder): chess.com's names and hues. Used as badge fills, graph dots for inaccuracy and worse, and (as lighter tints for contrast on dark) the grade name in the coach card. Win/positive states borrow the Best green; loss/negative states borrow the Blunder red family.
+- **Brilliant** (grade-brilliant), **Great** (grade-great), **Best** (grade-best), **Excellent** (grade-excellent), **Good** (grade-good), **Book** (grade-book), **Inaccuracy** (grade-inaccuracy), **Mistake** (grade-mistake), **Miss** (grade-miss), **Blunder** (grade-blunder): chess.com's names and hues. Used as badge fills, the graph's dots on a game's key moments, and (as lighter tints for contrast on dark) the grade name in the coach card. Win/positive states borrow the Best green; loss/negative states borrow the Blunder red family.
 
 ### Neutral
 - **Page** (page): the app background and top bar.
@@ -193,7 +195,7 @@ Both themes share every token name; only values change. Dark is the default. Lig
 **Character:** One plain, slightly warm grotesque does every job; hierarchy comes from weight (500, 550, 600, 650, 700) and small negative tracking on headings, not from a second family.
 
 ### Hierarchy
-- **Page title** (700, 28px, 1.15, -0.02em): the H1 of Habits, Practice and Games.
+- **Page title** (700, 28px, 1.15, -0.02em): the H1 of Habits, Games, Openings and Compare (Review and Practice have a visually hidden H1).
 - **Headline** (700, 22px, 1.2-1.25, -0.015em): the review report-card title and the #1 habit heading.
 - **Title** (700, 18-19px, 1.3, -0.01em): the coach card heading and page section headings.
 - **Body** (400, 15px, 1.5): prose, capped at 60-72ch on pages.
@@ -211,7 +213,7 @@ The review screen is a fixed three-column grid: a 16px eval bar, the board, and 
 
 Below 900px the review stacks: player strip, a horizontal 8px eval bar, a full-width board, the other strip, then the panel at natural height with the scoresheet scrolling sideways.
 
-Habits, Practice and Games are a centred 1080px column (32px top, 24px sides, 72px bottom; 16px sides under 560px). Sections are spaced 44px apart; a heading sits over a one-line muted lede and its content. Grids collapse 3 → 2 → 1 columns at 860px and 560px.
+Habits, Games, Openings and Compare are a centred 1080px column; Practice and Puzzles use the review's board-and-panel grid (32px top, 24px sides, 72px bottom; 16px sides under 560px). Sections are spaced 44px apart; a heading sits over a one-line muted lede and its content. Grids collapse 3 → 2 → 1 columns at 860px and 560px.
 
 The top bar is 52px, sticky, on the page colour with a hairline beneath. Spacing works in a 6/8/16/24 rhythm with 10-14px used inside dense rows.
 
@@ -228,7 +230,7 @@ Flat and tonal. Depth is three surface steps (page, panel, raised) plus hairline
 - **Focus ring** (`outline: 2px solid` Pale Move Blue, `2px` offset): every focusable element.
 
 ### Named Rules
-**The Only Lifted Thing Rule.** The board is the one object that casts a shadow. Everything else sits flat and separates by tone.
+**The Only Lifted Thing Rule.** On the page, the board is the one object that casts a shadow; everything else sits flat and separates by tone. Things that float above the page (the player menu, the "Type your move" field) lift with a soft shadow too.
 
 ## Shapes
 
@@ -246,13 +248,13 @@ Quiet, solid, small.
 - **Disabled:** 35% opacity.
 
 ### Tabs
-- Review panel and Practice tabs: no fill, Muted Ink labels, a 2px inset underline in Pale Move Blue on the selected tab, over a hairline baseline.
+- Review panel tabs (Summary, Key moments, Moves): no fill, Muted Ink labels, a 2px inset underline in Pale Move Blue on the selected tab, over a hairline baseline.
 
 ### Segmented control
 - Games filters: a Panel-coloured 8px track with 3px padding; the selected option takes the Raised fill and Ink.
 
 ### Navigation
-- Top bar links: Soft Ink, 550 weight, 6px-rounded; hover and current page take the Raised fill and Ink. Brand hides under 640px, the player name under 400px.
+- Top bar links: Soft Ink, 550 weight, 6px-rounded; hover and current page take the Raised fill and Ink. Below 1100px the theme switch moves into the player menu; the brand hides under 800px; under 640px the player name is cut to fit and the rating hides, and the sections scroll sideways inside the bar.
 
 ### Cards / Containers
 - **Review panel:** Panel fill, 8px corners, no border, internal hairlines between head, coach card, scoresheet and footer.
@@ -260,13 +262,13 @@ Quiet, solid, small.
 - **Callouts:** feedback and "the fix" sit on the Raised fill at 6px; feedback tints to a translucent grade red or green for wrong and right.
 
 ### Grade badge (signature)
-The SVG circle in the grade's colour with a white mark: star (best), thumbs-up (excellent), check (good), cross (miss), and chess annotation symbols for great (!), inaccuracy (?!), mistake (?) and blunder (??). 18px in lists and the scoresheet, 26px on the board at the top-right corner of the destination square. The grade is always named in text nearby.
+The SVG circle in the grade's colour with a white mark: star (best), thumbs-up (excellent), check (good), a book (book), cross (miss), and chess annotation symbols for brilliant (!!), great (!), inaccuracy (?!), mistake (?) and blunder (??). 18px in lists and the scoresheet, 26px on the board at the top-right corner of the destination square. The grade is always named in text nearby.
 
 ### Scoresheet
 Two-column move list with a 44px move-number gutter; even rows carry a 2.5% white wash. The player's own moves are Ink at 650; the opponent's are Soft Ink. The current move takes the Current Move Wash. Under 900px it becomes a single horizontal scrolling row.
 
 ### Eval bar and graph
-The eval bar is Eval White over Eval Black, eased (320ms) to the current evaluation, with a thin orange midline; it is vertical beside the board and horizontal on narrow screens. The 88px advantage graph uses the same white at 12% for its area, a light line, grade-coloured dots on inaccuracies and worse, phase dividers, and a Pale Move Blue cursor.
+The eval bar is Eval White over Eval Black, eased (320ms) to the current evaluation, with a thin orange midline; it is vertical beside the board and horizontal on narrow screens. The 88px advantage graph uses the same white at 12% for its area, a light line, grade-coloured dots on the game's key moments, phase dividers, and a Pale Move Blue cursor.
 
 ### Board arrows
 Best line in green (#629924), the played move in blue (#3b78c7), threats in red (#d43b32), all at 80-85% opacity. Last move squares use the lichess-style olive highlight.

@@ -142,7 +142,10 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
 
       <section className="block" aria-labelledby="side-title">
         <h2 id="side-title">Side by side</h2>
-        <p className="block-lede">Your last {plural(me.player.played, tc + " game")} against theirs. A side gets the edge only when the gap is bigger than the noise.</p>
+        <p className="block-lede">
+          Your last {plural(me.player.played, tc + " game")} against theirs; the skill areas use the latest 20 of each. A side gets the edge
+          only when the gap is clear: a set margin for each area, and ranges that don't overlap for mistake rates.
+        </p>
         <div className="table-scroll">
           <table className="ptable ptable--grid cmp-table">
             <thead>
@@ -262,7 +265,7 @@ export function Compare({ player }: { player: string | null }) {
       <header className="page-top">
         <h1>Compare</h1>
         <p>
-          You against any chess.com player: their last {COMPARE_GAMES} {tc} games, reviewed in your browser like yours, and
+          You against any chess.com player: their last {COMPARE_GAMES} rated {tc} games from the past year, reviewed in your browser like yours, and
           how to play them.
         </p>
       </header>
@@ -306,7 +309,7 @@ export function Compare({ player }: { player: string | null }) {
       {shown && enough && (
         <section className="block" aria-labelledby="their-openings-title">
           <h2 id="their-openings-title">{name}'s openings</h2>
-          <p className="block-lede">What they play and how it goes for them, from their side. Games open on chess.com.</p>
+          <p className="block-lede">What they play and how it goes for them, from their side.{lib.isSample ? "" : " Games open on chess.com."}</p>
           <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => (g.url.startsWith("https://www.chess.com/") ? g.url : null)} />
         </section>
       )}

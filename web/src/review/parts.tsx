@@ -4,6 +4,7 @@ import { ClassIcon } from "../components/ClassIcon";
 import { chancesAround } from "../lib/explain";
 import { moveLabel } from "../lib/format";
 import type { Color, GameReview, Move, MoveClass } from "../types";
+import { keyMoments } from "../lib/coach";
 
 const NOTABLE: MoveClass[] = ["brilliant", "great", "inaccuracy", "mistake", "miss", "blunder"];
 
@@ -183,7 +184,7 @@ export function Graph({
             ))}
           <path className="g-area" d={area} />
           <path className="g-line" d={line} />
-          {review.key_moments.map((ply) => {
+          {keyMoments(review).map((ply) => {
             const m = review.moves[ply - 1];
             return <circle key={ply} className={`g-dot g-dot--${m.class}`} cx={x(ply)} cy={y(series[ply])} r={4.5} />;
           })}

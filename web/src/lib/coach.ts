@@ -36,11 +36,14 @@ export function momentAt(review: GameReview, ply: number): Moment {
   return { ply, index, label: moveLabel(ply, m.san, m.color), cls: m.class, before, after, loss: m.win_loss, why, best: m.best };
 }
 
+/** The key moments worth replaying: reviews saved before decided positions were left out may still list them. */
+export const keyMoments = (review: GameReview) => review.key_moments.filter((ply) => !review.moves[ply - 1]?.decided);
+
 export function read(review: GameReview): CoachRead {
   const g = review.game;
   const moves = Math.ceil(review.moves.length / 2);
   const headline = `${g.ending} in ${moves} moves.`;
-  const moments = review.key_moments.map((ply) => momentAt(review, ply));
+  const moments = keyMoments(review).map((ply) => momentAt(review, ply));
 
   let story: string;
   const turn = [...moments].sort((a, b) => b.loss - a.loss)[0];

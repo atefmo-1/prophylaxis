@@ -1,5 +1,18 @@
 # Prophylaxis: Plan & Architecture
 
+> **This is the original plan, written before building (October 2026), and kept as a record.** Much changed on the way,
+> so where it and the code disagree, the code and [README.md](README.md) are right. The main changes:
+> - Everything runs in the visitor's browser: Stockfish 19 Lite as WebAssembly, an ONNX tactic model, IndexedDB.
+>   There is no backend, no FastAPI server and no LLM; the Python pipeline (`src/coach`, full Stockfish 19,
+>   MultiPV 2) is the reference.
+> - The site's pages are Review, Habits, Practice, Games, Openings and Compare, built with chessground and its own
+>   SVG charts.
+> - The extension (`web/extension`) runs its own analysis in an offscreen page and reviews a game once chess.com's
+>   public archive lists it.
+> - Tags, stats and practice differ in detail: clock tags are `time_pressure` and `rushed`; mistake rates are the share
+>   of moves that were mistakes or worse; practice uses fixed steps of 1, 3, 7 and 21 days.
+> - The repo is `src/coach` (Python), `web` (site and extension) and `ml` (the tactic classifier).
+
 A personal chess coach for chess.com players. It covers what chess.com puts behind its paywall (Game Review, Move Explanations, Advanced Stats) and adds something chess.com doesn't do: it analyzes **all** of your games together to find recurring weaknesses and turn them into training.
 
 ---

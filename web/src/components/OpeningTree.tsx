@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { StoredGame } from "../analysis/stats";
 import { bookKey, loadOpeningNames } from "../analysis/book";
 import { day, plural, share } from "../lib/format";
-import { accuracy, branches, buildTree, moveLabel, score, type TreeNode } from "../lib/openingTree";
+import { accuracy, branches, buildTree, moveLabel, score, TREE_DEPTH, type TreeNode } from "../lib/openingTree";
 import { RESULT_META } from "../lib/format";
 import type { Color } from "../types";
 import { Chess } from "chessops/chess";
@@ -178,7 +178,7 @@ export function OpeningTree({
             </p>
           </>
         ) : (
-          <p className="muted">No game went further than this in the first {Math.floor(nodes.length / 2)} moves.</p>
+          <p className="muted">{ply < TREE_DEPTH ? "Every game that got here ended here." : "The tree stops at ten moves each."}</p>
         )}
 
         <H className="otree-h">Latest games from here</H>

@@ -19,6 +19,15 @@ import "./pages.css";
 import { LoadError } from "../components/LoadError";
 
 const SESSION = 5;
+const DAY = 24 * 60 * 60 * 1000;
+
+/** When a position comes back, from its schedule: "back tomorrow", "back in 3 days", "back in a week". */
+function backIn(game: string, ply: number): string {
+  const item = loadPractice().find((i) => i.game === game && i.ply === ply);
+  if (!item) return "";
+  const days = Math.max(1, Math.round((item.due - Date.now()) / DAY));
+  return days === 1 ? "back tomorrow" : days === 7 ? "back in a week" : days === 21 ? "back in 3 weeks" : `back in ${days} days`;
+}
 
 function buildSession(pool: PracticePosition[], tag: string | null, rank: Map<string, number>): PracticePosition[] {
   const now = Date.now();
@@ -56,10 +65,29 @@ export function Practice({ tag }: { tag: string | null }) {
   if (pool.status === "error") return <LoadError what="practice positions" detail={pool.error} />;
   if (!ready) return <div className="page" aria-busy="true" />;
   if (none) return <NotEnough title="Practice needs a few games" when="Positions appear here as soon as a reviewed game has a mistake to try again." />;
-  return <Session key={`${tag}-${round}`} session={session} tag={tag} info={info} onAgain={() => setRound((r) => r + 1)} />;
+  // When there's nothing to practice: is anything scheduled for this habit, and when is the next one due?
+  const matching = pool.data.filter((p) => !tag || p.tags.some((t) => t.tag === tag));
+  const keys = new Set(matching.map((p) => `${p.game}-${p.ply}`));
+  const next = loadPractice()
+    .filter((i) => keys.has(`${i.game}-${i.ply}`))
+    .reduce((a, i) => Math.min(a, i.due), Infinity);
+  const empty = { any: matching.length > 0, next: Number.isFinite(next) ? next : null };
+  return <Session key={`${tag}-${round}`} session={session} tag={tag} info={info} empty={empty} onAgain={() => setRound((r) => r + 1)} />;
 }
 
-function Session({ session, tag, info, onAgain }: { session: PracticePosition[]; tag: string | null; info: Map<string, TagInfo>; onAgain: () => void }) {
+function Session({
+  session,
+  tag,
+  info,
+  empty,
+  onAgain,
+}: {
+  session: PracticePosition[];
+  tag: string | null;
+  info: Map<string, TagInfo>;
+  empty: { any: boolean; next: number | null };
+  onAgain: () => void;
+}) {
   const [step, setStep] = useState(0);
   const [attempt, setAttempt] = useState<Attempt>(fresh);
   const [results, setResults] = useState<boolean[]>([]);
@@ -70,7 +98,11 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
       <div className="page">
         <header className="page-top">
           <h1>{title}</h1>
-          <p>Nothing to practice right now: every position here is scheduled for later. Come back tomorrow.</p>
+          <p>
+            {!empty.any
+              ? "None of your mistakes with this habit can be practiced yet: practice uses mistakes, misses and blunders, and so far this habit has only come with smaller slips."
+              : `Nothing to practice right now: every position here is scheduled for later. The next one is due ${empty.next ? day(empty.next) : "soon"}.`}
+          </p>
         </header>
         <div className="focus-actions">
           {tag && (
@@ -98,8 +130,8 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
             {found === 0
               ? "These are the positions that cost you games, so missing them at first is normal. Each one comes back tomorrow."
               : found === session.length
-                ? "Every one found. They come back in a few days, to make them stick."
-                : "The ones you found come back in a few days; the ones you missed come back tomorrow."}
+                ? "Every one found. Each comes back later, after a longer gap every time you find it."
+                : "The ones you missed come back tomorrow; the ones you found come back later, after a longer gap every time."}
           </p>
         </header>
         <ol className="session-recap">
@@ -109,7 +141,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
               <span>
                 <b>{moveLabel(s.ply, s.san, s.color)}</b> vs {s.opponent}
               </span>
-              <span className="muted">{results[i] ? "found, back in a few days" : "back tomorrow"}</span>
+              <span className="muted">{backIn(s.game, s.ply)}</span>
               <a href={href({ name: "game", id: s.game, ply: s.ply })}>See it in the game</a>
             </li>
           ))}

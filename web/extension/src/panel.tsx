@@ -66,7 +66,6 @@ function useGame() {
 const LINES = [
   "Stockfish is reading every position of your game.",
   "Looking for the moment the game turned.",
-  "Checking each mistake against your habits.",
   "Comparing your moves with your opponent's.",
   "Lining up retry puzzles from your own moves.",
 ];
@@ -83,7 +82,7 @@ function Analysing({ percent, live }: { percent: number; live?: Live }) {
   const plies = Math.max(live?.plies ?? 0, wins.length, 1);
   const now = wins[wins.length - 1] ?? 50;
   const points = wins.map((w, i) => `${(i / plies) * 100},${100 - w}`).join(" ");
-  const line = percent >= 85 ? "Scoring every move you could have played instead." : LINES[tip];
+  const line = percent >= 85 ? "Scoring better moves for your mistakes." : LINES[tip];
 
   return (
     <div className="xp-live" aria-live="polite">
@@ -104,7 +103,7 @@ function Analysing({ percent, live }: { percent: number; live?: Live }) {
       </svg>
       <div className="xp-live-foot">
         <span className="num">
-          {percent < 85 ? `Position ${wins.length} of ${plies + 1}` : "Almost done"}
+          {percent < 85 ? `Position ${Math.min(wins.length, plies)} of ${plies}` : "Almost done"}
         </span>
         <span className="num">{percent}%</span>
       </div>
@@ -244,7 +243,7 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
       <label>
         Your Prophylaxis site
         <input value={settings.siteUrl} type="url" required onChange={(e) => setSettings({ ...settings, siteUrl: e.target.value.trim() })} />
-        <small>Where Habits, Practice and All games open. Games reviewed here show up there too.</small>
+        <small>Where Habits, Practice and Games open. Your last 15 reviews here show up there too.</small>
       </label>
       <button type="submit" className="xp-btn xp-btn--primary">
         {saved ? "Saved" : "Save"}
@@ -306,7 +305,7 @@ function App() {
             <a href={href({ name: "patterns" })}>Habits</a>
             <a href={href({ name: "practice", tag: null })}>Practice</a>
             <a href={href({ name: "games" })}>
-              All games
+              Games
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
                 <path d="M4.5 2.5h5v5M9.5 2.5 3 9" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

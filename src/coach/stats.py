@@ -682,7 +682,8 @@ def game_review(conn: sqlite3.Connection, game_id: str, context: dict | None = N
         tags[t["ply"]].append({"tag": t["tag"], "detail": json.loads(t["detail"] or "{}")})
 
     mine = [m for m in moves if m["is_mine"]]
-    costliest = sorted((m for m in mine if m["move_class"] in MISTAKES), key=lambda m: -m["win_loss"])[:3]
+    # Key moments are puzzles, so a position where the game was already decided isn't one.
+    costliest = sorted((m for m in mine if m["move_class"] in MISTAKES and not _decided(m)), key=lambda m: -m["win_loss"])[:3]
     key_moments = sorted(costliest, key=lambda m: m["ply"])
 
     # Each habit seen in this game: its overall rank, and how many of the last 10 games up to this one show it

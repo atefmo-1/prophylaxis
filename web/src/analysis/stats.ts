@@ -29,7 +29,7 @@ const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
 const CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const HABIT_WINDOW = 10;
 const RECENT_GAMES = 20;
-const SKILL_RECENT = 20;
+export const SKILL_RECENT = 20;
 const SESSION_GAP_S = 30 * 60;
 const SAFETY_TAGS = [
   "hanging_piece", "allowed_fork", "lost_material", "allowed_mate",

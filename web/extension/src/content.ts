@@ -130,7 +130,7 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
   style.textContent = CSS;
   const card = el("section", { className: "card" });
   card.setAttribute("aria-label", "Prophylaxis game review");
-  const close = el("button", { className: "close", title: "Hide for this game" }, "×");
+  const close = el("button", { className: "close", title: "Hide" }, "×");
   close.setAttribute("aria-label", "Hide");
   close.onclick = () => {
     dismissed.add(id);
@@ -151,7 +151,7 @@ function render(id: string, state: GameState | null, review: GameReview | null) 
     again.onclick = () => send({ type: "analyse", id });
     card.append(el("p", {}, `Couldn't review this game: ${state.message}`), el("div", { className: "actions" }, again));
   } else if (review) {
-    const moments = review.key_moments.map((p) => review.moves[p - 1]);
+    const moments = review.key_moments.map((p) => review.moves[p - 1]).filter((m) => m && !m.decided);
     const biggest = [...moments].sort((a, b) => b.win_loss - a.win_loss)[0];
     if (!biggest) {
       card.append(el("p", {}, `${review.game.ending}. No mistakes or blunders from you. Accuracy ${review.game.accuracy?.toFixed(1)}.`));

@@ -17,7 +17,7 @@ export function ProgressPill() {
   if (status.kind === "error")
     return (
       <span className="pill pill--error" title={status.message}>
-        Couldn't reach chess.com
+        Couldn't load your games
       </span>
     );
   if (status.kind !== "analysing") return null;

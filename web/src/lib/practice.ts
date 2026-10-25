@@ -1,4 +1,4 @@
-// Positions to practise again, kept in this browser. Spaced repetition: missed → tomorrow, found → 3 days, then a week.
+// Positions to practise again, kept in this browser. Spaced repetition: missed → tomorrow, found → 3 days, then a week, then 3 weeks.
 export interface PracticeItem {
   game: string;
   ply: number;

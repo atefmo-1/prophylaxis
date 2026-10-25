@@ -4,12 +4,14 @@ import { Board, type Arrow } from "../components/Board";
 import { BarRows, GameChart, Legend, PairedBars, RateRows } from "../components/charts";
 import { ClassIcon } from "../components/ClassIcon";
 import { useOverview } from "../data";
+import { useLibrary } from "../library/Library";
 import { CLASS_META, RESULT_META, day, plural, share } from "../lib/format";
 import { hasPuzzles } from "../lib/puzzles";
 import { href } from "../router";
 import type { MoveClass, Overview, Skill, Weakness } from "../types";
 import "./pages.css";
 import { NotEnough } from "../components/Progress";
+import { SKILL_RECENT } from "../analysis/stats";
 import { LoadError } from "../components/LoadError";
 
 const MIN_GAMES = 5;
@@ -47,6 +49,8 @@ const formatSkill = (s: Skill, v: number | null) =>
   v === null ? "–" : s.key === "tactics" ? v.toFixed(1) : s.unit === "accuracy" ? v.toFixed(0) : `${Math.round(v)}%`;
 
 function Focus({ w }: { w: Weakness }) {
+  // A session takes up to five of this habit's positions; say how many there really are.
+  const positions = useLibrary().practice.filter((p) => p.tags.some((t) => t.tag === w.tag)).length;
   const ex = w.latest ?? w.examples[0];
   const arrows: Arrow[] = ex ? [{ uci: ex.played_uci, brush: "played" }] : [];
   if (ex?.best_uci && ex.best_uci !== ex.played_uci) arrows.push({ uci: ex.best_uci, brush: "best" });
@@ -65,9 +69,11 @@ function Focus({ w }: { w: Weakness }) {
         <p>{w.what}</p>
         <p className="focus-fix">{w.fix}</p>
         <div className="focus-actions">
-          <a className="pbtn pbtn--primary" href={href({ name: "practice", tag: w.tag })}>
-            Practice 5 of these
-          </a>
+          {positions > 0 && (
+            <a className="pbtn pbtn--primary" href={href({ name: "practice", tag: w.tag })}>
+              {positions >= 5 ? "Practice 5 of these" : positions === 1 ? "Practice this one" : `Practice these ${positions}`}
+            </a>
+          )}
           {hasPuzzles(w.tag) && (
             <a className="pbtn" href={href({ name: "puzzles", tag: w.tag })}>
               Puzzles like these
@@ -93,7 +99,7 @@ function Skills({ skills, played }: { skills: Skill[]; played: number }) {
       <p className="block-lede">
         {played > games
           ? `Your last ${games} games, compared with the ${played - games} before them.`
-          : `Your ${games} games so far. Once you have more than ${games}, each area compares your recent games with the ones before.`}
+          : `Your ${games} games so far. Once you have more than ${SKILL_RECENT}, each area compares your last ${SKILL_RECENT} with the ones before.`}
       </p>
       <ul className="skills">
         {skills.map((s) => (
@@ -178,7 +184,7 @@ function Trends({ data }: { data: Overview }) {
   return (
     <section className="block" aria-labelledby="trends-title">
       <h2 id="trends-title">Trends</h2>
-      <p className="block-lede">Every game since you started, oldest on the left. Hover for the game.</p>
+      <p className="block-lede">Every reviewed game, oldest on the left; the rating chart shows your {p.rating_time_class} games. Hover for the game.</p>
       <div className="cards">
         <Card title={`${kind} rating`} takeaway={`From ${p.start_rating} to ${p.rating}, with a peak of ${p.peak}.`}>
           <GameChart
@@ -233,7 +239,7 @@ function Trends({ data }: { data: Overview }) {
 
 function Mistakes({ data }: { data: Overview }) {
   const speed = data.clock.speed.filter((b) => b.mistake_rate);
-  const slowWorse = speed.length > 1 && speed[speed.length - 1].mistake_rate!.rate > speed[0].mistake_rate!.rate;
+  const worstSpeed = speed.filter((b) => b.mistake_rate).sort((a, b) => b.mistake_rate!.rate - a.mistake_rate!.rate)[0];
   const worstPhase = [...data.phases].sort((a, b) => (b.mistake_rate?.rate ?? 0) - (a.mistake_rate?.rate ?? 0))[0];
   return (
     <section className="block" aria-labelledby="where-title">
@@ -247,7 +253,7 @@ function Mistakes({ data }: { data: Overview }) {
           takeaway={
             <>
               {worstPhase && <>The {worstPhase.phase} is your weakest phase. </>}
-              {data.first_mistake_move !== null && <>Your first mistake usually comes by move {data.first_mistake_move}.</>}
+              {data.first_mistake_move !== null && <>In half your games with a mistake, the first comes by move {data.first_mistake_move}.</>}
             </>
           }
         >
@@ -259,9 +265,11 @@ function Mistakes({ data }: { data: Overview }) {
         <Card
           title="By time spent on the move"
           takeaway={
-            slowWorse
-              ? "Your slowest moves go wrong most: hard positions take longer, so long thinks mark the hard positions."
-              : "Your fastest moves go wrong most."
+            worstSpeed
+              ? worstSpeed === speed[speed.length - 1] && speed.length > 1
+                ? `Moves that took ${worstSpeed.label.toLowerCase()} go wrong most: hard positions take longer, so long thinks mark the hard positions.`
+                : `Moves made in ${worstSpeed.label.toLowerCase()} go wrong most.`
+              : undefined
           }
         >
           <RateRows rows={data.clock.speed.map((b) => ({ label: b.label, sub: `${b.moves} moves`, ci: b.mistake_rate }))} />
@@ -388,12 +396,12 @@ export function Habits() {
       <header className="page-top">
         <h1>Habits</h1>
         <p>
-          From your {data.player.played} played games, updated {day(data.generated_at)}.
+          From your {data.player.played} played games, up to your game of {day(data.series[data.series.length - 1]?.t ?? data.generated_at)}.
         </p>
       </header>
       <Focus w={data.weaknesses[0]} />
       <Skills skills={data.skills} played={data.player.played} />
-      <AllHabits list={data.weaknesses.slice(0, 10)} />
+      <AllHabits list={data.weaknesses} />
       <Trends data={data} />
       <Mistakes data={data} />
       <VersusAndResults data={data} />

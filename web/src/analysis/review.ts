@@ -236,7 +236,8 @@ export async function buildReview(
   // Summary
   const [accWhite, accBlack] = gameAccuracy(winWhite, positions[0].turn === "white");
   const mine = moves.filter((m) => m.mine);
-  const key = [...mine.filter((m) => BAD.includes(m.class))].sort((a, b) => b.win_loss - a.win_loss).slice(0, 3).sort((a, b) => a.ply - b.ply);
+  // Key moments are puzzles, so a position where the game was already decided isn't one.
+  const key = [...mine.filter((m) => BAD.includes(m.class) && !m.decided)].sort((a, b) => b.win_loss - a.win_loss).slice(0, 3).sort((a, b) => a.ply - b.ply);
   const count = (side: boolean) => moves.filter((m) => m.mine === side).reduce<Record<string, number>>((c, m) => ((c[m.class] = (c[m.class] ?? 0) + 1), c), {});
   const code = me.result;
   const result: Result = code === "win" ? "win" : DRAWS.has(code) ? "draw" : "loss";

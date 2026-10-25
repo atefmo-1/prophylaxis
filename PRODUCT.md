@@ -21,7 +21,7 @@ A personal chess coach that does what chess.com charges for (Game Review, move c
 
 ## Positioning
 
-It works for any chess.com player, on their own real games. Every insight links to a real position from a real game, every rate shows its uncertainty (n is small), and the grading is validated against chess.com's own accuracy numbers. Generic chess sites review one game at a time; this one looks across all games.
+It works for any chess.com player, on their own real games. Habits and mistakes point at real positions from real games, rates show their uncertainty (n is small), and the grading is validated against chess.com's own accuracy numbers. Generic chess sites review one game at a time; this one looks across all games.
 
 ## Operating Context
 
@@ -32,13 +32,13 @@ It works for any chess.com player, on their own real games. Every insight links 
 ## Capabilities and Constraints
 
 - Analyzes finished games only. It must never offer help during a live game (chess.com Fair Play policy).
-- Move classes follow chess.com's scale: great, best, excellent, good, inaccuracy, mistake, blunder.
-- Small samples (a player may have only a few dozen games): stats are shown with 90% intervals, never as falsely exact numbers.
+- Move classes follow chess.com's scale: brilliant, great, best, excellent, good, book, inaccuracy, mistake, miss, blunder.
+- Small samples (a player may have only a few dozen games): rates are shown with 90% intervals rather than as falsely exact numbers, and comparisons call a difference only when it is clear.
 - Built: review with retry puzzles, habits, practice from your own mistakes, Lichess puzzles per habit, the opening tree, Compare with tips against another player, the ML tactic classifier and the Chrome extension. Not built: LLM explanations or a chat coach; every sentence comes from the engine or a tested rule (see PLAN.md).
 
 ## Brand Commitments
 
-None yet. No existing name, logo or visual identity.
+The name is Prophylaxis ("seeing a problem coming and stopping it before it happens"). The visual identity is in DESIGN.md: quiet dark chrome, a classic brown board and chess.com's grade colours. No logo beyond the favicon.
 
 ## Evidence on Hand
 

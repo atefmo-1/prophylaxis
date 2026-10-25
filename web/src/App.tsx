@@ -105,7 +105,7 @@ function PlayerMenu({ player }: { player: string }) {
                 forgetPlayer();
             }}
           >
-            Delete my data from this browser
+            Delete {player}'s reviews from this browser
           </button>
         )}
       </div>

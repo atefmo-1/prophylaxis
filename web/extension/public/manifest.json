@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Prophylaxis",
   "version": "0.1.0",
-  "description": "After a chess.com game ends: your biggest moment, the habit behind it, and a chance to retry it. Never runs during play.",
+  "description": "After a chess.com game ends: your biggest moment, the habit behind it, and a chance to retry it. Never looks at a game until it's over.",
   "minimum_chrome_version": "116",
   "permissions": ["storage", "sidePanel", "offscreen"],
   "host_permissions": ["https://api.chess.com/*"],
