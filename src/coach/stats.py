@@ -79,6 +79,55 @@ TAG_INFO = {
         "what": "You had a check or capture that started a sequence winning material.",
         "fix": "When enemy pieces are loose or lined up, look for forcing moves: checks, captures, threats.",
     },
+    # Named only by the tactic classifier on the site (web/src/analysis/tactics.ts, ml/REPORT.md).
+    "allowed_discovered_attack": {
+        "kind": "allowed",
+        "title": "Walking into discovered attacks",
+        "what": "Your move let your opponent move one piece out of the way and attack with the piece behind it.",
+        "fix": "Watch enemy queens, rooks and bishops that sit behind their own pieces and point at yours.",
+    },
+    "allowed_pin": {
+        "kind": "allowed",
+        "title": "Walking into pins",
+        "what": "Your move let your opponent pin one of your pieces to a more valuable one behind it.",
+        "fix": "Don't line up your king or queen behind another piece on a line an enemy bishop, rook or queen can reach.",
+    },
+    "allowed_skewer": {
+        "kind": "allowed",
+        "title": "Walking into skewers",
+        "what": "Your move let a long-range piece attack a valuable piece of yours and win the one behind it.",
+        "fix": "Keep your king and queen off lines shared with your other pieces when enemy rooks, bishops or queens are near.",
+    },
+    "trapped_piece": {
+        "kind": "allowed",
+        "title": "Getting pieces trapped",
+        "what": "Your move left one of your pieces with no safe square, so it could be attacked and won.",
+        "fix": "Before sending a piece deep into enemy territory, check that it has a safe way back.",
+    },
+    "missed_discovered_attack": {
+        "kind": "missed",
+        "title": "Missing discovered attacks",
+        "what": "You could move one piece out of the way with a threat and attack with the piece behind it.",
+        "fix": "Look at your queen, rooks and bishops: which of your own pieces block them, and what if that piece moved with a threat?",
+    },
+    "missed_pin": {
+        "kind": "missed",
+        "title": "Missing pins",
+        "what": "You had a move that pinned an enemy piece to a more valuable one and won material.",
+        "fix": "Look for enemy pieces lined up with their king or queen on a line your bishop, rook or queen can reach.",
+    },
+    "missed_skewer": {
+        "kind": "missed",
+        "title": "Missing skewers",
+        "what": "You could attack a valuable enemy piece and win the one behind it once it moved.",
+        "fix": "When the enemy king or queen shares a line with another piece, look for a check or attack along that line.",
+    },
+    "missed_trapped_piece": {
+        "kind": "missed",
+        "title": "Missing trapped pieces",
+        "what": "An enemy piece had no safe square, and you could have attacked it and won it.",
+        "fix": "When an enemy piece is far from home, count its escape squares: can you take them all away?",
+    },
     "time_pressure": {
         "kind": "clock",
         "title": "Blundering under time pressure",
@@ -194,8 +243,14 @@ def _trend(items: list, played: list, my_moves: dict[str, int]) -> dict | None:
 
 
 SKILL_RECENT = 20
-SAFETY_TAGS = {"hanging_piece", "allowed_fork", "lost_material", "allowed_mate"}
-MISSED_TAGS = {"missed_free_piece", "missed_fork", "missed_mate", "missed_tactic"}
+SAFETY_TAGS = {
+    "hanging_piece", "allowed_fork", "lost_material", "allowed_mate",
+    "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece",
+}
+MISSED_TAGS = {
+    "missed_free_piece", "missed_fork", "missed_mate", "missed_tactic",
+    "missed_discovered_attack", "missed_pin", "missed_skewer", "missed_trapped_piece",
+}
 
 
 def _skills(played: list, moves_by_game: dict, tags_by_name: dict, games: list) -> list[dict]:

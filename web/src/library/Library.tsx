@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Engine, workerTransport } from "../analysis/engine";
 import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
+import { loadTacticModel, type TacticModel } from "../analysis/tactics";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
@@ -84,6 +85,8 @@ export const useLibraryStatus = () => useContext(StatusContext);
 let engine: Engine | null = null;
 const getEngine = () =>
   (engine ??= new Engine(workerTransport(new Worker(`${import.meta.env.BASE_URL}engine/stockfish-19-lite-single.js`))));
+let tactics: Promise<TacticModel | null> | null = null;
+const getTactics = () => (tactics ??= loadTacticModel(import.meta.env.BASE_URL));
 
 const readPlayer = () => {
   try {
@@ -139,6 +142,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       const current: Current = { id: gameId(game), opponent: game[color === "white" ? "black" : "white"].username, color, plies: 0, percent: 0, fen: null, wins: [] };
       setStatus({ kind: "analysing", done: i, total: todo.length, current });
       try {
+        const model = await getTactics();
         const review = await buildReview(game, who, getEngine(), null, (n, total, stage, frame?: Frame) => {
           if (!live()) return;
           if (frame) {
@@ -148,7 +152,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.plies = stage === "positions" ? total : current.plies;
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current } });
-        });
+        }, model);
         const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION };
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);

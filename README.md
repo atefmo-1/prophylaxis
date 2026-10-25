@@ -43,6 +43,7 @@ It reviews each game the moment it ends, beside the board on chess.com.
 chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, in a Web Worker)
                                        └─► grading: win %, accuracy, move classes
                                        └─► tactic rules: hung pieces, forks, missed mates, clock
+                                       └─► tactic classifier (ONNX, onnxruntime-web, its own Web Worker): names pins, skewers, …
                                        └─► stats: Jeffreys intervals, habit ranking
                                        └─► saved in IndexedDB ──► Review · Habits · Practice · Games
 ```
@@ -52,6 +53,7 @@ chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, in 
 | Reading games from chess.com (CORS is open; one request at a time; past months fetched once) | `web/src/library/chesscom.ts` |
 | Background review queue, newest first, and the browser store | `web/src/library/Library.tsx`, `web/src/library/store.ts` |
 | One game: engine lines, grades, tactic tags, puzzles for each mistake | `web/src/analysis/review.ts`, `motifs.ts`, `grading.ts` |
+| The trained tactic classifier, and how its tags combine with the rules' | `web/src/analysis/tactics.ts`, `tactics.worker.ts`, `planes.ts` |
 | Statistics across games: intervals, habits, skills, practice positions | `web/src/analysis/stats.ts` |
 | Pages (React + Vite + TypeScript, chessground board) | `web/src/` |
 
@@ -67,6 +69,14 @@ uv run coach export                                  # JSON into data/export/
 ```
 
 Needs [uv](https://docs.astral.sh/uv/) and Stockfish on your `PATH` (or `STOCKFISH_PATH`). Everything it writes stays in `data/`, which git ignores.
+
+### The tactic classifier: `ml/`
+
+A small CNN, trained on 1.9 million Lichess puzzles (CC0), that names the tactic behind a move: fork, pin, skewer, discovered attack, back-rank mate and more. On held-out puzzles its macro F1 over 15 themes is 0.81, against 0.25 for the hand-written rules (which can name only 5 of them). The rules still win on mate-in-2. The site uses the model's tags only for the themes where it beat the rules, and the rules still decide, from Stockfish's lines, whether material was really lost. It ships quantised to 0.78 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
+
+```bash
+cd ml && uv run tactics all   # download, build the splits, train LightGBM and the CNN, export, score
+```
 
 ## Running the site locally
 
@@ -90,6 +100,7 @@ Stockfish is GPLv3; its licence ships with the site and the extension in `engine
 
 ```bash
 uv run pytest                                      # grading, openings, intervals, tactic rules
+(cd ml && uv run pytest)                           # tactic classifier: data, features, encoder parity with TypeScript
 npm --prefix web run typecheck
 node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
 node web/scripts/check-extension.mjs <username> <gameId>     # the extension's post-game review
@@ -98,7 +109,7 @@ node web/scripts/check-bridge.mjs <username>                 # extension and sit
 
 ## Roadmap
 
-See [PLAN.md](PLAN.md): an ML tactic classifier trained on the Lichess puzzle database, a blunder-risk model, grounded LLM move explanations and a coach chat.
+See [PLAN.md](PLAN.md): a blunder-risk model, grounded LLM move explanations and a coach chat.
 
 ## Licence
 

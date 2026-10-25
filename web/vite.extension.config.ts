@@ -11,14 +11,17 @@ export default defineConfig({
   publicDir: resolve(import.meta.dirname, "extension/public"),
   plugins: [
     react(),
-    // Stockfish lives once, in the site's public folder; the extension ships a copy.
+    // Stockfish and the tactic classifier live once, in the site's public folder; the extension ships a copy.
     {
       name: "copy-engine",
       closeBundle() {
-        cpSync(resolve(import.meta.dirname, "public/engine"), resolve(import.meta.dirname, "dist-extension/engine"), { recursive: true });
+        for (const dir of ["engine", "models"]) {
+          cpSync(resolve(import.meta.dirname, `public/${dir}`), resolve(import.meta.dirname, `dist-extension/${dir}`), { recursive: true });
+        }
       },
     },
   ],
+  worker: { format: "es" },
   build: {
     outDir: resolve(import.meta.dirname, "dist-extension"),
     emptyOutDir: true,

@@ -1,12 +1,15 @@
-// Offscreen page: hosts Stockfish (WebAssembly, in a worker) and turns a finished game into a review.
+// Offscreen page: hosts Stockfish and the tactic classifier (WebAssembly, each in a worker) and turns a finished
+// game into a review.
 import { parsePgn } from "chessops/pgn";
 import { Engine, workerTransport } from "../../src/analysis/engine";
 import { buildReview, gameFacts } from "../../src/analysis/review";
 import { ANALYSIS_VERSION } from "../../src/analysis/stats";
+import { loadTacticModel } from "../../src/analysis/tactics";
 import type { Overview } from "../../src/types";
 import { findGame, type Message, type SiteHabits } from "./shared";
 
 const engine = new Engine(workerTransport(new Worker(chrome.runtime.getURL("engine/stockfish-19-lite-single.js"))));
+const tactics = loadTacticModel(chrome.runtime.getURL(""));
 let queue: Promise<void> = Promise.resolve();
 
 async function run(id: string, username: string, habits: SiteHabits | null) {
@@ -22,7 +25,7 @@ async function run(id: string, username: string, habits: SiteHabits | null) {
     const review = await buildReview(game, username, engine, overview, (done, total, stage, frame) => {
       const percent = Math.round(stage === "positions" ? (done / total) * 85 : 85 + (done / total) * 15);
       chrome.runtime.sendMessage({ type: "progress", id, percent, frame } satisfies Message);
-    });
+    }, await tactics);
     const facts = { player: username, facts: gameFacts(game, username), version: ANALYSIS_VERSION };
     await chrome.runtime.sendMessage({ type: "done", id, review, facts } satisfies Message);
   } catch (e) {

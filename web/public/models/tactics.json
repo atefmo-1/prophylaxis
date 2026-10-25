@@ -1,0 +1,52 @@
+{
+ "planes": 32,
+ "themes": [
+  "mateIn1",
+  "mateIn2",
+  "fork",
+  "pin",
+  "discoveredAttack",
+  "deflection",
+  "hangingPiece",
+  "attraction",
+  "backRankMate",
+  "promotion",
+  "skewer",
+  "trappedPiece",
+  "capturingDefender",
+  "doubleCheck",
+  "smotheredMate"
+ ],
+ "thresholds": [
+  0.14,
+  0.45,
+  0.45,
+  0.39,
+  0.39,
+  0.29,
+  0.39,
+  0.39,
+  0.51,
+  0.29,
+  0.34,
+  0.25,
+  0.25,
+  0.39,
+  0.39
+ ],
+ "trusted": [
+  "fork",
+  "pin",
+  "discoveredAttack",
+  "deflection",
+  "hangingPiece",
+  "attraction",
+  "backRankMate",
+  "promotion",
+  "skewer",
+  "trappedPiece",
+  "capturingDefender",
+  "doubleCheck",
+  "smotheredMate"
+ ]
+}

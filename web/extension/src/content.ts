@@ -41,14 +41,22 @@ function reason(tags: MoveTag[], cls: string, reply: string | undefined): string
   const d = (t?.detail ?? {}) as Record<string, unknown>;
   switch (t?.tag) {
     case "hanging_piece": return `hung your ${d.piece}`;
-    case "allowed_fork": return `walked into a ${d.by} fork`;
+    case "allowed_fork": return d.by ? `walked into a ${d.by} fork` : "walked into a fork";
     case "allowed_mate": return `allowed mate in ${d.in}`;
     case "lost_material": return "lost material to a threat";
+    case "allowed_discovered_attack": return "walked into a discovered attack";
+    case "allowed_pin": return "walked into a pin";
+    case "allowed_skewer": return "walked into a skewer";
+    case "trapped_piece": return "got a piece trapped";
     case "allowed_stalemate": return "stalemated a won game";
     case "missed_free_piece": return `missed a free ${d.piece}`;
-    case "missed_fork": return `missed a ${d.by} fork`;
+    case "missed_fork": return d.by ? `missed a ${d.by} fork` : "missed a fork";
     case "missed_mate": return `missed mate in ${d.in}`;
     case "missed_tactic": return "missed a winning tactic";
+    case "missed_discovered_attack": return "missed a discovered attack";
+    case "missed_pin": return "missed a pin";
+    case "missed_skewer": return "missed a skewer";
+    case "missed_trapped_piece": return "missed a trapped piece";
     case "time_pressure": return "went wrong in time trouble";
     case "rushed": return "moved too fast";
     default: return reply ? `it allowed ${reply}` : `a ${GRADE[cls]?.label.toLowerCase() ?? "mistake"}`;

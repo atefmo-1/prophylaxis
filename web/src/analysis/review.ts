@@ -12,11 +12,15 @@ import { ENDINGS, TAG_INFO } from "./catalog";
 import type { Engine } from "./engine";
 import { classify, gameAccuracy, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
 import { detect, toMove } from "./motifs";
+import { refineTags, type TacticModel } from "./tactics";
 
 export const NODES = 400_000;
 export const RETRY_NODES = 400_000;
 const BAD: MoveClass[] = ["mistake", "miss", "blunder"];
-const ALLOWED = new Set(["hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate"]);
+const ALLOWED = new Set([
+  "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate",
+  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece",
+]);
 const DRAWS = new Set(["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
 const RETRY_TOLERANCE = 3;
 
@@ -79,6 +83,7 @@ export async function buildReview(
   engine: Engine,
   overview: Overview | null,
   progress?: Progress,
+  tactics: TacticModel | null = null,
 ): Promise<GameReview> {
   const parsed = parsePgn(game.pgn)[0];
   if (!parsed) throw new Error("Couldn't read this game's moves.");
@@ -145,7 +150,9 @@ export async function buildReview(
 
     let tags: MoveTag[] = [];
     if (mover === myColor) {
-      tags = detect(before, move, lb, la, loss, clockBefore, spent).map(([tag, detail]) => ({ tag, detail }));
+      let found = detect(before, move, lb, la, loss, clockBefore, spent);
+      if (tactics) found = await refineTags(tactics, found, before, uci, lb, la).catch(() => found);
+      tags = found.map(([tag, detail]) => ({ tag, detail }));
       const names = new Set(tags.map((t) => t.tag));
       const oppErred = moves.length >= 1 && BAD.includes(moves[moves.length - 1].class);
       if (BAD.includes(cls) && oppErred && [...names].some((t) => t.startsWith("missed_")) && ![...names].some((t) => ALLOWED.has(t))) {
