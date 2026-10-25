@@ -85,7 +85,9 @@ export function explain(review: GameReview, i: number): Explanation {
   const bad = move.class === "inaccuracy" || move.class === "mistake" || move.class === "blunder";
 
   let verdict: string;
-  if (move.class === "great") verdict = `${who} found the only good move here.`;
+  if (move.class === "brilliant") verdict = `Brilliant: ${who.toLowerCase()} gave up material for a better position, and the engine agrees.`;
+  else if (move.class === "great") verdict = `${who} found the only good move here.`;
+  else if (move.class === "book") verdict = "Book move: known opening theory.";
   else if (move.class === "best") verdict = `${who} played the engine's top choice.`;
   else if (!bad) verdict = `${meta.label} move: close to the best.`;
   else verdict = `${meta.label}.`;
@@ -96,7 +98,7 @@ export function explain(review: GameReview, i: number): Explanation {
       : `Your winning chances went from ${pct(before)} to ${pct(after)}.`;
 
   const lines: string[] = [];
-  if (move.mine && move.class !== "best" && move.class !== "great" && move.best) {
+  if (move.mine && !["brilliant", "great", "best", "book"].includes(move.class) && move.best) {
     lines.push(`The best move was ${move.best}.`);
   }
   for (const tag of move.tags) {

@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = Path(os.environ.get("COACH_DATA_DIR", ROOT / "data"))
 DB_PATH = DATA_DIR / "chess.db"
 EXPORT_DIR = Path(os.environ.get("COACH_EXPORT_DIR", DATA_DIR / "export"))
+# Lichess's openings list (CC0), shared with the site, which serves it from the same file.
+OPENINGS_TSV = ROOT / "web" / "public" / "openings" / "lichess.tsv"
 
 USERNAME = os.environ.get("COACH_USERNAME", "")
 USER_AGENT = "prophylaxis/0.1 (personal game-analysis tool)"
@@ -18,7 +20,7 @@ ENGINE_MULTIPV = 2
 
 # Bump when move grading or tactic detection changes; `coach analyze` then re-grades
 # every game from the engine cache without re-running Stockfish.
-ANALYSIS_VERSION = 4  # 4: a back-rank mate needs the king boxed in
+ANALYSIS_VERSION = 5  # 4: a back-rank mate needs the king boxed in; 5: Brilliant and Book
 
 
 def stockfish_path() -> str:

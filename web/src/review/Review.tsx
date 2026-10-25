@@ -17,7 +17,7 @@ import { EvalBar, Graph, PlayerStrip, Scoresheet } from "./parts";
 import "./review.css";
 
 const BAD: MoveClass[] = ["inaccuracy", "mistake", "miss", "blunder"];
-const SUMMARY_CLASSES: MoveClass[] = ["great", "best", "excellent", "good", "inaccuracy", "mistake", "miss", "blunder"];
+const SUMMARY_CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const PHASE_NAME: Record<string, string> = { opening: "Opening", middlegame: "Middlegame", endgame: "Endgame" };
 
 type Mode = { kind: "summary" } | { kind: "moments"; step: number } | { kind: "moves" } | { kind: "done" };

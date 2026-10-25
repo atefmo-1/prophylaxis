@@ -1,0 +1,151 @@
+{
+ "sacrifice": [
+  {
+   "name": "Greek gift",
+   "fen": "rnbq1rk1/pppnbppp/4p3/3pP3/3P4/2NB1N2/PPP2PPP/R1BQK2R w KQ - 5 7",
+   "move": "d3h7",
+   "given": 2,
+   "best_capture_after": 3
+  },
+  {
+   "name": "Quiet pawn move",
+   "fen": "rnbq1rk1/pppnbppp/4p3/3pP3/3P4/2NB1N2/PPP2PPP/R1BQK2R w KQ - 5 7",
+   "move": "h2h4",
+   "given": 0,
+   "best_capture_after": 0
+  },
+  {
+   "name": "Knight takes a defended pawn",
+   "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+   "move": "f3e5",
+   "given": 2,
+   "best_capture_after": 3
+  },
+  {
+   "name": "Rook trade",
+   "fen": "3r2k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+   "move": "d1d8",
+   "given": 0,
+   "best_capture_after": 0
+  },
+  {
+   "name": "Queen left where a knight takes it",
+   "fen": "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 2 3",
+   "move": "d1h5",
+   "given": 9,
+   "best_capture_after": 9
+  },
+  {
+   "name": "Exchange sacrifice",
+   "fen": "2r3k1/5ppp/5n2/8/8/5R2/6PP/6K1 w - - 0 1",
+   "move": "f3f6",
+   "given": 2,
+   "best_capture_after": 5
+  },
+  {
+   "name": "En passant",
+   "fen": "rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3",
+   "move": "e5f6",
+   "given": 0,
+   "best_capture_after": 1
+  },
+  {
+   "name": "Piece already hanging, another move",
+   "fen": "rnbqkbnr/ppp2ppp/8/3pp3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 3",
+   "move": "g1f3",
+   "given": 0,
+   "best_capture_after": 0
+  },
+  {
+   "name": "Pawn sacrifice (too small)",
+   "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+   "move": "f2f4",
+   "given": 1,
+   "best_capture_after": 1
+  },
+  {
+   "name": "Capture while in check",
+   "fen": "4k3/8/8/8/8/8/3q4/4K3 w - - 0 1",
+   "move": "e1d2",
+   "given": 0,
+   "best_capture_after": 0
+  }
+ ],
+ "book": [
+  {
+   "name": "Ruy Lopez, Morphy",
+   "moves": [
+    "e4",
+    "e5",
+    "Nf3",
+    "Nc6",
+    "Bb5",
+    "a6",
+    "Ba4",
+    "Nf6",
+    "O-O",
+    "Be7",
+    "Re1",
+    "b5",
+    "Bb3",
+    "d6",
+    "c3",
+    "O-O",
+    "h3",
+    "Na5",
+    "Bc2",
+    "c5",
+    "d4",
+    "Qc7"
+   ],
+   "book_plies": 22
+  },
+  {
+   "name": "Transposed Queen's pawn",
+   "moves": [
+    "Nf3",
+    "d5",
+    "d4",
+    "Nf6",
+    "c4",
+    "e6",
+    "Nc3"
+   ],
+   "book_plies": 7
+  },
+  {
+   "name": "Out of book on move 2",
+   "moves": [
+    "e4",
+    "e5",
+    "Ke2",
+    "Ke7",
+    "Ke1"
+   ],
+   "book_plies": 3
+  },
+  {
+   "name": "Scholar's mate try",
+   "moves": [
+    "e4",
+    "e5",
+    "Qh5",
+    "Nc6",
+    "Bc4",
+    "Nf6",
+    "Qxf7#"
+   ],
+   "book_plies": 5
+  },
+  {
+   "name": "A rare first move",
+   "moves": [
+    "a3",
+    "h6",
+    "h3",
+    "a6"
+   ],
+   "book_plies": 1
+  }
+ ]
+}

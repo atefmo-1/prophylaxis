@@ -20,10 +20,10 @@ import type {
 import { ENDINGS, TAG_INFO } from "./catalog";
 import { moveAccuracy, pov } from "./grading";
 
-/** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier). */
-export const ANALYSIS_VERSION = 2;
+/** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier; 3: Brilliant and Book). */
+export const ANALYSIS_VERSION = 3;
 const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
-const CLASSES: MoveClass[] = ["great", "best", "excellent", "good", "inaccuracy", "mistake", "miss", "blunder"];
+const CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const HABIT_WINDOW = 10;
 const RECENT_GAMES = 20;
 const SKILL_RECENT = 20;

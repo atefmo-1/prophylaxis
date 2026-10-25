@@ -28,9 +28,11 @@
   --c-row-alt: rgb(255 255 255 / 0.025);
   --c-band: rgb(236 235 232 / 0.18);
   --c-shade: rgb(0 0 0 / 0.22);
+  --gi-brilliant: #3fc7bf;
   --gi-great: #7fa9c9;
   --gi-best: #96bc4b;
   --gi-good: #a8b89d;
+  --gi-book: #c4a483;
   --gi-inaccuracy: #f0b93a;
   --gi-mistake: #ee9a49;
   --gi-miss: #f07c5a;
@@ -65,9 +67,11 @@
     --c-row-alt: rgb(0 0 0 / 0.025);
     --c-band: rgb(24 25 27 / 0.14);
     --c-shade: rgb(0 0 0 / 0.05);
+    --gi-brilliant: #13807b;
     --gi-great: #3f6f94;
     --gi-best: #4c8620;
     --gi-good: #5b6c51;
+    --gi-book: #7d5f40;
     --gi-inaccuracy: #9a7000;
     --gi-mistake: #b25b16;
     --gi-miss: #c04b29;
@@ -101,9 +105,11 @@
   --c-row-alt: rgb(0 0 0 / 0.025);
   --c-band: rgb(24 25 27 / 0.14);
   --c-shade: rgb(0 0 0 / 0.05);
+  --gi-brilliant: #13807b;
   --gi-great: #3f6f94;
   --gi-best: #4c8620;
   --gi-good: #5b6c51;
+  --gi-book: #7d5f40;
   --gi-inaccuracy: #9a7000;
   --gi-mistake: #b25b16;
   --gi-miss: #c04b29;

@@ -105,8 +105,11 @@ export function Start() {
           <p>Your recent games load straight from chess.com's public archive.</p>
         </li>
         <li>
-          <h2>Get your first review in about a minute</h2>
-          <p>Your latest game comes first. The rest are reviewed in the background while you read, newest first.</p>
+          <h2>Get your first review in seconds</h2>
+          <p>
+            Your latest game comes first, on every core your device can spare. The rest are reviewed in the background while
+            you read, newest first.
+          </p>
         </li>
         <li>
           <h2>Add the Chrome extension, if you like</h2>

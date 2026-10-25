@@ -167,6 +167,7 @@ coach_notes(id PK, created_at, scope, body)    -- agent memory: weekly summaries
 - Move accuracy: `103.1668 * exp(-0.04354 * (win_before - win_after)) - 3.1669`, clamped to 0–100
 - Game accuracy: a blend of the mean and harmonic mean of move accuracies, weighted by volatility (as Lichess does).
 - Class thresholds follow chess.com's expected-points scale on the win% drop: < 2 excellent, < 5 good, < 10 inaccuracy, < 20 mistake, ≥ 20 blunder. "Best" is the engine's top move; "great" is the only good move (next best ≥ 20 points worse) in a position that mattered.
+- "Book": every move from the start whose position appears in a named line of Lichess's openings list (CC0), unless the engine calls it a mistake (≥ 10 points lost). "Brilliant": the best move or close to it (< 2 points lost) that gives up at least 2 points of material by static exchange, not out of check, from a position that wasn't already won (< 90) and stays at least level (≥ 50). Both are in `src/coach/grading.py` and `book.py`, and `web/scripts/check-grading.ts` checks the TypeScript port against the same positions.
 - **Validation:** correlate our accuracy with chess.com's on the 15 games that have it. Target Pearson r ≥ 0.8. (chess.com's exact formula is private, so we only need the same ranking, not identical values.)
 
 ### 5.4 Enrichment: what kind of mistake?

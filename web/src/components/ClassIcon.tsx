@@ -2,10 +2,12 @@
 import type { MoveClass } from "../types";
 
 export const CLASS_COLOR: Record<MoveClass, string> = {
+  brilliant: "#1baca6",
   great: "#5b8baf",
   best: "#81b64c",
   excellent: "#96bc4b",
   good: "#95a88a",
+  book: "#a88865",
   inaccuracy: "#f0b93a",
   mistake: "#e5872b",
   miss: "#e8613a",
@@ -13,6 +15,7 @@ export const CLASS_COLOR: Record<MoveClass, string> = {
 };
 
 const GLYPH: Partial<Record<MoveClass, string>> = {
+  brilliant: "!!",
   great: "!",
   inaccuracy: "?!",
   mistake: "?",
@@ -32,6 +35,8 @@ function Mark({ cls }: { cls: MoveClass }) {
       );
     case "good":
       return <path d="M6.3 10.3l2.4 2.4 5-5" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />;
+    case "book":
+      return <path d="M5.6 6.4c1.7-.6 3.2-.4 4.4.6v7.2c-1.2-1-2.7-1.2-4.4-.6zM14.4 6.4c-1.7-.6-3.2-.4-4.4.6v7.2c1.2-1 2.7-1.2 4.4-.6z" fill="#fff" />;
     case "miss":
       return <path d="M7.2 7.2l5.6 5.6M12.8 7.2l-5.6 5.6" stroke="#fff" strokeWidth={2.1} strokeLinecap="round" />;
     default:

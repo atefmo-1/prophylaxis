@@ -12,7 +12,13 @@ import chess
 
 # (upper bound of win % lost, class), checked in order; anything larger is a blunder
 THRESHOLDS = [(2.0, "excellent"), (5.0, "good"), (10.0, "inaccuracy"), (20.0, "mistake")]
-CLASSES = ["great", "best", "excellent", "good", "inaccuracy", "mistake", "miss", "blunder"]
+CLASSES = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"]
+BOOK_MAX_LOSS = 10.0      # a known opening move the engine calls a mistake stays a mistake
+BRILLIANT_MAX_LOSS = 2.0  # the best move or close to it (excellent)
+BRILLIANT_MAX_WIN = 90.0  # not already winning anyway
+BRILLIANT_MIN_AFTER = 50.0  # and still at least level after it
+SACRIFICE_MIN = 2         # material given up, in pawns (an exchange sacrifice counts)
+VALUES = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 0}
 
 
 def win_from_cp(cp: float) -> float:
@@ -97,3 +103,74 @@ def phase(board: chess.Board, ply: int) -> str:
     if ply <= 20:
         return "opening"
     return "middlegame"
+
+
+# Brilliant: chess.com's "a good piece sacrifice". The material is counted with a static exchange: capture on a
+# square and keep trading there, each side using its least valuable piece and stopping when trading on loses.
+def _captured(board: chess.Board, move: chess.Move) -> int:
+    if board.is_en_passant(move):
+        return VALUES[chess.PAWN]
+    piece = board.piece_at(move.to_square)
+    return VALUES[piece.piece_type] if piece else 0
+
+
+def _cheapest_capture(board: chess.Board, square: chess.Square) -> chess.Move | None:
+    """The side to move's legal capture on `square` with its least valuable piece (a king last)."""
+    best, best_rank = None, 100
+    for move in board.legal_moves:
+        if move.to_square != square or not board.is_capture(move) or move.promotion not in (None, chess.QUEEN):
+            continue
+        piece = board.piece_type_at(move.from_square)
+        rank = 99 if piece == chess.KING else VALUES[piece]
+        if rank < best_rank:
+            best, best_rank = move, rank
+    return best
+
+
+def exchange(board: chess.Board, move: chess.Move) -> int:
+    """What the side to move wins by making capture `move` and trading on that square afterwards."""
+    won = _captured(board, move)
+    board.push(move)
+    reply = _cheapest_capture(board, move.to_square)
+    if reply is not None:
+        won -= max(0, exchange(board, reply))
+    board.pop()
+    return won
+
+
+def best_capture(board: chess.Board) -> int:
+    """The most material the side to move can win with one capture and the trades after it (0 if none)."""
+    gains = [
+        exchange(board, m)
+        for m in board.legal_moves
+        if board.is_capture(m) and m.promotion in (None, chess.QUEEN)
+    ]
+    return max([0, *gains])
+
+
+def sacrifice(before: chess.Board, move: chess.Move) -> int:
+    """Material the move gives up: what the opponent can now win, less what the move took and what was already
+    there for the taking before it (0 if it gives nothing up)."""
+    after = before.copy(stack=False)
+    after.push(move)
+    given = best_capture(after)
+    if given == 0:
+        return 0
+    if before.is_check():
+        already = 0
+    else:
+        passed = before.copy(stack=False)
+        passed.push(chess.Move.null())
+        already = best_capture(passed)
+    return given - _captured(before, move) if given > already else 0
+
+
+def is_brilliant(before: chess.Board, move: chess.Move, win_before: float, win_after: float, win_loss: float) -> bool:
+    return (
+        win_loss < BRILLIANT_MAX_LOSS
+        and win_before < BRILLIANT_MAX_WIN
+        and win_after >= BRILLIANT_MIN_AFTER
+        and not before.is_check()
+        and move.promotion is None
+        and sacrifice(before, move) >= SACRIFICE_MIN
+    )

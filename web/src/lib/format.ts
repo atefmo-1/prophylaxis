@@ -1,10 +1,12 @@
 import type { Interval, MoveClass, Result } from "../types";
 
 export const CLASS_META: Record<MoveClass, { label: string; mark: string; tone: string }> = {
+  brilliant: { label: "Brilliant", mark: "!!", tone: "teal" },
   great: { label: "Great", mark: "!", tone: "blue" },
   best: { label: "Best", mark: "", tone: "green" },
   excellent: { label: "Excellent", mark: "", tone: "sage" },
   good: { label: "Good", mark: "", tone: "grey" },
+  book: { label: "Book", mark: "", tone: "brown" },
   inaccuracy: { label: "Inaccuracy", mark: "?!", tone: "yellow" },
   mistake: { label: "Mistake", mark: "?", tone: "orange" },
   miss: { label: "Miss", mark: "×", tone: "red" },

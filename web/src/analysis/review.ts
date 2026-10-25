@@ -10,7 +10,8 @@ import type { Color, GameReview, Move, MoveClass, MoveTag, Overview, Result } fr
 import type { GameFacts } from "./stats";
 import { ENDINGS, TAG_INFO } from "./catalog";
 import type { Analyser } from "./engine";
-import { classify, gameAccuracy, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
+import { bookPlies, type OpeningBook } from "./book";
+import { BOOK_MAX_LOSS, classify, gameAccuracy, isBrilliant, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
 import { detect, toMove } from "./motifs";
 import { refineTags, type TacticModel } from "./tactics";
 
@@ -84,7 +85,7 @@ export async function buildReview(
   engine: Analyser,
   overview: Overview | null,
   progress?: Progress,
-  tactics: TacticModel | null = null,
+  { tactics = null, book = null }: { tactics?: TacticModel | null; book?: OpeningBook | null } = {},
 ): Promise<GameReview> {
   const parsed = parsePgn(game.pgn)[0];
   if (!parsed) throw new Error("Couldn't read this game's moves.");
@@ -133,6 +134,7 @@ export async function buildReview(
   );
 
   // Grade every move
+  const inBook = book ? bookPlies(book, positions) : 0;
   const [base, inc] = game.time_control.split("+").map(Number);
   const lastClock: Record<Color, number | null> = { white: Number.isFinite(base) ? base : null, black: Number.isFinite(base) ? base : null };
   const moves: Move[] = [];
@@ -156,6 +158,8 @@ export async function buildReview(
       const recapture = prev && prev.uci.slice(2, 4) === uci.slice(2, 4) && !!before.board.get(move.to);
       if (!recapture && wb - pov(lineWinWhite(lb[1]), mover === "white") >= 20) cls = "great";
     }
+    if (isBrilliant(before, move, wb, wa, loss)) cls = "brilliant";
+    if (ply <= inBook && loss < BOOK_MAX_LOSS) cls = "book";
     const clockAfter = clocks[ply - 1];
     const clockBefore = lastClock[mover];
     const spent = clockAfter !== null && clockBefore !== null ? Math.max(0, clockBefore + (inc || 0) - clockAfter) : null;

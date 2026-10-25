@@ -2,7 +2,7 @@
 
 export type Color = "white" | "black";
 export type Result = "win" | "loss" | "draw";
-export type MoveClass = "great" | "best" | "excellent" | "good" | "inaccuracy" | "mistake" | "miss" | "blunder";
+export type MoveClass = "brilliant" | "great" | "best" | "excellent" | "good" | "book" | "inaccuracy" | "mistake" | "miss" | "blunder";
 
 export interface Interval {
   k: number;

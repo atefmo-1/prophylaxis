@@ -550,9 +550,11 @@
 }
 
 .coach-class { font-size: 14px; font-weight: 650; }
+.coach-class--brilliant { color: var(--gi-brilliant); }
 .coach-class--great { color: var(--gi-great); }
 .coach-class--best, .coach-class--excellent { color: var(--gi-best); }
 .coach-class--good { color: var(--gi-good); }
+.coach-class--book { color: var(--gi-book); }
 .coach-class--inaccuracy { color: var(--gi-inaccuracy); }
 .coach-class--mistake { color: var(--gi-mistake); }
 .coach-class--miss { color: var(--gi-miss); }

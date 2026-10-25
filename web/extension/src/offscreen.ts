@@ -5,6 +5,7 @@ import { Engine, workerTransport } from "../../src/analysis/engine";
 import { EnginePool } from "../../src/analysis/pool";
 import { buildReview, gameFacts } from "../../src/analysis/review";
 import { ANALYSIS_VERSION } from "../../src/analysis/stats";
+import { loadBook } from "../../src/analysis/book";
 import { loadTacticModel } from "../../src/analysis/tactics";
 import type { Overview } from "../../src/types";
 import { findGame, type Message, type SiteHabits } from "./shared";
@@ -16,6 +17,7 @@ const engine = new EnginePool(
   Array.from({ length: engines }, () => new Engine(workerTransport(new Worker(chrome.runtime.getURL("engine/stockfish-19-lite-single.js"))))),
 );
 const tactics = loadTacticModel(chrome.runtime.getURL(""));
+const book = loadBook(chrome.runtime.getURL(""));
 let queue: Promise<void> = Promise.resolve();
 
 async function run(id: string, username: string, habits: SiteHabits | null) {
@@ -31,7 +33,7 @@ async function run(id: string, username: string, habits: SiteHabits | null) {
     const review = await buildReview(game, username, engine, overview, (done, total, stage, frame) => {
       const percent = Math.round(stage === "positions" ? (done / total) * 85 : 85 + (done / total) * 15);
       chrome.runtime.sendMessage({ type: "progress", id, percent, frame } satisfies Message);
-    }, await tactics);
+    }, { tactics: await tactics, book: await book });
     const facts = { player: username, facts: gameFacts(game, username), version: ANALYSIS_VERSION };
     await chrome.runtime.sendMessage({ type: "done", id, review, facts } satisfies Message);
   } catch (e) {

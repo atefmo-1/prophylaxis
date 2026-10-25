@@ -6,7 +6,7 @@ In chess, *prophylaxis* means seeing a problem coming and stopping it before it 
 
 A free chess coach for anyone who plays on chess.com. It covers what chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across all your games to rank the habits that cost you the most.
 
-- **Game review:** opens on a chess.com-style report card, then walks you through your key moments as puzzles ("find a better move"), accepting any move that holds your position. Every move is graded on chess.com's scale (great → miss → blunder) with a scoresheet, eval bar, winning-chances graph and a plain-English explanation.
+- **Game review:** opens on a chess.com-style report card, then walks you through your key moments as puzzles ("find a better move"), accepting any move that holds your position. Every move is graded on chess.com's scale (brilliant, great, best … book … miss, blunder) with a scoresheet, eval bar, winning-chances graph and a plain-English explanation.
 - **Habits:** your #1 habit with a position from your own games, six skill areas, and every habit ranked by how much it costs you, each linked to its positions.
 - **Practice:** five positions a day from your own mistakes, with spaced repetition.
 - **Honest numbers:** with a few dozen games, every rate is shown with a 90% interval, not as a falsely exact percentage.
@@ -100,9 +100,10 @@ Stockfish is GPLv3; its licence ships with the site and the extension in `engine
 ## Tests
 
 ```bash
-uv run pytest                                      # grading, openings, intervals, tactic rules
+uv run pytest                                      # grading (incl. Brilliant and Book), openings, intervals, tactic rules
 (cd ml && uv run pytest)                           # tactic classifier: data, features, encoder parity with TypeScript
 npm --prefix web run typecheck
+node web/scripts/check-grading.ts                            # Brilliant and Book in TypeScript give Python's answers
 node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
 node web/scripts/check-device.mjs <username> [laptop|phone]   # engines, time budget, time left, pausing, as a laptop or a slow phone
 node web/scripts/check-extension.mjs <username> <gameId>     # the extension's post-game review
@@ -115,4 +116,4 @@ See [PLAN.md](PLAN.md): a blunder-risk model, grounded LLM move explanations and
 
 ## Licence
 
-GPL-3.0-or-later (see [LICENSE](LICENSE)). Stockfish, which the site and extension run, is also GPLv3.
+GPL-3.0-or-later (see [LICENSE](LICENSE)). Stockfish, which the site and extension run, is also GPLv3. The opening book is [Lichess's openings list](https://github.com/lichess-org/chess-openings) (CC0), in `web/public/openings/`.

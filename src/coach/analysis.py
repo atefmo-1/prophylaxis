@@ -8,7 +8,7 @@ from collections.abc import Callable
 import chess
 import chess.pgn
 
-from . import config, engine, grading, motifs
+from . import book, config, engine, grading, motifs
 
 GREAT_MIN_GAP = 20.0     # win % between the only good move and the next best
 GREAT_MIN_WIN = 25.0     # ignore "only moves" in positions that were already lost
@@ -69,6 +69,7 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
         for b, l in zip(boards, lines)
     ]
 
+    in_book = book.book_plies(boards)
     clocks: dict[chess.Color, float | None] = {chess.WHITE: row["base_s"], chess.BLACK: row["base_s"]}
     move_rows, tag_rows = [], []
 
@@ -86,6 +87,10 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
         prev = nodes[ply - 2].move if ply >= 2 else None
         if cls == "best" and _is_great(before, move, prev, lines_before, win_before):
             cls = "great"
+        if grading.is_brilliant(before, move, win_before, win_after, win_loss):
+            cls = "brilliant"
+        if ply <= in_book and win_loss < grading.BOOK_MAX_LOSS:
+            cls = "book"
 
         clock_after = node.clock()
         clock_before = clocks[mover]

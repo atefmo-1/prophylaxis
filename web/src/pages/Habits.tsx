@@ -258,7 +258,7 @@ function Mistakes({ data }: { data: Overview }) {
   );
 }
 
-const QUALITY: MoveClass[] = ["best", "excellent", "good", "inaccuracy", "mistake", "miss", "blunder"];
+const QUALITY: MoveClass[] = ["brilliant", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 
 function VersusAndResults({ data }: { data: Overview }) {
   const p = data.player;

@@ -3,6 +3,7 @@
 // (device.ts). Every page reads from here.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { buildReview, gameFacts, NODES, type ChessComGame, type Frame } from "../analysis/review";
+import { loadBook, type OpeningBook } from "../analysis/book";
 import { loadTacticModel, type TacticModel } from "../analysis/tactics";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
@@ -131,6 +132,8 @@ export const useLibraryStatus = () => useContext(StatusContext);
 
 let tactics: Promise<TacticModel | null> | null = null;
 const getTactics = () => (tactics ??= loadTacticModel(import.meta.env.BASE_URL));
+let book: Promise<OpeningBook | null> | null = null;
+const getBook = () => (book ??= loadBook(import.meta.env.BASE_URL));
 
 const readPlayer = () => {
   try {
@@ -215,7 +218,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current }, eta: etaFrom(i, current.percent), paused: paused.current });
       };
       show();
-      const model = await getTactics();
+      const [model, openings] = await Promise.all([getTactics(), getBook()]);
       const started = performance.now();
       const pausesBefore = pauses.current;
       try {
@@ -228,7 +231,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           current.plies = stage === "positions" ? total : current.plies;
           current.percent = Math.round(stage === "positions" ? (n / total) * 85 : 85 + (n / total) * 15);
           show();
-        }, model);
+        }, { tactics: model, book: openings });
         if (pauses.current === pausesBefore && !paused.current) dev.learn(plies[i], performance.now() - started);
         const entry: StoredGame = { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION };
         if (!live()) return;

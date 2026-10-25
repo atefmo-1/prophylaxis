@@ -1,7 +1,10 @@
+import json
+from pathlib import Path
+
 import chess
 import pytest
 
-from coach import grading, openings, stats
+from coach import book, grading, openings, stats
 
 
 def test_win_percent_is_symmetric():
@@ -65,3 +68,36 @@ def test_interval_contains_rate():
     assert stats.interval(0, 10)["lo"] == 0
     assert stats.interval(10, 10)["hi"] == 1
     assert stats.interval(0, 0) is None
+
+
+# Brilliant and Book. The same positions are checked against the site's TypeScript port
+# (web/scripts/check-grading.ts), so the two stay in step.
+FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "grading.json").read_text())
+
+
+@pytest.mark.parametrize("case", FIXTURE["sacrifice"], ids=lambda c: c["name"])
+def test_sacrifice(case):
+    board = chess.Board(case["fen"])
+    move = chess.Move.from_uci(case["move"])
+    assert grading.sacrifice(board, move) == case["given"]
+    board.push(move)
+    assert grading.best_capture(board) == case["best_capture_after"]
+
+
+@pytest.mark.parametrize("case", FIXTURE["book"], ids=lambda c: c["name"])
+def test_book_plies(case):
+    board = chess.Board()
+    boards = [board.copy()]
+    for san in case["moves"]:
+        board.push_san(san)
+        boards.append(board.copy())
+    assert book.book_plies(boards) == case["book_plies"]
+
+
+def test_brilliant_needs_a_sound_sacrifice_from_a_position_that_isnt_won():
+    board = chess.Board("2r3k1/5ppp/5n2/8/8/5R2/6PP/6K1 w - - 0 1")
+    rxf6 = board.parse_san("Rxf6")
+    assert grading.is_brilliant(board, rxf6, win_before=55, win_after=60, win_loss=0)
+    assert not grading.is_brilliant(board, rxf6, win_before=55, win_after=40, win_loss=15)  # unsound
+    assert not grading.is_brilliant(board, rxf6, win_before=95, win_after=96, win_loss=0)  # already winning
+    assert not grading.is_brilliant(board, board.parse_san("h3"), win_before=55, win_after=55, win_loss=0)  # no sacrifice

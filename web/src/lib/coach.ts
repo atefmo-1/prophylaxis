@@ -69,11 +69,14 @@ export function read(review: GameReview): CoachRead {
   const info = top ? review.tag_info[top] : undefined;
   const lesson = info ? { title: info.title, fix: info.fix } : null;
 
+  const brilliant = review.moves.filter((m) => m.mine && m.class === "brilliant");
   const great = review.moves.filter((m) => m.mine && m.class === "great");
   const strengths =
-    great.length > 0
-      ? `${great.length === 1 ? "One great move" : `${great.length} great moves`}, including ${moveLabel(great[0].ply, great[0].san)}.`
-      : null;
+    brilliant.length > 0
+      ? `${brilliant.length === 1 ? "A brilliant move" : `${brilliant.length} brilliant moves`}: ${moveLabel(brilliant[0].ply, brilliant[0].san)}.`
+      : great.length > 0
+        ? `${great.length === 1 ? "One great move" : `${great.length} great moves`}, including ${moveLabel(great[0].ply, great[0].san)}.`
+        : null;
 
   return { headline, story, lesson, moments, strengths };
 }

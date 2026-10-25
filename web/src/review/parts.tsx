@@ -5,7 +5,7 @@ import { chancesAround } from "../lib/explain";
 import { moveLabel } from "../lib/format";
 import type { Color, GameReview, Move, MoveClass } from "../types";
 
-const NOTABLE: MoveClass[] = ["great", "inaccuracy", "mistake", "miss", "blunder"];
+const NOTABLE: MoveClass[] = ["brilliant", "great", "inaccuracy", "mistake", "miss", "blunder"];
 
 /** Vertical winning-chances bar beside the board; white fills from white's side of the board. */
 export function EvalBar({ whiteWin, orientation }: { whiteWin: number; orientation: Color }) {
