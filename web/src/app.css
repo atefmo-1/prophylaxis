@@ -6,18 +6,19 @@
   --c-line: #34363a;
   --c-ink: #ecebe8;
   --c-ink-2: #b9b8b3;
-  --c-ink-3: #8f8e89;
-  --c-accent: #3d7cc9;
+  --c-ink-3: #969590;
+  --c-accent: #366fb5;
   --c-accent-ink: #8dbbf0;
   --c-current: rgb(61 124 201 / 0.32);
   --c-win: #8fc45c;
   --c-loss: #ef7a6c;
   --c-hover: #33353a;
   --c-pressed: #3a3c41;
-  --c-accent-hover: #4b8bd8;
+  --c-accent-hover: #3d78c1;
   --c-foot: #1b1c1e;
   --c-font: "Hanken Grotesk Variable", system-ui, sans-serif;
   --c-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --c-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --sq-light: #f0d9b5;
   --sq-dark: #b58863;
   --c-line-strong: #4a4c51;
@@ -60,7 +61,7 @@
     --c-loss: #bf3a2d;
     --c-hover: #e2e2de;
     --c-pressed: #d8d8d3;
-    --c-accent-hover: #3b7bc6;
+    --c-accent-hover: #3573bb;
     --c-foot: #fafaf8;
     --c-scroll: #c4c4bf;
     --c-row-hover: rgb(0 0 0 / 0.03);
@@ -98,7 +99,7 @@
   --c-loss: #bf3a2d;
   --c-hover: #e2e2de;
   --c-pressed: #d8d8d3;
-  --c-accent-hover: #3b7bc6;
+  --c-accent-hover: #3573bb;
   --c-foot: #fafaf8;
   --c-scroll: #c4c4bf;
   --c-row-hover: rgb(0 0 0 / 0.03);
@@ -127,6 +128,11 @@ body {
   font-family: var(--c-font);
   font-size: 15px;
   line-height: 1.5;
+}
+
+::placeholder {
+  color: var(--c-ink-3);
+  opacity: 1;
 }
 
 ::selection {
@@ -226,13 +232,24 @@ p {
   text-decoration: none;
 }
 
+/* The sections scroll sideways inside the bar when they don't fit, so the player menu always stays on screen. */
 .topnav {
   display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topnav::-webkit-scrollbar {
+  display: none;
 }
 
 .topnav a {
+  flex: none;
   padding: 6px 12px;
+  white-space: nowrap;
   border-radius: 6px;
   color: var(--c-ink-2);
   font-weight: 550;
@@ -252,9 +269,34 @@ p {
 
 .topbar-end {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 20px;
   margin-left: auto;
+}
+
+/* Narrower than a laptop: the theme switch moves into the player menu, the review progress drops its time left and
+   a comparison under way is reached from Compare. */
+@media (max-width: 1100px) {
+  .topbar {
+    gap: 16px;
+  }
+
+  .topbar-end {
+    gap: 12px;
+  }
+
+  .topbar-end > .theme,
+  .topbar-end .pill-eta,
+  .topbar-end .pill--link {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .brand {
+    display: none;
+  }
 }
 
 .theme {
@@ -358,12 +400,17 @@ p {
     padding: 0 10px;
   }
 
-  .brand {
-    display: none;
+  /* A fade at the edge says the sections scroll. */
+  .topnav {
+    mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
   }
 
+  /* Links tall enough for a thumb; the progress becomes a line along the bottom of the bar. */
   .topnav a {
-    padding: 6px 7px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 8px;
     font-size: 14px;
   }
 
@@ -371,9 +418,10 @@ p {
     gap: 6px;
   }
 
-  /* The theme switch moves into the player menu; the progress becomes a line along the bottom of the bar. */
-  .topbar-end > .theme {
-    display: none;
+  .me summary {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
   }
 
   .me summary {
@@ -390,6 +438,16 @@ p {
 
 .me-theme {
   display: none;
+}
+
+@media (max-width: 1100px) {
+  .me-menu .me-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    color: var(--c-ink-2);
+  }
 }
 
 /* The review fits the board to the screen below the top bar (52px); the sample note adds a line. */
@@ -419,12 +477,56 @@ p {
   cursor: pointer;
 }
 
-@media (max-width: 640px) {
-  .me-theme {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    color: var(--c-ink-2);
-  }
+
+
+/* Typing a move: out of sight until reached with Tab, then a field over the bottom of the board. */
+.board-type {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  z-index: 5;
+  width: min(280px, calc(100% - 20px));
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--c-panel);
+  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.6), 0 0 0 1px var(--c-line);
+  transform: translateX(-50%);
+}
+
+.board-type:not(:focus-within) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.board-type label {
+  display: grid;
+  gap: 6px;
+  color: var(--c-ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.board-type input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.board-type-error {
+  display: block;
+  margin-top: 6px;
+  color: var(--gi-blunder, var(--c-loss));
+  font-size: 13px;
+}
+
+.board-type-error:empty {
+  display: none;
 }

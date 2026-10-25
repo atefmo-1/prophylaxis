@@ -168,7 +168,9 @@ def main() -> None:
 
             opp_rating = rating + rng.randint(-45, 45)
             names = {my_color: player, not my_color: f"opponent-{profile['opponents']}{i + 1:02d}"}
-            ratings = {my_color: rating, not my_color: opp_rating}
+            # chess.com's archive gives each player's rating after the game, so the sample does too.
+            change = 0 if winner is None else 8 if winner == my_color else -8
+            ratings = {my_color: rating + change, not my_color: opp_rating - change}
             if winner is None:
                 codes = {chess.WHITE: loser_code, chess.BLACK: loser_code}
                 pgn_result = "1/2-1/2"
@@ -196,7 +198,7 @@ def main() -> None:
                 "black": {"username": names[chess.BLACK], "rating": ratings[chess.BLACK], "result": codes[chess.BLACK]},
             })
             mine = codes[my_color]
-            rating += 8 if mine == "win" else 0 if winner is None else -8
+            rating += change
             # Sessions of two to four games in an evening, then a day or two off.
             when = end + (timedelta(minutes=rng.randint(2, 10)) if rng.random() < 0.7 else timedelta(days=rng.randint(1, 2), hours=rng.randint(-2, 2)))
             print(f"{i + 1:2d} {slug:46s} {len(moves):3d} plies  {mine}")

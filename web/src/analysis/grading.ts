@@ -52,7 +52,7 @@ function pstdev(xs: number[]): number {
 }
 
 /** Per-side game accuracy (white, black) from white's win % at the start and after every ply. */
-export function gameAccuracy(winWhite: number[]): [number | null, number | null] {
+export function gameAccuracy(winWhite: number[], whiteFirst = true): [number | null, number | null] {
   const n = winWhite.length - 1;
   if (n < 2) return [null, null];
   const window = Math.min(Math.max(Math.floor(n / 10), 2), 8);
@@ -62,7 +62,7 @@ export function gameAccuracy(winWhite: number[]): [number | null, number | null]
   const weights = windows.map((w) => Math.min(Math.max(pstdev(w), 0.5), 12));
   const sides: [number, number][][] = [[], []];
   for (let i = 0; i < n; i++) {
-    const white = i % 2 === 0;
+    const white = (i % 2 === 0) === whiteFirst;
     sides[white ? 0 : 1].push([moveAccuracy(pov(winWhite[i], white), pov(winWhite[i + 1], white)), weights[i]]);
   }
   return sides.map((items) => {

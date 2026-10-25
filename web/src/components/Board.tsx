@@ -2,7 +2,11 @@ import { Chessground } from "chessground";
 import type { Api } from "chessground/api";
 import type { DrawShape } from "chessground/draw";
 import type { Key } from "chessground/types";
-import { useEffect, useRef } from "react";
+import { Chess } from "chessops/chess";
+import { parseFen } from "chessops/fen";
+import { parseSan } from "chessops/san";
+import { makeSquare, parseUci } from "chessops/util";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import "chessground/assets/chessground.base.css";
 import "chessground/assets/chessground.cburnett.css";
 import type { MoveClass } from "../types";
@@ -68,6 +72,55 @@ const shapesFor = (arrows: Arrow[]): DrawShape[] =>
     return { orig, dest, brush: arrow.brush };
   });
 
+/** A typed move ("Nf3", "exd5", "e2e4") as its from and to squares, or null when it isn't legal here. */
+function readMove(fen: string, text: string): [string, string] | null {
+  const pos = parseFen(fen).chain((setup) => Chess.fromSetup(setup));
+  if (pos.isErr) return null;
+  const typed = text.trim().replace(/[+#!?]+$/, "");
+  const move = parseUci(typed.toLowerCase()) ?? parseSan(pos.value, typed.replace(/^0-0(-0)?$/, (m) => m.replace(/0/g, "O")));
+  if (!move || !("from" in move) || !pos.value.isLegal(move)) return null;
+  return [makeSquare(move.from), makeSquare(move.to)];
+}
+
+/**
+ * Making a move without a mouse: a field that appears over the bottom of the board when it's reached with Tab, so
+ * key moments, practice and puzzles can be played from the keyboard or a screen reader.
+ */
+function MoveEntry({ fen, movable }: { fen: string; movable: Movable }) {
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const move = readMove(fen, text);
+    if (!move || !movable.dests.get(move[0] as Key)?.includes(move[1] as Key)) {
+      setError(text.trim() ? `${text.trim()} isn't a legal move here.` : "Type a move, like Nf3.");
+      return;
+    }
+    setText("");
+    setError("");
+    movable.onMove(move[0], move[1]);
+  };
+  return (
+    <form className="board-type" onSubmit={submit}>
+      <label>
+        <span>Type your move</span>
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="e.g. Nf3"
+          autoComplete="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          aria-describedby="board-type-error"
+        />
+      </label>
+      <span id="board-type-error" className="board-type-error" role="status">
+        {error}
+      </span>
+    </form>
+  );
+}
+
 /** Chessground owns the DOM inside the wrapper; React feeds it config. Optionally playable, with a grade badge. */
 export function Board(props: Props) {
   const { fen, orientation, lastMove, check = false, arrows = NO_ARROWS, badge, movable, label, coordinates = true } = props;
@@ -83,7 +136,7 @@ export function Board(props: Props) {
     api.current = Chessground(el.current, {
       ...config({ ...p, check: p.check ?? false }),
       coordinates,
-      animation: { enabled: true, duration: 180 },
+      animation: { enabled: !matchMedia("(prefers-reduced-motion: reduce)").matches, duration: 180 },
       highlight: { lastMove: true, check: true },
       events: { move: (orig, dest) => latest.current.movable?.onMove(orig, dest) },
       drawable: { enabled: false, visible: true, brushes: BRUSHES as never, autoShapes: shapesFor(p.arrows ?? NO_ARROWS) },
@@ -112,13 +165,14 @@ export function Board(props: Props) {
   }
 
   return (
-    <div className="board" role="img" aria-label={label}>
-      <div ref={el} className="board-ground" />
+    <div className="board">
+      <div ref={el} className="board-ground" role="img" aria-label={label} />
       {badge && (
-        <span className="board-badge" style={badgeStyle}>
+        <span className="board-badge" style={badgeStyle} key={`${fen}${badge.cls}`}>
           <ClassIcon cls={badge.cls} size={26} />
         </span>
       )}
+      {movable && <MoveEntry fen={fen} movable={movable} />}
     </div>
   );
 }

@@ -35,7 +35,7 @@ export function PlayerStrip({
 }) {
   return (
     <div className="strip">
-      <span className={`strip-color strip-color--${color}`} aria-label={`plays ${color}`} />
+      <span className={`strip-color strip-color--${color}`} role="img" aria-label={`plays ${color}`} />
       <span className="strip-name">{name}</span>
       <span className="strip-rating num">{rating}</span>
       {change != null && change !== 0 && (
@@ -69,16 +69,26 @@ function Cell({ move, index, current, onSelect }: { move?: Move; index: number; 
 /** The two-column scoresheet: number, White, Black. The current move stays in view inside the sheet. */
 export function Scoresheet({ moves, index, onSelect }: { moves: Move[]; index: number; onSelect: (i: number) => void }) {
   const box = useRef<HTMLDivElement>(null);
+  const at = useRef(index);
+  at.current = index;
   useEffect(() => {
     const el = box.current;
-    const cell = el?.querySelector<HTMLElement>(`[data-index="${index}"]`);
-    if (!el || !cell) return;
-    const b = el.getBoundingClientRect();
-    const c = cell.getBoundingClientRect();
-    if (c.top < b.top + 4) el.scrollTop -= b.top - c.top + 36;
-    else if (c.bottom > b.bottom - 4) el.scrollTop += c.bottom - b.bottom + 36;
-    if (c.left < b.left) el.scrollLeft -= b.left - c.left + 24;
-    else if (c.right > b.right) el.scrollLeft += c.right - b.right + 24;
+    if (!el) return;
+    const keepInView = () => {
+      const cell = el.querySelector<HTMLElement>(`[data-index="${at.current}"]`);
+      if (!cell) return;
+      const b = el.getBoundingClientRect();
+      const c = cell.getBoundingClientRect();
+      if (c.top < b.top + 4) el.scrollTop -= b.top - c.top + 36;
+      else if (c.bottom > b.bottom - 4) el.scrollTop += c.bottom - b.bottom + 36;
+      if (c.left < b.left) el.scrollLeft -= b.left - c.left + 24;
+      else if (c.right > b.right) el.scrollLeft += c.right - b.right + 24;
+    };
+    keepInView();
+    // The sheet also shrinks when the coach card above it grows (a key moment's feedback): keep the move in view then too.
+    const observer = new ResizeObserver(keepInView);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [index]);
 
   const rows = [];

@@ -8,9 +8,9 @@ colors:
   line: "#34363a"
   ink: "#ecebe8"
   ink-soft: "#b9b8b3"
-  ink-muted: "#8f8e89"
-  accent: "#3d7cc9"
-  accent-hover: "#4b8bd8"
+  ink-muted: "#969590"
+  accent: "#366fb5"
+  accent-hover: "#3d78c1"
   accent-ink: "#8dbbf0"
   current-move: "rgb(61 124 201 / 0.32)"
   square-light: "#f0d9b5"
@@ -232,7 +232,7 @@ Flat and tonal. Depth is three surface steps (page, panel, raised) plus hairline
 
 ## Shapes
 
-Small, practical radii in four steps: 4px for the board, scoresheet cells and badges in strips; 6px for buttons, nav links, segments and callouts; 8px for the review panel and segmented track; 10px for page cards and lists. Grade badges are circles with a faint dark rim. Swatches for piece colour are 3px-rounded squares. The coach progress dots are 18 x 4px bars. Lists are grouped inside one rounded container with hairline row dividers rather than separate cards.
+Small, practical radii in four steps: 4px for the board, scoresheet cells and badges in strips; 6px for buttons, nav links, segments and callouts; 8px for the review panel and segmented track; 10px for page cards and lists. Grade badges are circles with a faint dark rim. Swatches for piece colour are small circles, so they never read as checkboxes. The coach progress dots are 18 x 4px bars. Lists are grouped inside one rounded container with hairline row dividers rather than separate cards.
 
 ## Components
 
@@ -279,7 +279,9 @@ Best line in green (#629924), the played move in blue (#3b78c7), threats in red 
 - **Do** use Move Blue for exactly one primary action per decision, and for the current move and focus.
 - **Do** set every number with tabular figures.
 - **Do** size the review board from the viewport height and let the panel match it.
-- **Do** keep transitions short (150ms for state, 180ms for piece moves, 320ms for the eval bar) on the shared ease curve; motion drops to zero under reduced-motion.
+- **Do** keep transitions short (150ms for state, 180ms for piece moves, 320ms for the eval bar) on the shared ease curve; motion drops to zero under reduced-motion, piece animation included.
+- **Do** keep the one authored moment: the grade badge lands on its square (260ms, exponential ease-out, after the piece arrives), and a try's feedback settles in under the prompt (200ms).
+- **Do** keep every board move possible from the keyboard: a "Type your move" field appears over the board when reached with Tab.
 
 ### Don't:
 - **Don't** introduce a hue outside the grade ramp and the board; status colour borrows from the ramp.

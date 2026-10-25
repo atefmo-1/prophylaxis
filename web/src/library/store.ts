@@ -11,6 +11,8 @@ export interface MonthRecord {
   url: string;
   games: ChessComGame[];
   fetched: number;
+  /** Fetched after the month ended, so it can't change any more (older records lack it and are fetched once more). */
+  complete?: boolean;
 }
 
 let opening: Promise<IDBDatabase> | null = null;

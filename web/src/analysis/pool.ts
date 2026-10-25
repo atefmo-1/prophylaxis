@@ -32,6 +32,9 @@ export class EnginePool implements Analyser {
     return this.open !== null;
   }
 
+  /** How many times the pool has been paused: compare before and after some work to know it ran straight through. */
+  pauses = 0;
+
   newGame(lane: number) {
     this.engines[lane % this.lanes].newGame();
   }
@@ -52,6 +55,7 @@ export class EnginePool implements Analyser {
   /** Searches already running finish; nothing new starts until resume(). */
   pause() {
     if (this.open) return;
+    this.pauses++;
     this.gate = new Promise((resolve) => (this.open = resolve));
   }
 

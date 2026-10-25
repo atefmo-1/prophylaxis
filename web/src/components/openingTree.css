@@ -106,12 +106,10 @@
 }
 
 .otree-h {
-  margin: 10px 0 0;
-  font-size: 13px;
+  margin: 14px 0 0;
+  font-size: 15px;
   font-weight: 650;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--c-ink-3);
+  color: var(--c-ink-2);
 }
 
 .otree-moves tbody tr {
@@ -123,7 +121,7 @@
 }
 
 .otree-move {
-  padding: 0;
+  padding: 6px 0;
   border: 0;
   background: none;
   color: var(--c-ink);
@@ -182,6 +180,11 @@
   list-style: none;
 }
 
+.otree-games a {
+  color: var(--c-accent-ink);
+  text-underline-offset: 3px;
+}
+
 .otree-res--win { color: var(--c-win); }
 .otree-res--loss { color: var(--c-loss); }
 .otree-res--draw { color: var(--c-ink-2); }
@@ -195,5 +198,12 @@
 @media (max-width: 760px) {
   .otree {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .otree-move,
+  .otree-path button {
+    min-height: 40px;
   }
 }

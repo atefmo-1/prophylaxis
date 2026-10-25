@@ -18,7 +18,7 @@ export function Openings() {
           it; each one shows how those games went.
         </p>
       </header>
-      <OpeningTree stored={played} who="You" gameLink={(g) => href({ name: "game", id: g.id, ply: null })} />
+      <OpeningTree stored={played} who="You" gameLink={(g) => href({ name: "game", id: g.id, ply: null })} level={2} />
     </div>
   );
 }

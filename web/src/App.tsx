@@ -53,7 +53,15 @@ function PlayerMenu({ player }: { player: string }) {
   const menu = useRef<HTMLDetailsElement>(null);
   const close = () => menu.current?.removeAttribute("open");
   return (
-    <details className="me" ref={menu}>
+    <details
+      className="me"
+      ref={menu}
+      onKeyDown={(e) => {
+        if (e.key !== "Escape" || !menu.current?.open) return;
+        close();
+        menu.current.querySelector("summary")?.focus();
+      }}
+    >
       <summary>
         {isSample ? "Sample player" : player} {rating !== null && (
           <span className="num" title={`${player_!.rating_time_class} rating`}>
@@ -108,13 +116,18 @@ function PlayerMenu({ player }: { player: string }) {
 function TopBar({ route }: { route: Route }) {
   const { player } = useLibrary();
   const { target } = useCurrentComparison();
+  // When the sections scroll sideways (narrow screens), keep the current one in view.
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    nav.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [route.name]);
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: "latest" })}>
         Prophylaxis
       </a>
       {player && (
-        <nav className="topnav" aria-label="Sections">
+        <nav className="topnav" aria-label="Sections" ref={nav}>
           {NAV.map((item) => (
             <a key={item.label} href={href(item.route.name === "compare" ? { name: "compare", player: target } : item.route)} aria-current={item.match.includes(route.name) ? "page" : undefined}>
               {item.label}
@@ -146,12 +159,12 @@ export function App() {
 function SampleNote() {
   const { leave } = useLibrary();
   return (
-    <p className="sample-note">
+    <aside className="sample-note" aria-label="Sample player">
       You're looking at a sample player: made-up beginner games, played by a weak engine.{" "}
       <button type="button" onClick={leave}>
         Review your own games
       </button>
-    </p>
+    </aside>
   );
 }
 

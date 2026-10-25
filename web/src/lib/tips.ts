@@ -26,10 +26,10 @@ const AGAINST: Record<string, { title: string; how: string }> = {
   back_rank_mate: { title: "Aim at their back rank", how: "If their king is stuck behind its pawns, a rook or queen on the back row can mate." },
   time_pressure: { title: "Make it a long game", how: "Keep pieces on and the position busy, so their clock runs down." },
   rushed: { title: "Give them something to think about", how: "Quiet positions with a trap in them reward patience; they play fast." },
-  missed_free_piece: { title: "Your slips may go unpunished", how: "Play actively, but still check your pieces are safe." },
-  missed_fork: { title: "Your slips may go unpunished", how: "Play actively, but still check your pieces are safe." },
-  missed_tactic: { title: "Your slips may go unpunished", how: "Play actively, but still check your pieces are safe." },
-  missed_mate: { title: "Your slips may go unpunished", how: "Play actively, but still check your pieces are safe." },
+  missed_free_piece: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_fork: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_tactic: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
+  missed_mate: { title: "They miss free pieces", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
 };
 
 const PHASE_TIP: Record<string, string> = {
@@ -92,12 +92,12 @@ export function tipsAgainst(them: Overview, me: Overview | null, name: string): 
     const weak = theirs.filter((o) => (o.score ?? 1) <= 0.35).sort((a, b) => (a.score ?? 0) - (b.score ?? 0))[0];
     if (weak) {
       tips.push({
-        title: `Steer for the ${weak.family} when they're ${color}`,
-        why: `${name} scored ${share(weak.score ?? 0)} in ${weak.games} games of it as ${color}.`,
+        title: `Go for the ${weak.family} when they have ${color}`,
+        why: `${name} scored ${share(weak.score ?? 0)} in ${weak.games} games of it with ${color}: aim your first moves at it.`,
       });
     } else if (total >= 5 && top.games / total >= 0.4) {
       tips.push({
-        title: `Prepare for the ${top.family} when they're ${color}`,
+        title: `Prepare for the ${top.family} when they have ${color}`,
         why: `${name} played it in ${top.games} of ${total} games as ${color} (${share(top.score ?? 0)} score).`,
       });
     }

@@ -59,7 +59,7 @@ def classify(win_loss: float, played_best: bool) -> str:
     return "blunder"
 
 
-def game_accuracy(win_white: list[float]) -> dict[chess.Color, float | None]:
+def game_accuracy(win_white: list[float], first: chess.Color = chess.WHITE) -> dict[chess.Color, float | None]:
     """Per-side game accuracy: average of a volatility-weighted mean and a harmonic mean.
 
     `win_white` holds white's win % for the start position and after every ply.
@@ -76,7 +76,7 @@ def game_accuracy(win_white: list[float]) -> dict[chess.Color, float | None]:
 
     per_side: dict[chess.Color, list[tuple[float, float]]] = {chess.WHITE: [], chess.BLACK: []}
     for i in range(n_moves):
-        color = chess.WHITE if i % 2 == 0 else chess.BLACK
+        color = first if i % 2 == 0 else not first
         acc = move_accuracy(pov(win_white[i], color), pov(win_white[i + 1], color))
         per_side[color].append((acc, weights[i]))
 

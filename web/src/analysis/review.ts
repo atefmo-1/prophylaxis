@@ -97,6 +97,7 @@ export async function buildReview(
   const positions: Position[] = [startingPosition(parsed.headers).unwrap()];
   const sans: string[] = [];
   const clocks: (number | null)[] = [];
+  const daily = game.time_control.includes("/"); // a daily game's clock resets every move
   for (const node of parsed.moves.mainline()) {
     const pos = positions[positions.length - 1].clone();
     const move = parseSan(pos, node.san);
@@ -104,7 +105,7 @@ export async function buildReview(
     sans.push(makeSan(pos, move));
     pos.play(move);
     positions.push(pos);
-    clocks.push(clockOf(node.comments));
+    clocks.push(daily ? null : clockOf(node.comments));
   }
   const n = sans.length;
 
@@ -233,7 +234,7 @@ export async function buildReview(
   );
 
   // Summary
-  const [accWhite, accBlack] = gameAccuracy(winWhite);
+  const [accWhite, accBlack] = gameAccuracy(winWhite, positions[0].turn === "white");
   const mine = moves.filter((m) => m.mine);
   const key = [...mine.filter((m) => BAD.includes(m.class))].sort((a, b) => b.win_loss - a.win_loss).slice(0, 3).sort((a, b) => a.ply - b.ply);
   const count = (side: boolean) => moves.filter((m) => m.mine === side).reduce<Record<string, number>>((c, m) => ((c[m.class] = (c[m.class] ?? 0) + 1), c), {});

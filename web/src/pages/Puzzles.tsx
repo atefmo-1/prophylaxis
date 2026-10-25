@@ -158,6 +158,7 @@ function PuzzleBoard(props: {
 
   return (
     <div className="rv">
+      <h1 className="visually-hidden">{title}</h1>
       <div className="rv-grid">
         <div className="rv-top strip">
           <span className="strip-name">Lichess puzzle, rated {puzzle.rating}</span>
@@ -188,12 +189,12 @@ function PuzzleBoard(props: {
             </div>
           </header>
           <div className="panel-body">
-            <div className="coach">
+            <div className="coach" aria-live="polite">
               {!done ? (
                 <>
                   <h2>{status === "opening" ? "Watch your opponent's move…" : `Your move: find the best move for ${solver}.`}</h2>
                   {missed && (
-                    <p className="coach-feedback coach-feedback--no">Not this one: {sanOf(fen, missed)} doesn't work here. Try another move.</p>
+                    <p className="coach-feedback coach-feedback--no" key={missed}>Not this one: {sanOf(fen, missed)} doesn't work here. Try another move.</p>
                   )}
                   {ply > 1 && !missed && <p className="coach-feedback coach-feedback--yes">Good. Keep going: what's next?</p>}
                   <div className="coach-actions">

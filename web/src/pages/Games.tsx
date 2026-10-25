@@ -55,7 +55,13 @@ export function Games() {
       <div className="filters">
         <div className="seg" role="group" aria-label="Result">
           {RESULTS.map((f) => (
-            <button key={f.value} type="button" aria-pressed={result === f.value} onClick={() => setResult(f.value)}>
+            <button
+              key={f.value}
+              type="button"
+              aria-pressed={result === f.value}
+              disabled={f.value !== "all" && !games.data.some((g) => g.result === f.value)}
+              onClick={() => setResult(f.value)}
+            >
               {f.label}
             </button>
           ))}
@@ -88,7 +94,7 @@ export function Games() {
               <tr key={g.id}>
                 <td>
                   <a className="row-link" href={href({ name: "game", id: g.id, ply: null })}>
-                    <span className={`piece-dot piece-dot--${g.color}`} aria-label={`you played ${g.color}`} />
+                    <span className={`piece-dot piece-dot--${g.color}`} role="img" aria-label={`you played ${g.color}`} />
                     {g.opponent} <span className="muted num">{g.opp_rating}</span>
                   </a>
                   <small>
@@ -103,7 +109,7 @@ export function Games() {
                 <td className="num hide-sm">{g.mistakes}</td>
                 <td className="num hide-sm">{g.blunders}</td>
                 <td className="hide-sm">
-                  {g.habit ? <a href={href({ name: "practice", tag: g.habit.tag })}>{g.habit.title}</a> : <span className="muted">none</span>}
+                  {g.habit ? <a href={href({ name: "practice", tag: g.habit.tag })}>{g.habit.title}</a> : <span className="muted">no habit tagged</span>}
                 </td>
                 <td className="hide-md">{g.family}</td>
               </tr>

@@ -37,9 +37,10 @@
 }
 
 .cmp-chip {
-  padding: 4px 10px;
+  min-height: 36px;
+  padding: 0 12px;
   border: 1px solid var(--c-line);
-  border-radius: 999px;
+  border-radius: 6px;
   background: none;
   color: var(--c-ink);
   font: inherit;
@@ -116,20 +117,52 @@
   color: var(--c-ink-2);
 }
 
+/* Tips read like the ranked habit list: one panel, numbered rows, hairlines between. */
 .cmp-tips {
-  display: grid;
-  gap: 12px;
   margin: 0;
-  padding-left: 1.4em;
+  padding: 0;
+  list-style: none;
+  counter-reset: tip;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
 }
 
 .cmp-tips li {
   display: grid;
-  gap: 2px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 2px 16px;
+  padding: 14px 18px;
+  counter-increment: tip;
+}
+
+.cmp-tips li + li {
+  border-top: 1px solid var(--c-line);
+}
+
+.cmp-tips li::before {
+  content: counter(tip);
+  grid-row: span 2;
+  color: var(--c-ink-3);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.cmp-tips b {
+  font-weight: 650;
 }
 
 .cmp-tips span {
   color: var(--c-ink-2);
+}
+
+.cmp-paused {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  color: var(--c-ink);
 }
 
 .cmp-table th[scope="row"] {

@@ -141,7 +141,7 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
             ):
                 move_rows[-1]["move_class"] = "miss"
 
-    accuracy = grading.game_accuracy(win_white)
+    accuracy = grading.game_accuracy(win_white, game.board().turn)
     conn.execute("DELETE FROM moves WHERE game_id = ?", (row["id"],))
     conn.execute("DELETE FROM move_tags WHERE game_id = ?", (row["id"],))
     if move_rows:

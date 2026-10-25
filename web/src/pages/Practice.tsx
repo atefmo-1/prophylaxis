@@ -69,12 +69,12 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
       <div className="page">
         <header className="page-top">
           <h1>{title}</h1>
-          <p>Nothing to practise right now: every position here is scheduled for later. Come back tomorrow.</p>
+          <p>Nothing to practice right now: every position here is scheduled for later. Come back tomorrow.</p>
         </header>
         <div className="focus-actions">
           {tag && (
             <a className="pbtn" href={href({ name: "practice", tag: null })}>
-              Practise any habit
+              Practice any habit
             </a>
           )}
           <a className="pbtn" href={href({ name: "patterns" })}>
@@ -139,6 +139,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
 
   return (
     <div className="rv">
+      <h1 className="visually-hidden">Practice: position {step + 1} of {session.length}</h1>
       <div className="rv-grid">
         <div className="rv-top strip">
           <span className="strip-name">
@@ -172,7 +173,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
             </div>
           </header>
           <div className="panel-body">
-            <div className="coach">
+            <div className="coach" aria-live="polite">
               <p className="coach-step">
                 Position {step + 1}
                 <span className="coach-dots" aria-hidden="true">
@@ -187,7 +188,7 @@ function Session({ session, tag, info, onAgain }: { session: PracticePosition[];
                     In the game you played {moveLabel(p.ply, p.san)}. Find a better move for {p.color}.
                   </h2>
                   {lastTry && (
-                    <p className="coach-feedback coach-feedback--no">
+                    <p className="coach-feedback coach-feedback--no" key={attempt.tries.length}>
                       Not quite: {sanOf(p.fen, lastTry)} leaves your chances at {Math.round(p.wins[lastTry] ?? 0)}%. Try another move.
                     </p>
                   )}

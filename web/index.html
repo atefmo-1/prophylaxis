@@ -9,7 +9,12 @@
     <script>
       try {
         var t = localStorage.getItem("coach.theme");
-        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+        if (t === "light" || t === "dark") {
+          document.documentElement.dataset.theme = t;
+          document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
+            m.content = t === "light" ? "#f3f3f1" : "#161718";
+          });
+        }
       } catch (e) {}
     </script>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />

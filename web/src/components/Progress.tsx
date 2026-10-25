@@ -97,7 +97,7 @@ export function FirstReview() {
         {wins.length > 1 && <polyline points={points} className="line" />}
       </svg>
       <p className="first-foot">
-        <span className="num">{c.percent < 85 ? `Position ${wins.length} of ${plies + 1}` : "Scoring better moves for your mistakes"}</span>
+        <span className="num">{c.percent < 85 ? `Position ${Math.min(wins.length, plies)} of ${plies}` : "Scoring better moves for your mistakes"}</span>
         <span className="num">{status.paused ? `${c.percent}%` : `${timeLeft(c.eta)} left`}</span>
       </p>
       {status.paused && (

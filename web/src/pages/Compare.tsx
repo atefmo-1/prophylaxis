@@ -217,10 +217,10 @@ export function Compare({ player }: { player: string | null }) {
   const same = (a: string | null, b: string | null) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
   useEffect(() => {
     if (player && !same(player, target)) setTarget(player);
-    // Back on Compare without a name (the top bar's link before it knew one): show the comparison under way.
-    else if (!player && target) window.location.replace(href({ name: "compare", player: target }));
   }, [player, target, setTarget]);
-  const current = same(player, target);
+  // Compare without a name in the address (an old link) shows the comparison under way, if there is one.
+  const shown = player ?? target;
+  const current = same(shown, target);
   const status = current ? cmp.status : ({ kind: "idle" } as const);
   const them = current ? cmp.player : null;
   const theirs = current ? cmp.theirs : [];
@@ -235,7 +235,7 @@ export function Compare({ player }: { player: string | null }) {
   for (const g of lib.games) counts.set(g.opponent, (counts.get(g.opponent) ?? 0) + 1);
   // The sample player's opponents are made up; it compares with the sample rival, which ships with the site.
   const suggestions = lib.isSample ? [SAMPLE_RIVAL] : [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([n]) => n);
-  const name = them ?? player ?? "";
+  const name = them ?? shown ?? "";
   const vs = lib.games.filter((g) => g.opponent.toLowerCase() === name.toLowerCase());
   const h2h = { win: vs.filter((g) => g.result === "win").length, loss: vs.filter((g) => g.result === "loss").length, draw: vs.filter((g) => g.result === "draw").length };
   const enough = theirs.length >= COMPARE_MIN && overview && own?.overview;
@@ -250,15 +250,23 @@ export function Compare({ player }: { player: string | null }) {
         </p>
       </header>
 
-      <Picker key={player ?? ""} suggestions={suggestions} initial={player ?? ""} />
+      <Picker key={shown ?? ""} suggestions={suggestions} initial={shown ?? ""} />
 
-      {player && (
+      {shown && (
         <div className="cmp-status" role="status">
           {status.kind === "loading" && <p>{status.step}</p>}
           {status.kind === "error" && <p className="cmp-error">{status.message}</p>}
           {status.kind === "waiting" && <p>Your own games are being reviewed first; {name}'s start right after.</p>}
           {status.kind === "reviewing" && (
             <>
+              {lib.paused && (
+                <p className="cmp-paused">
+                  Paused {lib.paused === "battery" ? "while the battery is low" : "by you"}.{" "}
+                  <button type="button" className="pbtn" onClick={lib.resume}>
+                    Resume
+                  </button>
+                </p>
+              )}
               <p>
                 Reviewing {name}'s games: {status.done} of {status.total} done{status.eta === null ? "; timing the first one" : `, ${timeLeft(status.eta)} left`}.
                 {theirs.length < COMPARE_MIN ? ` The comparison appears after ${COMPARE_MIN}.` : " The numbers firm up as the rest finish."}
@@ -276,13 +284,13 @@ export function Compare({ player }: { player: string | null }) {
         </div>
       )}
 
-      {player && enough && <Results me={own!.overview!} them={overview!} name={name} h2h={h2h} />}
+      {shown && enough && <Results me={own!.overview!} them={overview!} name={name} h2h={h2h} />}
 
-      {player && enough && (
+      {shown && enough && (
         <section className="block" aria-labelledby="their-openings-title">
           <h2 id="their-openings-title">{name}'s openings</h2>
           <p className="block-lede">What they play and how it goes for them, from their side. Games open on chess.com.</p>
-          <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => g.url} />
+          <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => (g.url.startsWith("https://www.chess.com/") ? g.url : null)} />
         </section>
       )}
     </div>

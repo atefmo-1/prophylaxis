@@ -34,19 +34,26 @@ export async function fetchGames(player: string, months: number, enough: number)
   for (const url of [...archives].reverse()) {
     if (out.length >= enough) break;
     let month: MonthRecord | undefined = known.get(url);
-    if (!month || url === current) {
+    if (!month || url === current || !month.complete) {
       const res = await fetch(url, { cache: "no-cache" });
       // chess.com sometimes lists a past month it doesn't serve; remember it as empty rather than asking every visit.
       if (!res.ok && !(res.status === 404 && url !== current)) continue;
       const games: ChessComGame[] = res.ok
         ? ((await res.json()).games ?? []).filter((g: ChessComGame) => g.rules === "chess" && g.pgn && isMine(g, user))
         : [];
-      month = { player: user, url, games, fetched: Date.now() };
+      month = { player: user, url, games, fetched: Date.now(), complete: url !== current && Date.now() > monthEnd(url) };
       await saveMonth(month);
     }
     out.push(...month.games);
   }
   return out.sort((a, b) => b.end_time - a.end_time);
+}
+
+/** When a month's archive (…/games/YYYY/MM) can't get any more games: the end of that month, plus a day for the last
+ * games to finish and reach the archive. */
+function monthEnd(url: string): number {
+  const [y, m] = url.split("/").slice(-2).map(Number);
+  return Date.UTC(y, m, 1) + 24 * 3600 * 1000;
 }
 
 export const gameId = (g: ChessComGame) => g.url.replace(/\/$/, "").split("/").pop()!;

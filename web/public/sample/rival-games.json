@@ -11,12 +11,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 430,
+"rating": 422,
 "result": "checkmated"
 },
 "black": {
 "username": "opponent-r01",
-"rating": 464,
+"rating": 472,
 "result": "win"
 }
 },
@@ -31,12 +31,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r02",
-"rating": 391,
+"rating": 399,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 414,
 "result": "resigned"
 }
 },
@@ -51,12 +51,12 @@
 "eco": "https://www.chess.com/openings/Ruy-Lopez-Opening",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 406,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-r03",
-"rating": 389,
+"rating": 397,
 "result": "win"
 }
 },
@@ -71,12 +71,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r04",
-"rating": 413,
+"rating": 421,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 }
 },
@@ -91,12 +91,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 398,
+"rating": 406,
 "result": "win"
 },
 "black": {
 "username": "opponent-r05",
-"rating": 361,
+"rating": 353,
 "result": "timeout"
 }
 },
@@ -111,12 +111,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r06",
-"rating": 388,
+"rating": 396,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 }
 },
@@ -131,12 +131,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-rival",
-"rating": 398,
+"rating": 406,
 "result": "win"
 },
 "black": {
 "username": "opponent-r07",
-"rating": 400,
+"rating": 392,
 "result": "resigned"
 }
 },
@@ -151,12 +151,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r08",
-"rating": 411,
+"rating": 403,
 "result": "checkmated"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 414,
 "result": "win"
 }
 },
@@ -171,12 +171,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 422,
 "result": "win"
 },
 "black": {
 "username": "opponent-r09",
-"rating": 382,
+"rating": 374,
 "result": "resigned"
 }
 },
@@ -191,12 +191,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r10",
-"rating": 409,
+"rating": 417,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 414,
 "result": "resigned"
 }
 },
@@ -211,12 +211,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 406,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-r11",
-"rating": 411,
+"rating": 419,
 "result": "win"
 }
 },
@@ -231,12 +231,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r12",
-"rating": 450,
+"rating": 458,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 }
 },
@@ -251,12 +251,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 398,
+"rating": 406,
 "result": "win"
 },
 "black": {
 "username": "opponent-r13",
-"rating": 409,
+"rating": 401,
 "result": "resigned"
 }
 },
@@ -271,12 +271,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r14",
-"rating": 413,
+"rating": 421,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 }
 },
@@ -291,12 +291,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 398,
+"rating": 406,
 "result": "win"
 },
 "black": {
 "username": "opponent-r15",
-"rating": 394,
+"rating": 386,
 "result": "timeout"
 }
 },
@@ -311,12 +311,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r16",
-"rating": 437,
+"rating": 445,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 }
 },
@@ -331,12 +331,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 398,
+"rating": 406,
 "result": "win"
 },
 "black": {
 "username": "opponent-r17",
-"rating": 432,
+"rating": 424,
 "result": "timeout"
 }
 },
@@ -351,12 +351,12 @@
 "eco": "https://www.chess.com/openings/Scandinavian-Defense-Mieses-Kotroc-Variation",
 "white": {
 "username": "opponent-r18",
-"rating": 425,
+"rating": 417,
 "result": "timeout"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 414,
 "result": "win"
 }
 },
@@ -371,12 +371,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 422,
 "result": "win"
 },
 "black": {
 "username": "opponent-r19",
-"rating": 452,
+"rating": 444,
 "result": "timeout"
 }
 },
@@ -391,12 +391,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r20",
-"rating": 421,
+"rating": 429,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 414,
 "result": "resigned"
 }
 },
@@ -411,12 +411,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 406,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-r21",
-"rating": 441,
+"rating": 449,
 "result": "win"
 }
 },
@@ -431,12 +431,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r22",
-"rating": 434,
+"rating": 426,
 "result": "resigned"
 },
 "black": {
 "username": "sample-rival",
-"rating": 406,
+"rating": 414,
 "result": "win"
 }
 },
@@ -451,12 +451,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 422,
 "result": "win"
 },
 "black": {
 "username": "opponent-r23",
-"rating": 449,
+"rating": 441,
 "result": "timeout"
 }
 },
@@ -471,12 +471,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r24",
-"rating": 392,
+"rating": 384,
 "result": "resigned"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 430,
 "result": "win"
 }
 },
@@ -491,12 +491,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "sample-rival",
-"rating": 430,
+"rating": 422,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-r25",
-"rating": 412,
+"rating": 420,
 "result": "win"
 }
 },
@@ -511,12 +511,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r26",
-"rating": 461,
+"rating": 469,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 414,
 "result": "resigned"
 }
 },
@@ -531,12 +531,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 414,
+"rating": 422,
 "result": "win"
 },
 "black": {
 "username": "opponent-r27",
-"rating": 408,
+"rating": 400,
 "result": "timeout"
 }
 },
@@ -551,12 +551,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-r28",
-"rating": 406,
+"rating": 398,
 "result": "resigned"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 430,
 "result": "win"
 }
 },
@@ -571,12 +571,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-rival",
-"rating": 430,
+"rating": 422,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-r29",
-"rating": 453,
+"rating": 461,
 "result": "win"
 }
 },
@@ -591,12 +591,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-r30",
-"rating": 447,
+"rating": 455,
 "result": "win"
 },
 "black": {
 "username": "sample-rival",
-"rating": 422,
+"rating": 414,
 "result": "resigned"
 }
 }

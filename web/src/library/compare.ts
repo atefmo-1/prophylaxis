@@ -60,7 +60,7 @@ export function latest(stored: StoredGame[], timeClass: string, n = COMPARE_GAME
     .slice(0, n);
 }
 
-export function useComparison(name: string | null, timeClass: string | null, sample = false) {
+export function useComparison(name: string | null, timeClass: string | null, sample = false, owner: string | null = null) {
   const own = useLibraryStatus();
   const busy = own.kind === "analysing" || own.kind === "checking";
   const [status, setStatus] = useState<CompareStatus>({ kind: "idle" });
@@ -69,12 +69,19 @@ export function useComparison(name: string | null, timeClass: string | null, sam
   const [todo, setTodo] = useState<ChessComGame[] | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
   const run = useRef(0);
+  const inFlight = useRef<number | null>(null); // the run whose game the engines are reviewing right now
+  const busyNow = useRef(busy);
+  busyNow.current = busy;
   const pace = useRef({ ms: 0, plies: 0 }); // what this comparison's games actually took, for the time left
 
   // Who they are, what's already reviewed, and which of their games to review.
   useEffect(() => {
     const token = ++run.current;
     const live = () => run.current === token;
+    // A game still being reviewed for the previous comparison would hold up this one's: stop it, unless the
+    // player's own queue is running, which shares the engines.
+    if (inFlight.current !== null && !busyNow.current) void getDevice().then((d) => d.pool.cancel());
+    inFlight.current = null;
     setPlayer(null);
     setStored([]);
     setTodo(null);
@@ -87,7 +94,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       const who = rival ? SAMPLE_RIVAL : await findPlayer(name);
       if (!live()) return;
       setPlayer(who);
-      if (!rival) remember(who);
+      if (!rival && owner) remember(owner, who);
       const shipped = rival ? await rivalReviews() : [];
       const have = [...shipped, ...(await loadGames(who.toLowerCase()).catch(() => [] as StoredGame[]))];
       if (!live()) return;
@@ -102,7 +109,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       setTodo(games.filter((g) => !done.has(gameId(g))));
       if (!games.length) setStatus({ kind: "error", message: `${who} has no rated ${timeClass} games in the last year.` });
     })().catch((e: Error) => live() && setStatus({ kind: "error", message: e.message }));
-  }, [name, timeClass, sample]);
+  }, [name, timeClass, sample, owner]);
 
   // Review what's missing, one game per pass, once the player's own games are done. Each pass removes the game it
   // reviewed from the list, so a pass cut short (the page closed, the player's own queue started) loses nothing.
@@ -111,8 +118,10 @@ export function useComparison(name: string | null, timeClass: string | null, sam
     if (!todo.length) return void setStatus((s) => (s.kind === "error" ? s : { kind: "ready" }));
     if (busy) return void setStatus({ kind: "waiting" });
     const token = run.current;
+    if (inFlight.current === token) return; // the game started before the player's own queue ran is still finishing
     let stopped = false;
-    const live = () => run.current === token && !stopped;
+    // The game is kept even if the player's own queue started meanwhile; only another comparison makes it moot.
+    const current = () => run.current === token;
     (async () => {
       const dev = await getDevice();
       // The time left, from what this comparison's games took: the device's stored speed can be stale (measured while
@@ -121,13 +130,17 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       const eta = seen ? todo.reduce((a, g) => a + Math.max(pliesOf(g.pgn), 1) * (ms / seen), 0) : null;
       setStatus({ kind: "reviewing", done: chosen.length - todo.length, total: chosen.length, eta });
       const game = todo[0];
+      inFlight.current = token;
       try {
         const plies = pliesOf(game.pgn);
         const stayedInView = inView();
+        const pausesBefore = dev.pool.pauses;
+        const pausedBefore = dev.pool.paused;
         const started = performance.now();
         const entry = await reviewGame(game, player, dev);
-        if (!live()) return;
-        if (stayedInView()) {
+        if (!current()) return;
+        // Only a game that ran on its own, in view and never paused, says how fast this device is.
+        if (!stopped && stayedInView() && !pausedBefore && dev.pool.pauses === pausesBefore) {
           const took = performance.now() - started;
           pace.current = { ms: pace.current.ms + took, plies: pace.current.plies + plies };
           dev.learn(plies, took);
@@ -136,8 +149,10 @@ export function useComparison(name: string | null, timeClass: string | null, sam
         setStored((s) => [...s.filter((x) => x.review.game.id !== entry.review.game.id), entry]);
       } catch {
         // A game that can't be read is left out.
+      } finally {
+        if (inFlight.current === token) inFlight.current = null;
       }
-      if (live()) setTodo((t) => (t ? t.filter((g) => g !== game) : t));
+      if (current()) setTodo((t) => (t ? t.filter((g) => g !== game) : t));
     })();
     return () => {
       stopped = true;

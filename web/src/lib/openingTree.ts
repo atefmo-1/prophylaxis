@@ -33,10 +33,14 @@ function count(n: TreeNode, g: StoredGame["review"]["game"]) {
   n.recent.push({ id: g.id, t: g.t, opponent: g.opponent, result: g.result, url: g.url });
 }
 
+const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const isStandardStart = (fen: string | undefined) => !fen || fen.split(" ").slice(0, 4).join(" ") === START.split(" ").slice(0, 4).join(" ");
+
 /** One tree for the games played with `color`, from that player's side. */
 export function buildTree(stored: StoredGame[], color: Color, depth = TREE_DEPTH): TreeNode {
-  const games = stored.filter((s) => s.review.game.color === color && s.review.moves.length > 0);
-  const root = node(null, null, games[0]?.review.start_fen ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  // Games from a set-up position would land in the wrong places of a tree that starts from the normal position.
+  const games = stored.filter((s) => s.review.game.color === color && s.review.moves.length > 0 && isStandardStart(s.review.start_fen));
+  const root = node(null, null, START);
   for (const s of games) {
     let at = root;
     count(at, s.review.game);

@@ -148,7 +148,7 @@ ENDINGS = {
     ("win", "timeout"): "Won on time",
     ("win", "abandoned"): "Won, opponent left",
     ("loss", "checkmated"): "Lost by checkmate",
-    ("loss", "resigned"): "Resigned",
+    ("loss", "resigned"): "Lost by resignation",
     ("loss", "timeout"): "Lost on time",
     ("loss", "abandoned"): "Left the game",
     ("draw", "stalemate"): "Draw by stalemate",

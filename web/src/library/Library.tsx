@@ -115,6 +115,8 @@ interface LibraryValue {
   /** The next games that could be reviewed after these, and about how long they'd take; null when there are none. */
   more: { games: number; eta: number; span: number } | null;
   reviewMore: () => void;
+  /** Why reviewing is on hold (the player paused it, or the battery is low), or null. */
+  paused: Paused;
   pause: () => void;
   resume: () => void;
   start: (username: string) => Promise<void>;
@@ -168,6 +170,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const lastCheck = useRef(0);
   const device = useRef<Device | null>(null);
   const paused = useRef<Paused>(null);
+  const [pausedNow, setPausedNow] = useState<Paused>(null);
   const pauses = useRef(0); // counts pauses, so a game that was paused doesn't teach the speed estimate
   const plan = useRef<{ games: ChessComGame[]; target: number } | null>(null);
 
@@ -182,7 +185,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       if (who !== SAMPLE) {
         const known = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
         const imported = (await reviewsFromExtension(who)).filter((s) => s.version === ANALYSIS_VERSION && !known.has(s.review.game.id));
-        for (const entry of imported) await saveGame(who.toLowerCase(), entry);
+        for (const entry of imported) {
+          if (!live()) return;
+          await saveGame(who.toLowerCase(), entry);
+        }
         if (imported.length && live()) {
           const ids = new Set(imported.map((s) => s.review.game.id));
           setStored((s) => [...s.filter((x) => !ids.has(x.review.game.id)), ...imported]);
@@ -198,6 +204,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           if (!live()) return;
           const review = await retagReview(model, entry.review).catch(() => null);
           if (!review) continue; // left as it was; tried again next visit
+          if (!live()) return;
           const next = { ...entry, review, tagged: model.version };
           await saveGame(who.toLowerCase(), next);
           fresh.set(next.review.game.id, next);
@@ -272,6 +279,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const setPaused = useCallback((reason: Paused) => {
     if (paused.current === reason) return;
     paused.current = reason;
+    setPausedNow(reason);
     if (reason) pauses.current++;
     if (reason) device.current?.pool.pause();
     else device.current?.pool.resume();
@@ -385,7 +393,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     device.current?.pool.cancel();
     writeTarget(player, null);
     await forget(player.toLowerCase());
-    await forgetCompared();
+    await forgetCompared(player);
     writePlayer(null);
     setPlayer(null);
   }, [player]);
@@ -407,8 +415,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   }, [player, derived.overview]);
 
   const value = useMemo<LibraryValue>(
-    () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, more, reviewMore, pause, resume, start, startSample, leave, forgetPlayer }),
-    [player, loaded, stored, derived, more, reviewMore, pause, resume, start, startSample, leave, forgetPlayer],
+    () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, more, reviewMore, paused: pausedNow, pause, resume, start, startSample, leave, forgetPlayer }),
+    [player, loaded, stored, derived, more, reviewMore, pausedNow, pause, resume, start, startSample, leave, forgetPlayer],
   );
 
   return (

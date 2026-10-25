@@ -8,6 +8,14 @@ import { useEffect, useState } from "react";
 //   #/puzzles/<tag>    Lichess puzzles for a habit
 //   #/openings         the opening tree of your games
 //   #/compare/<name>   you against another chess.com player
+const decode = (part: string) => {
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    return part; // a malformed escape: keep it as typed
+  }
+};
+
 export type Route =
   | { name: "latest" }
   | { name: "game"; id: string; ply: number | null }
@@ -29,7 +37,7 @@ export function parse(hash: string): Route {
   if (parts[0] === "practice") return { name: "practice", tag: parts[1] ?? null };
   if (parts[0] === "puzzles") return { name: "puzzles", tag: parts[1] ?? null };
   if (parts[0] === "openings") return { name: "openings" };
-  if (parts[0] === "compare") return { name: "compare", player: parts[1] ? decodeURIComponent(parts[1]) : null };
+  if (parts[0] === "compare") return { name: "compare", player: parts[1] ? decode(parts[1]) : null };
   return { name: "latest" };
 }
 

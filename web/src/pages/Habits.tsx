@@ -65,7 +65,7 @@ function Focus({ w }: { w: Weakness }) {
         <p className="focus-fix">{w.fix}</p>
         <div className="focus-actions">
           <a className="pbtn pbtn--primary" href={href({ name: "practice", tag: w.tag })}>
-            Practise 5 of these
+            Practice 5 of these
           </a>
           {hasPuzzles(w.tag) && (
             <a className="pbtn" href={href({ name: "puzzles", tag: w.tag })}>
@@ -117,7 +117,7 @@ function AllHabits({ list }: { list: Weakness[] }) {
   return (
     <section className="block" aria-labelledby="habits-title">
       <h2 id="habits-title">All habits</h2>
-      <p className="block-lede">Ranked by how much winning chance they cost you per game.</p>
+      <p className="block-lede">Ranked by how much winning chance each one costs you in an average game, across all your reviewed games.</p>
       <ol className="habit-list">
         {list.map((w, i) => (
           <li key={w.tag}>
@@ -133,11 +133,11 @@ function AllHabits({ list }: { list: Weakness[] }) {
               <span>recent games{w.windows.prev !== null ? `, was ${w.windows.prev}` : ""}</span>
             </div>
             <div className="habit-cost">
-              <b className="num">−{Math.round(w.avg_loss)}%</b>
-              <span>chances each time</span>
+              <b className="num">{w.impact < 1 ? "under 1%" : `−${Math.round(w.impact)}%`}</b>
+              <span>a game, −{Math.round(w.avg_loss)}% each time</span>
             </div>
             <a className="pbtn" href={href({ name: hasPuzzles(w.tag) ? "puzzles" : "practice", tag: w.tag })}>
-              {hasPuzzles(w.tag) ? "Puzzles" : "Practise"}
+              {hasPuzzles(w.tag) ? "Puzzles" : "Practice"}
             </a>
           </li>
         ))}

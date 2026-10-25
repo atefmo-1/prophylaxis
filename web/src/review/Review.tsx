@@ -1,5 +1,5 @@
 // The game review: board first, coach panel beside it. Opens on a summary, then key moments as retry puzzles.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Board, type Arrow, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { IconFirst, IconLast, IconNext, IconPrev } from "../components/Icons";
@@ -10,7 +10,7 @@ import { read } from "../lib/coach";
 import { chancesAround, explain, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, plural, timeControl } from "../lib/format";
 import { recordAttempt } from "../lib/practice";
-import { dragToUci, legalDests, pieceAt, sanOf, uciOfSan } from "../lib/rules";
+import { dragToUci, isCheck, legalDests, pieceAt, playUci, sanOf, uciOfSan } from "../lib/rules";
 import { tacticArrows } from "../lib/shapes";
 import { href, replacePly } from "../router";
 import type { GameReview as ReviewData, MoveClass, MoveTag } from "../types";
@@ -54,7 +54,8 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: ()
   const k = review.key_moments.length;
   return (
     <div className="summary">
-      <h1>{g.ending}</h1>
+      {/* Reviews saved before "Lost by resignation" said only "Resigned". */}
+      <h2>{g.ending === "Resigned" ? "Lost by resignation" : g.ending}</h2>
       <p className="summary-story">{coach.story}</p>
 
       <table className="rv-sumtable">
@@ -178,10 +179,11 @@ export function ReviewView({
     [go],
   );
 
-  // Arrow keys always step through the game.
+  // Arrow keys step through the game, except while a key moment is waiting for your move.
+  const solving = useRef(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.metaKey || e.ctrlKey || (e.target as HTMLElement).closest("input, textarea")) return;
+      if (e.altKey || e.metaKey || e.ctrlKey || solving.current || (e.target as HTMLElement).closest("input, textarea")) return;
       const map: Record<string, number> = { ArrowLeft: index - 1, ArrowRight: index + 1, Home: -1, End: n - 1 };
       if (!(e.key in map)) return;
       e.preventDefault();
@@ -195,6 +197,7 @@ export function ReviewView({
   const momentPly = mode.kind === "moments" ? moments[mode.step] : null;
   const moment = momentPly !== null ? review.moves[momentPly - 1] : null;
   const attempt: Attempt = (momentPly !== null && attempts[momentPly]) || { status: "trying", tries: [], last: null };
+  solving.current = mode.kind === "moments" && attempt.status === "trying";
   const beforeFen = momentPly !== null ? (momentPly === 1 ? review.start_fen : review.moves[momentPly - 2].fen) : null;
 
   const startMoments = (step = 0) => {
@@ -249,12 +252,17 @@ export function ReviewView({
       const reply = moment.reply_line[0] ? uciOfSan(moment.fen, moment.reply_line[0]) : null;
       arrows = reply ? tacticArrows(moment.fen, reply, "threat") : [];
       check = /[+#]$/.test(moment.san);
+    } else if (attempt.status === "found" && attempt.last && playUci(beforeFen, attempt.last)) {
+      // The move you found stays on the board, where you put it.
+      fen = playUci(beforeFen, attempt.last)!;
+      lastMove = attempt.last;
+      badge = null;
+      check = isCheck(fen);
     } else {
       fen = beforeFen;
       lastMove = prev?.uci ?? null;
       badge = null;
-      const shown = attempt.status === "found" ? attempt.last : moment.best_uci;
-      arrows = shown ? tacticArrows(beforeFen, shown, "best") : [];
+      arrows = moment.best_uci ? tacticArrows(beforeFen, moment.best_uci, "best") : [];
     }
   } else if (mode.kind === "moves" && move && move.mine && BAD.includes(move.class) && !move.decided && move.best_uci && move.best_uci !== move.uci) {
     const before = index >= 1 ? review.moves[index - 1].fen : review.start_fen;
@@ -277,6 +285,9 @@ export function ReviewView({
 
   return (
     <div className="rv">
+      <h1 className="visually-hidden">
+        Review: your game against {g.opponent}
+      </h1>
       <div className="rv-grid">
         <div className="rv-top">
           <PlayerStrip {...them} />
@@ -339,7 +350,11 @@ export function ReviewView({
                 <h2>
                   Done: {moments.filter((p) => attempts[p]?.status === "found").length} of {moments.length} found
                 </h2>
-                <p>Positions you didn't find come back in practice tomorrow.</p>
+                <p>
+                  {moments.every((p) => attempts[p]?.status === "found")
+                    ? "You found every one. They come back in practice in a few days, to make them stick."
+                    : "The positions you didn't find come back in practice tomorrow."}
+                </p>
                 <div className="summary-actions">
                   <button type="button" className="btn btn--primary" onClick={() => stepMoves(-1)}>
                     Step through every move
@@ -446,7 +461,7 @@ function MomentCard({
             You played {moveLabel(ply, m.san)}. Find a better move for {g.color}.
           </h2>
           {lastTry && (
-            <p className="coach-feedback coach-feedback--no">
+            <p className="coach-feedback coach-feedback--no" key={attempt.tries.length}>
               Not quite: {sanOf(beforeFen, lastTry)} leaves your chances at {Math.round(wins[lastTry] ?? 0)}%. Try another move.
             </p>
           )}

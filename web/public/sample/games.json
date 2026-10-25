@@ -11,12 +11,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-player",
-"rating": 412,
+"rating": 420,
 "result": "win"
 },
 "black": {
 "username": "opponent-01",
-"rating": 389,
+"rating": 381,
 "result": "resigned"
 }
 },
@@ -31,12 +31,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "opponent-02",
-"rating": 445,
+"rating": 437,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 428,
 "result": "win"
 }
 },
@@ -51,12 +51,12 @@
 "eco": "https://www.chess.com/openings/Philidor-Defense",
 "white": {
 "username": "sample-player",
-"rating": 428,
+"rating": 420,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-03",
-"rating": 463,
+"rating": 471,
 "result": "win"
 }
 },
@@ -71,12 +71,12 @@
 "eco": "https://www.chess.com/openings/Kings-Pawn-Opening-Kings-Knight-Variation",
 "white": {
 "username": "opponent-04",
-"rating": 449,
+"rating": 441,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 428,
 "result": "win"
 }
 },
@@ -91,12 +91,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "sample-player",
-"rating": 428,
+"rating": 420,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-05",
-"rating": 391,
+"rating": 399,
 "result": "win"
 }
 },
@@ -111,12 +111,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "opponent-06",
-"rating": 427,
+"rating": 435,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 412,
 "result": "checkmated"
 }
 },
@@ -131,12 +131,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "sample-player",
-"rating": 412,
+"rating": 420,
 "result": "win"
 },
 "black": {
 "username": "opponent-07",
-"rating": 431,
+"rating": 423,
 "result": "resigned"
 }
 },
@@ -151,12 +151,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "opponent-08",
-"rating": 440,
+"rating": 432,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 428,
 "result": "win"
 }
 },
@@ -171,12 +171,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "sample-player",
-"rating": 428,
+"rating": 420,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-09",
-"rating": 447,
+"rating": 455,
 "result": "win"
 }
 },
@@ -191,12 +191,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-10",
-"rating": 406,
+"rating": 414,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 412,
 "result": "resigned"
 }
 },
@@ -211,12 +211,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-player",
-"rating": 412,
+"rating": 404,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-11",
-"rating": 415,
+"rating": 423,
 "result": "win"
 }
 },
@@ -231,12 +231,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "opponent-12",
-"rating": 405,
+"rating": 413,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 404,
+"rating": 396,
 "result": "resigned"
 }
 },
@@ -251,12 +251,12 @@
 "eco": "https://www.chess.com/openings/Philidor-Defense",
 "white": {
 "username": "sample-player",
-"rating": 396,
+"rating": 404,
 "result": "win"
 },
 "black": {
 "username": "opponent-13",
-"rating": 378,
+"rating": 370,
 "result": "resigned"
 }
 },
@@ -271,12 +271,12 @@
 "eco": "https://www.chess.com/openings/Ruy-Lopez-Opening",
 "white": {
 "username": "opponent-14",
-"rating": 396,
+"rating": 404,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 404,
+"rating": 396,
 "result": "checkmated"
 }
 },
@@ -291,12 +291,12 @@
 "eco": "https://www.chess.com/openings/Italian-Game-Two-Knights-Defense",
 "white": {
 "username": "sample-player",
-"rating": 396,
+"rating": 388,
 "result": "timeout"
 },
 "black": {
 "username": "opponent-15",
-"rating": 371,
+"rating": 379,
 "result": "win"
 }
 },
@@ -311,12 +311,12 @@
 "eco": "https://www.chess.com/openings/Queens-Pawn-Opening-Accelerated-London-System",
 "white": {
 "username": "opponent-16",
-"rating": 418,
+"rating": 426,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 388,
+"rating": 380,
 "result": "checkmated"
 }
 },
@@ -331,12 +331,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "sample-player",
-"rating": 380,
+"rating": 372,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-17",
-"rating": 359,
+"rating": 367,
 "result": "win"
 }
 },
@@ -351,12 +351,12 @@
 "eco": "https://www.chess.com/openings/Queens-Gambit-Declined",
 "white": {
 "username": "opponent-18",
-"rating": 392,
+"rating": 384,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 372,
+"rating": 380,
 "result": "win"
 }
 },
@@ -371,12 +371,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-player",
-"rating": 380,
+"rating": 388,
 "result": "win"
 },
 "black": {
 "username": "opponent-19",
-"rating": 403,
+"rating": 395,
 "result": "resigned"
 }
 },
@@ -391,12 +391,12 @@
 "eco": "https://www.chess.com/openings/Philidor-Defense",
 "white": {
 "username": "opponent-20",
-"rating": 413,
+"rating": 421,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 388,
+"rating": 380,
 "result": "resigned"
 }
 },
@@ -411,12 +411,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-player",
-"rating": 380,
+"rating": 388,
 "result": "win"
 },
 "black": {
 "username": "opponent-21",
-"rating": 360,
+"rating": 352,
 "result": "resigned"
 }
 },
@@ -431,12 +431,12 @@
 "eco": "https://www.chess.com/openings/Queens-Gambit-Declined",
 "white": {
 "username": "opponent-22",
-"rating": 384,
+"rating": 392,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 388,
+"rating": 380,
 "result": "resigned"
 }
 },
@@ -451,12 +451,12 @@
 "eco": "https://www.chess.com/openings/Ruy-Lopez-Opening",
 "white": {
 "username": "sample-player",
-"rating": 380,
+"rating": 372,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-23",
-"rating": 352,
+"rating": 360,
 "result": "win"
 }
 },
@@ -471,12 +471,12 @@
 "eco": "https://www.chess.com/openings/Queens-Pawn-Opening-Accelerated-London-System",
 "white": {
 "username": "opponent-24",
-"rating": 344,
+"rating": 352,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 372,
+"rating": 364,
 "result": "resigned"
 }
 },
@@ -491,12 +491,12 @@
 "eco": "https://www.chess.com/openings/Queens-Gambit-Declined",
 "white": {
 "username": "sample-player",
-"rating": 364,
+"rating": 372,
 "result": "win"
 },
 "black": {
 "username": "opponent-25",
-"rating": 401,
+"rating": 393,
 "result": "resigned"
 }
 },
@@ -511,12 +511,12 @@
 "eco": "https://www.chess.com/openings/French-Defense-Advance-Variation",
 "white": {
 "username": "opponent-26",
-"rating": 410,
+"rating": 402,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 372,
+"rating": 380,
 "result": "win"
 }
 },
@@ -531,12 +531,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-player",
-"rating": 380,
+"rating": 388,
 "result": "win"
 },
 "black": {
 "username": "opponent-27",
-"rating": 363,
+"rating": 355,
 "result": "resigned"
 }
 },
@@ -551,12 +551,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "opponent-28",
-"rating": 349,
+"rating": 341,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 388,
+"rating": 396,
 "result": "win"
 }
 },
@@ -571,12 +571,12 @@
 "eco": "https://www.chess.com/openings/Scandinavian-Defense-Mieses-Kotroc-Variation",
 "white": {
 "username": "sample-player",
-"rating": 396,
+"rating": 388,
 "result": "resigned"
 },
 "black": {
 "username": "opponent-29",
-"rating": 353,
+"rating": 361,
 "result": "win"
 }
 },
@@ -591,12 +591,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "opponent-30",
-"rating": 384,
+"rating": 376,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 388,
+"rating": 396,
 "result": "win"
 }
 },
@@ -611,12 +611,12 @@
 "eco": "https://www.chess.com/openings/Philidor-Defense",
 "white": {
 "username": "sample-player",
-"rating": 396,
+"rating": 404,
 "result": "win"
 },
 "black": {
 "username": "opponent-31",
-"rating": 371,
+"rating": 363,
 "result": "resigned"
 }
 },
@@ -631,12 +631,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "opponent-32",
-"rating": 364,
+"rating": 372,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 404,
+"rating": 396,
 "result": "resigned"
 }
 },
@@ -651,12 +651,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "sample-player",
-"rating": 396,
+"rating": 404,
 "result": "win"
 },
 "black": {
 "username": "opponent-33",
-"rating": 375,
+"rating": 367,
 "result": "resigned"
 }
 },
@@ -671,12 +671,12 @@
 "eco": "https://www.chess.com/openings/Ruy-Lopez-Opening",
 "white": {
 "username": "opponent-34",
-"rating": 366,
+"rating": 358,
 "result": "resigned"
 },
 "black": {
 "username": "sample-player",
-"rating": 404,
+"rating": 412,
 "result": "win"
 }
 },
@@ -691,12 +691,12 @@
 "eco": "https://www.chess.com/openings/Caro-Kann-Defense",
 "white": {
 "username": "sample-player",
-"rating": 412,
+"rating": 420,
 "result": "win"
 },
 "black": {
 "username": "opponent-35",
-"rating": 381,
+"rating": 373,
 "result": "timeout"
 }
 },
@@ -711,12 +711,12 @@
 "eco": "https://www.chess.com/openings/Sicilian-Defense-Open",
 "white": {
 "username": "opponent-36",
-"rating": 441,
+"rating": 449,
 "result": "win"
 },
 "black": {
 "username": "sample-player",
-"rating": 420,
+"rating": 412,
 "result": "resigned"
 }
 }
