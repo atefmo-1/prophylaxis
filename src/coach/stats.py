@@ -329,6 +329,7 @@ def overview(conn: sqlite3.Connection) -> dict:
         series.append({
             "game_id": g["id"],
             "t": g["start_time"],
+            "time_class": g["time_class"],
             "rating": g["my_rating"],
             "opp_rating": g["opp_rating"],
             "result": g["result"],
@@ -490,13 +491,20 @@ def overview(conn: sqlite3.Connection) -> dict:
     pairs = [(g["my_accuracy"], g["chesscom_accuracy"]) for g in games
              if g["my_accuracy"] is not None and g["chesscom_accuracy"] is not None]
 
+    # Ratings differ by time control, so the one shown is the time control played most (the latest game's on a tie).
+    count = Counter(g["time_class"] for g in games)
+    last = {g["time_class"]: i for i, g in enumerate(games)}
+    rating_class = max(count, key=lambda tc: (count[tc], last[tc]))
+    rated = [g for g in games if g["time_class"] == rating_class]
+
     return {
         "generated_at": int(time.time()),
         "player": {
             "username": config.USERNAME,
-            "rating": games[-1]["my_rating"],
-            "peak": max(g["my_rating"] for g in games),
-            "start_rating": games[0]["my_rating"],
+            "rating": rated[-1]["my_rating"],
+            "peak": max(g["my_rating"] for g in rated),
+            "start_rating": rated[0]["my_rating"],
+            "rating_time_class": rating_class,
             **_record(games),
             "accuracy": _mean(g["my_accuracy"] for g in games),
             "opp_accuracy": _mean(g["opp_accuracy"] for g in games),

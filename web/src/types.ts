@@ -110,6 +110,7 @@ export interface Overview {
     played: number;
     unplayed: number;
     time_classes: string[];
+    rating_time_class: string; // rating, peak and start_rating are for this time control
   };
   series: {
     game_id: string;
@@ -119,6 +120,7 @@ export interface Overview {
     result: Result;
     accuracy: number | null;
     accuracy_avg10: number | null;
+    time_class: string;
   }[];
   move_quality: { class: MoveClass; mine: number; mine_per_game: number; theirs: number; theirs_per_game: number }[];
   phases: { phase: string; moves: number; games: number; accuracy: number | null; mistakes: number; mistake_rate: Interval | null }[];

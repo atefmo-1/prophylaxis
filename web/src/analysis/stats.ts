@@ -403,6 +403,7 @@ export function overview(stored: StoredGame[], username: string, method: Overvie
     return {
       game_id: g.id,
       t: g.start_time,
+      time_class: g.time_class,
       rating: g.my_rating,
       opp_rating: g.opp_rating,
       result: g.result,
@@ -554,13 +555,25 @@ export function overview(stored: StoredGame[], username: string, method: Overvie
   const great = mine.filter((m) => m.move_class === "great").sort((a, b) => b.win_before - a.win_before);
   const pairs = games.filter((g) => g.my_accuracy !== null && g.chesscom_accuracy !== null).map((g) => ({ ours: g.my_accuracy!, chesscom: g.chesscom_accuracy! }));
 
+  // Ratings differ by time control, so the one shown is the time control played most (the latest game's on a tie).
+  const count = new Map<string, number>();
+  const latest = new Map<string, number>();
+  games.forEach((g, i) => {
+    count.set(g.time_class, (count.get(g.time_class) ?? 0) + 1);
+    latest.set(g.time_class, i);
+  });
+  const rank = (tc: string) => count.get(tc)! * 1_000_000 + latest.get(tc)!;
+  const ratingClass = [...count.keys()].reduce((a, b) => (rank(b) > rank(a) ? b : a));
+  const rated = games.filter((g) => g.time_class === ratingClass);
+
   return {
     generated_at: Math.floor(Date.now() / 1000),
     player: {
       username,
-      rating: games[games.length - 1].my_rating,
-      peak: Math.max(...games.map((g) => g.my_rating)),
-      start_rating: games[0].my_rating,
+      rating: rated[rated.length - 1].my_rating,
+      peak: Math.max(...rated.map((g) => g.my_rating)),
+      start_rating: rated[0].my_rating,
+      rating_time_class: ratingClass,
       ...record(games),
       accuracy: mean(games.map((g) => g.my_accuracy)),
       opp_accuracy: mean(games.map((g) => g.opp_accuracy)),

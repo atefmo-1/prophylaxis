@@ -162,7 +162,10 @@ const pct0 = (v: number) => `${Math.round(v)}`;
 
 function Trends({ data }: { data: Overview }) {
   const p = data.player;
-  const ratings = data.series.map((s) => s.rating);
+  // Ratings only make sense within one time control: the one played most.
+  const rated = data.series.filter((s) => s.time_class === p.rating_time_class);
+  const ratings = rated.map((s) => s.rating);
+  const kind = p.rating_time_class.charAt(0).toUpperCase() + p.rating_time_class.slice(1);
   const lo = Math.max(0, Math.floor((Math.min(...ratings) - 10) / 100) * 100);
   const hi = Math.ceil((Math.max(...ratings) + 10) / 100) * 100;
   const mid = Math.round((lo + hi) / 2 / 50) * 50;
@@ -173,15 +176,15 @@ function Trends({ data }: { data: Overview }) {
       <h2 id="trends-title">Trends</h2>
       <p className="block-lede">Every game since you started, oldest on the left. Hover for the game.</p>
       <div className="cards">
-        <Card title="Rapid rating" takeaway={`From ${p.start_rating} to ${p.rating}, with a peak of ${p.peak}.`}>
+        <Card title={`${kind} rating`} takeaway={`From ${p.start_rating} to ${p.rating}, with a peak of ${p.peak}.`}>
           <GameChart
-            label="Rapid rating after each game"
+            label={`${kind} rating after each ${p.rating_time_class} game`}
             series={[{ key: "rating", kind: "line", values: ratings }]}
             domain={[lo, hi]}
             ticks={[lo, mid, hi]}
             format={(v) => String(v)}
             tip={(i) => {
-              const s = data.series[i];
+              const s = rated[i];
               return (
                 <>
                   <b className="num">{s.rating}</b> {RESULT_META[s.result].label.toLowerCase()} vs {s.opp_rating}, {day(s.t)}

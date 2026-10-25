@@ -43,13 +43,18 @@ function PlayerMenu({ player }: { player: string }) {
   const { leave, forgetPlayer, isSample, pause, resume } = useLibrary();
   const status = useLibraryStatus();
   const overview = useOverview();
-  const rating = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
+  const player_ = overview.status === "ready" && !overview.data.empty ? overview.data.player : null;
+  const rating = player_?.rating ?? null;
   const menu = useRef<HTMLDetailsElement>(null);
   const close = () => menu.current?.removeAttribute("open");
   return (
     <details className="me" ref={menu}>
       <summary>
-        {isSample ? "Sample player" : player} {rating !== null && <span className="num">{rating}</span>}
+        {isSample ? "Sample player" : player} {rating !== null && (
+          <span className="num" title={`${player_!.rating_time_class} rating`}>
+            {rating}
+          </span>
+        )}
       </summary>
       <div className="me-menu">
         <div className="me-theme">
