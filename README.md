@@ -19,7 +19,7 @@ Only finished games are analysed. It never helps during a live game (chess.com F
 ### The site
 
 1. Open [the site](https://atefmo-1.github.io/prophylaxis/) on any device and enter your chess.com username.
-2. Your games load from chess.com's public archive and Stockfish starts reading them, in your browser. Your latest game is reviewed first, in about a minute; your other recent games (up to 100) follow in the background, newest first, while you read. Close the tab and it picks up where it left off next time, then checks for new games whenever you come back.
+2. Your games load from chess.com's public archive and Stockfish starts reading them, in your browser, on as many cores as your device can spare. Your latest game is reviewed first, in seconds on a laptop; your other recent games follow in the background, newest first, while you read. The first visit reviews as many games as your device gets through in about five minutes (at least 5, so Habits has something to show), and **Games** offers to review more. The top bar shows the time left and a pause button (on a phone, it's in the player menu), and reviewing pauses by itself when the battery is low and not charging. Close the tab and it picks up where it left off next time, then checks for new games whenever you come back.
 3. Use the four pages:
    - **Review** opens on your latest game. The **Summary** tab is the report card. **Review key moments** turns your worst moves into puzzles: drag a piece to find a better move; **Hint**, **Show the answer** and **Skip** are there when you're stuck. The **Moves** tab steps through the game with an explanation for every move (arrow keys, the buttons under the graph, or **Next mistake**).
    - **Habits** shows your #1 habit with a real position, then skill areas and every habit ranked by what it costs. It fills in once 5 games are reviewed.
@@ -40,7 +40,7 @@ It reviews each game the moment it ends, beside the board on chess.com.
 ## How it works
 
 ```
-chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, in a Web Worker)
+chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, one Web Worker per spare core)
                                        └─► grading: win %, accuracy, move classes
                                        └─► tactic rules: hung pieces, forks, missed mates, clock
                                        └─► tactic classifier (ONNX, onnxruntime-web, its own Web Worker): names pins, skewers, …
@@ -51,7 +51,8 @@ chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, in 
 | Part | Where |
 |---|---|
 | Reading games from chess.com (CORS is open; one request at a time; past months fetched once) | `web/src/library/chesscom.ts` |
-| Background review queue, newest first, and the browser store | `web/src/library/Library.tsx`, `web/src/library/store.ts` |
+| Background review queue, newest first, within a time budget; pausing; the browser store | `web/src/library/Library.tsx`, `web/src/library/store.ts` |
+| How many engines this device runs, a one-second speed check, time estimates; the engines sharing a game | `web/src/library/device.ts`, `web/src/analysis/pool.ts` |
 | One game: engine lines, grades, tactic tags, puzzles for each mistake | `web/src/analysis/review.ts`, `motifs.ts`, `grading.ts` |
 | The trained tactic classifier, and how its tags combine with the rules' | `web/src/analysis/tactics.ts`, `tactics.worker.ts`, `planes.ts` |
 | Statistics across games: intervals, habits, skills, practice positions | `web/src/analysis/stats.ts` |
@@ -103,6 +104,7 @@ uv run pytest                                      # grading, openings, interval
 (cd ml && uv run pytest)                           # tactic classifier: data, features, encoder parity with TypeScript
 npm --prefix web run typecheck
 node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
+node web/scripts/check-device.mjs <username> [laptop|phone]   # engines, time budget, time left, pausing, as a laptop or a slow phone
 node web/scripts/check-extension.mjs <username> <gameId>     # the extension's post-game review
 node web/scripts/check-bridge.mjs <username>                 # extension and site together (dev server running)
 ```

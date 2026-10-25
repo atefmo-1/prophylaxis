@@ -20,7 +20,8 @@ import type {
 import { ENDINGS, TAG_INFO } from "./catalog";
 import { moveAccuracy, pov } from "./grading";
 
-export const ANALYSIS_VERSION = 1;
+/** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier). */
+export const ANALYSIS_VERSION = 2;
 const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
 const CLASSES: MoveClass[] = ["great", "best", "excellent", "good", "inaccuracy", "mistake", "miss", "blunder"];
 const HABIT_WINDOW = 10;

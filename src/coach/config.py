@@ -18,7 +18,7 @@ ENGINE_MULTIPV = 2
 
 # Bump when move grading or tactic detection changes; `coach analyze` then re-grades
 # every game from the engine cache without re-running Stockfish.
-ANALYSIS_VERSION = 3
+ANALYSIS_VERSION = 4  # 4: a back-rank mate needs the king boxed in
 
 
 def stockfish_path() -> str:
