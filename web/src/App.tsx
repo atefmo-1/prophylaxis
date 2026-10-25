@@ -7,6 +7,7 @@ import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library
 import { Games } from "./pages/Games";
 import { Habits } from "./pages/Habits";
 import { Practice } from "./pages/Practice";
+import { Puzzles } from "./pages/Puzzles";
 import { Start } from "./pages/Start";
 import { Review } from "./review/Review";
 import { href, useRoute, type Route } from "./router";
@@ -14,7 +15,7 @@ import { href, useRoute, type Route } from "./router";
 const NAV: { label: string; route: Route; match: Route["name"][] }[] = [
   { label: "Review", route: { name: "latest" }, match: ["latest", "game"] },
   { label: "Habits", route: { name: "patterns" }, match: ["patterns"] },
-  { label: "Practice", route: { name: "practice", tag: null }, match: ["practice"] },
+  { label: "Practice", route: { name: "practice", tag: null }, match: ["practice", "puzzles"] },
   { label: "Games", route: { name: "games" }, match: ["games"] },
 ];
 
@@ -162,6 +163,8 @@ function Shell() {
           <Habits />
         ) : route.name === "practice" ? (
           <Practice tag={route.tag} />
+        ) : route.name === "puzzles" ? (
+          <Puzzles tag={route.tag} />
         ) : route.name === "games" ? (
           <Games />
         ) : (

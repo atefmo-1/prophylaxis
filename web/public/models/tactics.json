@@ -1,5 +1,6 @@
 {
- "planes": 32,
+ "version": "de77948c2c87",
+ "planes": 96,
  "themes": [
   "mateIn1",
   "mateIn2",
@@ -18,21 +19,21 @@
   "smotheredMate"
  ],
  "thresholds": [
-  0.14,
+  0.12,
   0.45,
+  0.4,
+  0.4,
+  0.4,
+  0.4,
+  0.4,
   0.45,
-  0.39,
-  0.39,
-  0.29,
-  0.39,
-  0.39,
-  0.51,
-  0.29,
   0.34,
-  0.25,
-  0.25,
-  0.39,
-  0.39
+  0.4,
+  0.34,
+  0.3,
+  0.4,
+  0.4,
+  0.4
  ],
  "trusted": [
   "fork",
@@ -40,13 +41,10 @@
   "discoveredAttack",
   "deflection",
   "hangingPiece",
-  "attraction",
   "backRankMate",
   "promotion",
   "skewer",
   "trappedPiece",
-  "capturingDefender",
-  "doubleCheck",
-  "smotheredMate"
+  "capturingDefender"
  ]
 }

@@ -1,0 +1,3 @@
+These puzzles come from the Lichess puzzle database (https://database.lichess.org/#puzzles),
+released under Creative Commons CC0. Each row is [puzzle id, FEN, moves (UCI), rating]; the first move
+is the opponent's, and the puzzle is lichess.org/training/<puzzle id>.

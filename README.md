@@ -8,7 +8,7 @@ A free chess coach for anyone who plays on chess.com. It covers what chess.com p
 
 - **Game review:** opens on a chess.com-style report card, then walks you through your key moments as puzzles ("find a better move"), accepting any move that holds your position. Every move is graded on chess.com's scale (brilliant, great, best … book … miss, blunder) with a scoresheet, eval bar, winning-chances graph and a plain-English explanation.
 - **Habits:** your #1 habit with a position from your own games, six skill areas, and every habit ranked by how much it costs you, each linked to its positions.
-- **Practice:** five positions a day from your own mistakes, with spaced repetition.
+- **Practice:** five positions a day from your own mistakes, with spaced repetition, plus Lichess puzzles of the exact tactic behind each habit, at your level.
 - **Honest numbers:** with a few dozen games, every rate is shown with a 90% interval, not as a falsely exact percentage.
 - **Private:** everything runs in your browser. Your analysis is kept there and never uploaded; there is no server.
 
@@ -23,7 +23,7 @@ Only finished games are analysed. It never helps during a live game (chess.com F
 3. Use the four pages:
    - **Review** opens on your latest game. The **Summary** tab is the report card. **Review key moments** turns your worst moves into puzzles: drag a piece to find a better move; **Hint**, **Show the answer** and **Skip** are there when you're stuck. The **Moves** tab steps through the game with an explanation for every move (arrow keys, the buttons under the graph, or **Next mistake**).
    - **Habits** shows your #1 habit with a real position, then skill areas and every habit ranked by what it costs. It fills in once 5 games are reviewed.
-   - **Practice** gives you five positions a day from your own mistakes. Ones you miss come back sooner, ones you solve come back later.
+   - **Practice** gives you five positions a day from your own mistakes. Ones you miss come back sooner, ones you solve come back later. Each tactic habit also has **Puzzles**: Lichess puzzles of that tactic that start at your level and get harder as you solve them.
    - **Games** lists every reviewed game; filter by result and colour.
 
 Your name in the top bar opens a menu to switch to another player or to delete your reviews from this browser.
@@ -73,7 +73,7 @@ Needs [uv](https://docs.astral.sh/uv/) and Stockfish on your `PATH` (or `STOCKFI
 
 ### The tactic classifier: `ml/`
 
-A small CNN, trained on 1.9 million Lichess puzzles (CC0), that names the tactic behind a move: fork, pin, skewer, discovered attack, back-rank mate and more. On held-out puzzles its macro F1 over 15 themes is 0.81, against 0.27 for the hand-written rules (which can name only 5 of them). The rules still win on mate-in-2. The rules still decide, from Stockfish's lines, whether material was really lost; the model names what they leave generic, using only themes where it beat them, and decides back-rank mates. It ships quantised to 0.78 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
+A small CNN that names the tactic behind a mistake (fork, pin, skewer, discovered attack, trapped piece, back-rank mate and more) from the position and Stockfish's line. It is trained on 4.8 million Lichess puzzles (CC0) and checked on 10,000 real games between Lichess players rated 1300 or less. On held-out puzzles its macro F1 over 15 themes is 0.91, against 0.27 for the hand-written rules, which can name only 5 of them. On real beginner blunders it names pins (F1 0.81), discovered attacks (0.89), skewers (0.83) and trapped pieces (0.78), which the rules couldn't name at all. The rules still win on mates and still decide whether material was really lost; the model names what they leave generic, and only for themes where it beat them on both puzzles and real games. The name then drives the habit, the arrows on the board and the practice puzzles. It ships quantised to 0.98 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
 
 ```bash
 cd ml && uv run tactics all   # download, build the splits, train LightGBM and the CNN, export, score

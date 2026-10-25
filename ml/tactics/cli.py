@@ -4,7 +4,7 @@ in order, each in its own process (LightGBM and PyTorch each bring their own Ope
 import subprocess
 import sys
 
-STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis"]
+STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis", "games", "blunders", "real", "siteline", "bundle"]  # then, by hand: human, and human-score <answers.json>
 
 
 def _print_scores(scores: dict) -> None:
@@ -70,6 +70,47 @@ def run(step: str) -> None:
             print(f"  rules or model, {theme}: F1 {m['f1']:.3f}")
         for reason, n in result["rules_false_positives"].items():
             print(f"  rules' extra {reason}: {n}")
+    elif step == "games":
+        from .games import fetch_games
+
+        print(fetch_games())
+    elif step == "blunders":
+        from .games import find_blunders
+
+        print(find_blunders())
+    elif step == "real":
+        from .games import score
+
+        result = score()
+        test = result["test"]
+        print(f"  test half: {test['n']} blunders from {test['games']} games")
+        for theme, m in test["themes"].items():
+            print(f"  {theme:18s} n={m['support']:4d}  rules {m['rules']['f1']:.3f}  model {m['model']['f1']:.3f}"
+                  f"  site {m['site']['f1']:.3f}")
+        for theme, why in result["decisions"].items():
+            print(f"  {theme}: {why}")
+    elif step == "siteline":
+        from .games import site_lines
+
+        result = site_lines()
+        print(f"  {result['n']} test-half blunders; the shallower search starts with the same move "
+              f"{result['first_move_agrees']:.0%} of the time")
+        for theme, m in result["themes"].items():
+            if m["support"] >= 20:
+                print(f"  {theme:18s} n={m['support']:4d}  labelling line {m['labelling_line_f1']:.3f}"
+                      f"  site line {m['site_line_f1']:.3f}")
+    elif step == "human":
+        from .human import build as build_human
+
+        print(build_human())
+    elif step == "human-score":
+        from .human import score as score_human
+
+        print(score_human(sys.argv[2]))
+    elif step == "bundle":
+        from .bundle import build
+
+        print(build())
     else:
         sys.exit(f"usage: tactics {{{'|'.join(STEPS + ['all'])}}}")
 

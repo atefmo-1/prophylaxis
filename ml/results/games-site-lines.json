@@ -1,0 +1,112 @@
+{
+ "n": 5161,
+ "site_nodes": 400000,
+ "first_move_agrees": 1.0,
+ "themes": {
+  "mateIn1": {
+   "support": 277,
+   "labelling_line_f1": 1.0,
+   "site_line_f1": 1.0,
+   "site_line_precision": 1.0,
+   "site_line_recall": 1.0
+  },
+  "mateIn2": {
+   "support": 86,
+   "labelling_line_f1": 0.900523560209424,
+   "site_line_f1": 0.900523560209424,
+   "site_line_precision": 0.819047619047619,
+   "site_line_recall": 1.0
+  },
+  "fork": {
+   "support": 582,
+   "labelling_line_f1": 0.9083402146985962,
+   "site_line_f1": 0.8939393939393939,
+   "site_line_precision": 0.8762376237623762,
+   "site_line_recall": 0.9123711340206185
+  },
+  "pin": {
+   "support": 214,
+   "labelling_line_f1": 0.8106796116504854,
+   "site_line_f1": 0.7889447236180905,
+   "site_line_precision": 0.8532608695652174,
+   "site_line_recall": 0.7336448598130841
+  },
+  "discoveredAttack": {
+   "support": 152,
+   "labelling_line_f1": 0.8859060402684564,
+   "site_line_f1": 0.8400000000000001,
+   "site_line_precision": 0.8513513513513513,
+   "site_line_recall": 0.8289473684210527
+  },
+  "deflection": {
+   "support": 57,
+   "labelling_line_f1": 0.8648648648648649,
+   "site_line_f1": 0.838095238095238,
+   "site_line_precision": 0.9166666666666666,
+   "site_line_recall": 0.7719298245614035
+  },
+  "hangingPiece": {
+   "support": 1894,
+   "labelling_line_f1": 0.9255377826806398,
+   "site_line_f1": 0.9252413793103449,
+   "site_line_precision": 0.9688041594454073,
+   "site_line_recall": 0.885427666314678
+  },
+  "attraction": {
+   "support": 24,
+   "labelling_line_f1": 0.7924528301886793,
+   "site_line_f1": 0.6785714285714286,
+   "site_line_precision": 0.59375,
+   "site_line_recall": 0.7916666666666666
+  },
+  "backRankMate": {
+   "support": 29,
+   "labelling_line_f1": 0.9206349206349206,
+   "site_line_f1": 0.9206349206349206,
+   "site_line_precision": 0.8529411764705882,
+   "site_line_recall": 1.0
+  },
+  "promotion": {
+   "support": 60,
+   "labelling_line_f1": 0.9500000000000001,
+   "site_line_f1": 0.8947368421052632,
+   "site_line_precision": 0.9444444444444444,
+   "site_line_recall": 0.85
+  },
+  "skewer": {
+   "support": 53,
+   "labelling_line_f1": 0.8318584070796461,
+   "site_line_f1": 0.7522935779816513,
+   "site_line_precision": 0.7321428571428571,
+   "site_line_recall": 0.7735849056603774
+  },
+  "trappedPiece": {
+   "support": 197,
+   "labelling_line_f1": 0.7763496143958868,
+   "site_line_f1": 0.7272727272727273,
+   "site_line_precision": 0.7951807228915663,
+   "site_line_recall": 0.6700507614213198
+  },
+  "capturingDefender": {
+   "support": 23,
+   "labelling_line_f1": 0.6666666666666666,
+   "site_line_f1": 0.6274509803921569,
+   "site_line_precision": 0.5714285714285714,
+   "site_line_recall": 0.6956521739130435
+  },
+  "doubleCheck": {
+   "support": 5,
+   "labelling_line_f1": 0.6666666666666665,
+   "site_line_f1": 0.7499999999999999,
+   "site_line_precision": 1.0,
+   "site_line_recall": 0.6
+  },
+  "smotheredMate": {
+   "support": 0,
+   "labelling_line_f1": 0.0,
+   "site_line_f1": 0.0,
+   "site_line_precision": 0.0,
+   "site_line_recall": 0.0
+  }
+ }
+}

@@ -7,8 +7,8 @@ ort.env.wasm.numThreads = 1;
 
 let session: Promise<ort.InferenceSession> | null = null;
 
-self.onmessage = async (e: MessageEvent<{ id: number; url?: string; planes?: Float32Array; n?: number }>) => {
-  const { id, url, planes, n } = e.data;
+self.onmessage = async (e: MessageEvent<{ id: number; url?: string; planes?: Float32Array; n?: number; size?: number }>) => {
+  const { id, url, planes, n, size } = e.data;
   try {
     if (url) {
       session = ort.InferenceSession.create(url, { executionProviders: ["wasm"] });
@@ -17,7 +17,7 @@ self.onmessage = async (e: MessageEvent<{ id: number; url?: string; planes?: Flo
       return;
     }
     const s = await session!;
-    const out = await s.run({ planes: new ort.Tensor("float32", planes!, [n!, 32, 8, 8]) });
+    const out = await s.run({ planes: new ort.Tensor("float32", planes!, [n!, size!, 8, 8]) });
     const probs = out.probabilities.data as Float32Array;
     self.postMessage({ id, probs }, { transfer: [probs.buffer] });
   } catch (err) {

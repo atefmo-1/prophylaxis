@@ -4,18 +4,19 @@
 import { readFileSync } from "node:fs";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
-import { encode, PLANES } from "../src/analysis/planes.ts";
+import { encode, modelLine, PLANES } from "../src/analysis/planes.ts";
 
-const fixtures = JSON.parse(readFileSync(process.argv[2], "utf8")) as { fen: string; uci: string; nonzero: [number, number][] }[];
+const fixtures = JSON.parse(readFileSync(process.argv[2], "utf8")) as { fen: string; line: string[]; nonzero: [number, number][] }[];
 let bad = 0;
 for (const f of fixtures) {
-  const planes = encode(Chess.fromSetup(parseFen(f.fen).unwrap()).unwrap(), f.uci)!;
+  const pos = Chess.fromSetup(parseFen(f.fen).unwrap()).unwrap();
+  const planes = encode(pos, modelLine(pos, f.line))!;
   const expected = new Float32Array(PLANES * 64);
   for (const [i, v] of f.nonzero) expected[i] = v;
   const diff = expected.findIndex((v, i) => v !== planes[i]);
   if (diff >= 0) {
     bad++;
-    console.error(`${f.fen} ${f.uci}: plane ${Math.floor(diff / 64)} square ${diff % 64}: ${planes[diff]} != ${expected[diff]}`);
+    console.error(`${f.fen} ${f.line.join(" ")}: plane ${Math.floor(diff / 64)} square ${diff % 64}: ${planes[diff]} != ${expected[diff]}`);
   }
 }
 console.log(`${fixtures.length - bad} / ${fixtures.length} positions encode identically`);

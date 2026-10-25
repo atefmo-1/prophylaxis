@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 //   #/game/<id>/<ply>  a game, optionally at a move
 //   #/patterns         weaknesses across games
 //   #/games            every game
+//   #/puzzles/<tag>    Lichess puzzles for a habit
 export type Route =
   | { name: "latest" }
   | { name: "game"; id: string; ply: number | null }
   | { name: "patterns" }
   | { name: "games" }
-  | { name: "practice"; tag: string | null };
+  | { name: "practice"; tag: string | null }
+  | { name: "puzzles"; tag: string | null };
 
 export function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
@@ -21,6 +23,7 @@ export function parse(hash: string): Route {
   if (parts[0] === "patterns") return { name: "patterns" };
   if (parts[0] === "games") return { name: "games" };
   if (parts[0] === "practice") return { name: "practice", tag: parts[1] ?? null };
+  if (parts[0] === "puzzles") return { name: "puzzles", tag: parts[1] ?? null };
   return { name: "latest" };
 }
 
@@ -44,6 +47,8 @@ function hashOf(route: Route): string {
       return "#/games";
     case "practice":
       return `#/practice${route.tag ? `/${route.tag}` : ""}`;
+    case "puzzles":
+      return `#/puzzles${route.tag ? `/${route.tag}` : ""}`;
     default:
       return "#/";
   }

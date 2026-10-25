@@ -1,20 +1,30 @@
 // The trained tactic classifier (ml/REPORT.md) alongside the motif rules. The rules still decide *whether* a move
-// lost or missed material, from the engine's lines. Where they can't say how, the model names the tactic, using
-// only the themes where it beat the rules on held-out Lichess puzzles ("trusted" in tactics.json).
-import type { Position } from "chessops/chess";
-import { encode, PLANES } from "./planes";
+// lost or missed material, from the engine's lines. Where they can't say how, the model names the tactic from the
+// position and the engine's line, using only the themes where it beat the rules both on held-out Lichess puzzles
+// and on real beginner games ("trusted" in tactics.json).
+import { Chess, type Position } from "chessops/chess";
+import { parseFen } from "chessops/fen";
+import { parseSan } from "chessops/san";
+import { makeUci } from "chessops/util";
+import type { NormalMove } from "chessops/types";
+import type { GameReview } from "../types";
+import { TAG_INFO } from "./catalog";
+import { encode, modelLine, PLANES } from "./planes";
 import { toMove, type Tag } from "./motifs";
 import type { Line } from "./grading";
 
 export interface TacticModel {
+  /** Changes whenever the shipped model does, so reviews tagged by an older one can be re-tagged. */
+  version: string;
   trusted: Set<string>;
-  /** Themes present for each (position, UCI move): the move is the side to move's tactic. */
-  classify(items: { pos: Position; uci: string }[]): Promise<Set<string>[]>;
+  /** Themes present for each position and engine line (UCI) for the side to move: the line's first move is theirs. */
+  classify(items: { pos: Position; line: string[] }[]): Promise<Set<string>[]>;
 }
 
 const LOAD_TIMEOUT_MS = 30_000; // the 14 MB runtime on a slow connection
 
 interface Meta {
+  version: string;
   planes: number;
   themes: string[];
   thresholds: number[];
@@ -50,12 +60,13 @@ export async function loadTacticModel(base: string): Promise<TacticModel | null>
     await Promise.race([call({ url: new URL(`${base}models/tactics.onnx`, location.href).href }), timeout]);
     const k = meta.themes.length;
     return {
+      version: meta.version,
       trusted: new Set(meta.trusted),
       async classify(items) {
         const planes = new Float32Array(items.length * PLANES * 64);
-        const ok = items.map(({ pos, uci }, i) => encode(pos, uci, planes, i * PLANES * 64) !== null);
+        const ok = items.map(({ pos, line }, i) => encode(pos, modelLine(pos, line), planes, i * PLANES * 64) !== null);
         if (!items.length) return [];
-        const probs = (await call({ planes, n: items.length }, [planes.buffer]))!;
+        const probs = (await call({ planes, n: items.length, size: PLANES }, [planes.buffer]))!;
         return items.map((_, i) => new Set(ok[i] ? meta.themes.filter((_, j) => probs[i * k + j] >= meta.thresholds[j]) : []));
       },
     };
@@ -86,7 +97,7 @@ function rename(tag: Tag, side: 1 | 2, found: Set<string>, trusted: Set<string>,
       // A free piece is only "free" if the move takes it.
       if (!victim || victim.color === pos.turn) continue;
       const detail = side === 1 ? { piece: victim.role, square: uci.slice(2, 4) } : { piece: victim.role };
-      return [names[side - 1], { ...detail, source: "model" }];
+      return [names[side - 1], { ...detail, amount: tag[1].amount, source: "model" }];
     }
     // The model names the idea, not the piece: the first move of the line may not be the one that pins or forks.
     return [names[side - 1], { ...tag[1], source: "model" }];
@@ -113,7 +124,7 @@ export async function refineTags(
   const askAllowed = (allowedAt >= 0 || (mateAt >= 0 && model.trusted.has("backRankMate"))) && reply.length > 0;
   const askMissed = missedAt >= 0 && best.length > 0;
   if (!askAllowed && !askMissed) return tags;
-  const items = [...(askAllowed ? [{ pos: after, uci: reply[0] }] : []), ...(askMissed ? [{ pos: before, uci: best[0] }] : [])];
+  const items = [...(askAllowed ? [{ pos: after, line: reply }] : []), ...(askMissed ? [{ pos: before, line: best }] : [])];
   const found = await model.classify(items);
   const allowed = askAllowed ? found[0] : null;
   const missed = askMissed ? found[found.length - 1] : null;
@@ -127,4 +138,51 @@ export async function refineTags(
     if (!allowed.has("backRankMate") && has) out.splice(out.findIndex((t) => t[0] === "back_rank_mate"), 1);
   }
   return out;
+}
+
+const ALLOWED_NAMES = new Set(NAMED.map((n) => n[1]));
+
+/** A tag as the rules alone gave it: model-named tags go back to the generic tag they renamed. */
+function unname(tag: Tag): Tag | null {
+  if (tag[1].source !== "model") return tag;
+  if (tag[0] === "back_rank_mate") return null;
+  return [ALLOWED_NAMES.has(tag[0]) ? "lost_material" : "missed_tactic", { amount: tag[1].amount }];
+}
+
+/** SAN moves from a stored review back to UCI, castling as the king's two-square move (as the engine writes it). */
+function sanToUci(fen: string, sans: string[]): string[] {
+  const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+  const out: string[] = [];
+  for (const san of sans) {
+    const move = parseSan(pos, san) as NormalMove | undefined;
+    if (!move) break;
+    const piece = pos.board.get(move.from);
+    const target = pos.board.get(move.to);
+    const castle = piece?.role === "king" && target?.role === "rook" && target.color === piece.color;
+    out.push(castle ? makeUci({ from: move.from, to: (move.from & ~7) + (move.to > move.from ? 6 : 2) }) : makeUci(move));
+    pos.play(move);
+  }
+  return out;
+}
+
+const REFINED = new Set(["lost_material", "missed_tactic", "allowed_mate"]);
+
+/** Re-tag a stored review with the current model, from the engine lines it kept: no new engine search needed. */
+export async function retagReview(model: TacticModel, review: GameReview): Promise<GameReview> {
+  const moves = [];
+  for (let i = 0; i < review.moves.length; i++) {
+    const m = review.moves[i];
+    const rules = m.tags.map((t) => unname([t.tag, t.detail])).filter((t): t is Tag => t !== null);
+    if (!m.mine || !rules.some((t) => REFINED.has(t[0]))) {
+      moves.push(m.tags.length === rules.length ? m : { ...m, tags: rules.map(([tag, detail]) => ({ tag, detail })) });
+      continue;
+    }
+    const beforeFen = i === 0 ? review.start_fen : review.moves[i - 1].fen;
+    const before = Chess.fromSetup(parseFen(beforeFen).unwrap()).unwrap();
+    const lines = (fen: string, sans: string[]) => [{ cp: null, mate: null, pv: sanToUci(fen, sans) }];
+    const tags = await refineTags(model, rules, before, m.uci, lines(beforeFen, m.best_line), lines(m.fen, m.reply_line));
+    moves.push({ ...m, tags: tags.map(([tag, detail]) => ({ tag, detail })) });
+  }
+  const present = [...new Set(moves.flatMap((m) => m.tags.map((t) => t.tag)))];
+  return { ...review, moves, tag_info: Object.fromEntries(present.filter((t) => TAG_INFO[t]).map((t) => [t, TAG_INFO[t]])) };
 }

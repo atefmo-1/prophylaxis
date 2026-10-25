@@ -1,6 +1,7 @@
 """Export the CNN to ONNX, quantise it to int8, re-score it, and write what the site loads:
 web/public/models/tactics.onnx and tactics.json (themes, thresholds, and the themes the model is trusted for)."""
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from onnxruntime.quantization import CalibrationDataReader, QuantFormat, QuantTy
 
 from . import cnn
 from .dataset import THEMES
-from .encode import arrays
+from .encode import Planes, arrays
 from .fetch import DATA
 from .metrics import best_thresholds, per_theme
 from .planes import PLANES
@@ -56,7 +57,7 @@ def export() -> dict:
         opset_version=17, dynamo=False,
     )
     quant_pre_process(str(fp32), str(prep))
-    val_planes = arrays("val", "planes")
+    val_planes = Planes("val")
     quantize_static(
         str(prep), str(int8), Reader(val_planes[:CALIBRATION]), quant_format=QuantFormat.QDQ,
         activation_type=QuantType.QUInt8, weight_type=QuantType.QInt8, per_channel=True,
@@ -67,7 +68,7 @@ def export() -> dict:
 
     # Thresholds are re-chosen on validation for the quantised model, since that is what ships.
     y_val, y_test = arrays("val", "labels"), arrays("test", "labels")
-    test_planes = arrays("test", "planes")
+    test_planes = Planes("test")
     report = {}
     for name, path in (("fp32", fp32), ("int8", int8)):
         p_val, p_test = run(path, val_planes), run(path, test_planes)
@@ -87,6 +88,7 @@ def export() -> dict:
     WEB_MODELS.mkdir(parents=True, exist_ok=True)
     (WEB_MODELS / "tactics.onnx").write_bytes(int8.read_bytes())
     (WEB_MODELS / "tactics.json").write_text(json.dumps({
+        "version": hashlib.sha256(int8.read_bytes()).hexdigest()[:12],
         "planes": PLANES,
         "themes": THEMES,
         "thresholds": [round(shipped["thresholds"][t], 2) for t in THEMES],

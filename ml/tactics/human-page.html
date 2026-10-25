@@ -1,0 +1,352 @@
+<title>Tactic check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&family=Noto+Sans+Symbols+2&display=swap">
+<style>
+/* Layout: one working surface. Board left, the question and its three answers right; a strip of all positions below.
+   Stacks to one column on a phone. */
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --ink: #1c211d;
+  --muted: #5b655d;
+  --line: #d9ddd6;
+  --accent: #2a6f5b;        /* the answer buttons, progress */
+  --accent-ink: #ffffff;
+  --sq-light: #e9e4d6;
+  --sq-dark: #9aa68a;
+  --move: #2f6fd1;          /* the blue arrow the questions refer to */
+  --target: #c8432f;
+  --yes: #2a7a4b;
+  --no: #b2452f;
+  --unsure: #8a7a3a;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --pieces: "Noto Sans Symbols 2", "Segoe UI Symbol", "Apple Symbols", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141815; --surface: #1d221e; --ink: #e7ebe5; --muted: #9ba59c; --line: #2f3631;
+    --accent: #5fb89a; --accent-ink: #0f1411; --sq-light: #cfc9b8; --sq-dark: #7d8a6d;
+    --move: #5b97ef; --target: #e2664f; --yes: #5cc184; --no: #e57a62; --unsure: #cdb867; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141815; --surface: #1d221e; --ink: #e7ebe5; --muted: #9ba59c; --line: #2f3631;
+  --accent: #5fb89a; --accent-ink: #0f1411; --sq-light: #cfc9b8; --sq-dark: #7d8a6d;
+  --move: #5b97ef; --target: #e2664f; --yes: #5cc184; --no: #e57a62; --unsure: #cdb867; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink); font: 17px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+h1 { font: 700 clamp(26px, 4vw, 34px)/1.1 var(--display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.intro { margin: 0; color: var(--muted); max-width: 68ch; }
+.progress { display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 15px; }
+.bar { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; max-width: 320px; }
+.bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+.main { display: grid; grid-template-columns: minmax(0, 480px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.board { width: 100%; max-width: 480px; aspect-ratio: 1; }
+.board svg { width: 100%; height: 100%; display: block; border-radius: 4px; box-shadow: 0 0 0 1px var(--line); }
+.panel { display: grid; gap: 16px; min-width: 0; }
+.where { font: 600 13px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.line { font: 500 15px/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.question { font: 600 21px/1.4 var(--body); margin: 0; text-wrap: pretty; }
+.steps { display: grid; gap: 8px; }
+.steps h2, .howto summary { font: 600 13px/1.2 var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.steps ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.steps li button {
+  width: 100%; text-align: left; font: 400 16px/1.4 var(--body); color: var(--ink); background: transparent;
+  border: 1px solid transparent; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: grid;
+  grid-template-columns: 1.6em minmax(0, 1fr); gap: 6px;
+}
+.steps li button:hover { border-color: var(--line); }
+.steps li button[aria-current="true"] { border-color: var(--move); background: var(--surface); }
+.steps li b { font: 500 14px/1.5 var(--mono); color: var(--muted); }
+.stepper { display: flex; gap: 8px; flex-wrap: wrap; }
+.stepper button { font: 600 14px/1 var(--body); padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.stepper button:disabled { opacity: .4; cursor: default; }
+.viewing { font-size: 14px; color: var(--muted); }
+.howto { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; max-width: 72ch; }
+.howto summary { cursor: pointer; }
+.howto ul { margin: 10px 0 2px; padding-left: 1.2em; display: grid; gap: 4px; }
+.answers { display: flex; flex-wrap: wrap; gap: 10px; }
+.answers button {
+  font: 600 17px/1 var(--body); padding: 14px 22px; border-radius: 8px; cursor: pointer; min-width: 96px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.answers button:hover { border-color: var(--accent); }
+.answers button[aria-pressed="true"][data-a="yes"] { background: var(--yes); border-color: var(--yes); color: var(--accent-ink); }
+.answers button[aria-pressed="true"][data-a="no"] { background: var(--no); border-color: var(--no); color: var(--accent-ink); }
+.answers button[aria-pressed="true"][data-a="unsure"] { background: var(--unsure); border-color: var(--unsure); color: var(--accent-ink); }
+.answers kbd { font: 500 12px var(--mono); opacity: .65; margin-left: 6px; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.nav { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.nav button { font: 600 15px/1 var(--body); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.nav button:disabled { opacity: .4; cursor: default; }
+.status { font-size: 14px; color: var(--muted); min-height: 1.4em; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 18px; height: 4px; border-radius: 2px; display: inline-block; }
+.strip { display: grid; gap: 8px; }
+.strip h2 { font: 600 13px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button {
+  width: 34px; height: 34px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font: 500 13px/1 var(--mono); cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.chips button[data-a="yes"] { background: var(--yes); border-color: var(--yes); color: var(--accent-ink); }
+.chips button[data-a="no"] { background: var(--no); border-color: var(--no); color: var(--accent-ink); }
+.chips button[data-a="unsure"] { background: var(--unsure); border-color: var(--unsure); color: var(--accent-ink); }
+.chips button[aria-current="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.chips button[data-old] { background: var(--surface); color: var(--ink); border: 2px dashed var(--unsure); }
+.notice { margin: 0; padding: 10px 12px; border-radius: 6px; border: 1px dashed var(--unsure); font-size: 15px; }
+.done { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; }
+.done p { margin: 0; }
+.copy { justify-self: start; font: 600 15px/1 var(--body); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+textarea { width: 100%; min-height: 80px; font: 13px var(--mono); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; }
+@media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr); } .board { margin: 0 auto; } }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Tactic check</h1>
+    <p class="intro">Positions from real beginner games. Each one asks a single question about what you can see on the board, so no chess expertise is needed: read what happens in plain words, follow the arrows and count. Answer <b>Not sure</b> whenever you can't tell. Answers save as you go.</p>
+    <div class="progress"><div class="bar" aria-hidden="true"><i id="fill"></i></div><span id="count">0 of 0 answered</span></div>
+    <details class="howto" id="howto">
+      <summary>How to read the board</summary>
+      <ul>
+        <li>White's pieces are the light ones, Black's the dark ones. The board is turned so the side making the move is at the bottom.</li>
+        <li>Squares are named by column letter (a to h) and row number (1 to 8), as printed along the edges: e4 is column e, row 4.</li>
+        <li>Pieces: ♚ king, ♛ queen, ♜ rook, ♝ bishop, ♞ knight, ♟ pawn. Bishops, rooks and queens attack in straight lines until something blocks them.</li>
+        <li><b>Check</b> means the king is attacked. <b>Checkmate</b> means it is attacked and can't escape: the game is over.</li>
+        <li>Under each question, "What happens" tells the moves in plain words. Click a move, or use <b>Play the moves</b>, to see it on the board.</li>
+      </ul>
+    </details>
+  </header>
+
+  <section class="main" aria-label="Current position">
+    <div class="board" id="board" role="img" aria-label="Chess position"></div>
+    <div class="panel">
+      <div class="where" id="where">Position 1</div>
+      <p class="question" id="question"></p>
+      <p class="notice" id="notice" hidden>You answered this one before the question was reworded to cover the whole line. Look at it again and answer under the new wording (the same answer is fine if it still holds); until then it isn't counted.</p>
+      <section class="steps" aria-label="What happens">
+        <h2>What happens</h2>
+        <ol id="steps"></ol>
+        <div class="stepper">
+          <button type="button" id="play">Play the moves ▶</button>
+          <button type="button" id="back">Back to the question</button>
+        </div>
+        <div class="viewing" id="viewing"></div>
+        <div class="line" id="line"></div>
+      </section>
+      <div class="answers" role="group" aria-label="Your answer">
+        <button type="button" id="ans-yes" data-a="yes" aria-pressed="false">Yes<kbd>Y</kbd></button>
+        <button type="button" id="ans-no" data-a="no" aria-pressed="false">No<kbd>N</kbd></button>
+        <button type="button" id="ans-unsure" data-a="unsure" aria-pressed="false">Not sure<kbd>U</kbd></button>
+      </div>
+      <div class="legend">
+        <span><i style="background: var(--move)"></i>a move</span>
+        <span><i style="background: var(--target)"></i>what the attacking side's move attacks</span>
+      </div>
+      <div class="nav">
+        <button type="button" id="prev">← Previous</button>
+        <button type="button" id="next">Next →</button>
+        <span class="status" id="status" role="status"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip" aria-label="All positions">
+    <h2>All positions <span style="text-transform:none;letter-spacing:0;font-weight:400">(dashed: answered under the old wording, please confirm)</span></h2>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="done" id="done" hidden>
+    <p id="done-text"></p>
+    <button type="button" class="copy" id="copy">Copy answers</button>
+    <textarea id="dump" readonly hidden aria-label="Your answers as text"></textarea>
+  </section>
+</div>
+
+<script>
+const QUESTIONS = __QUESTIONS__;
+const GLYPH = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+const answers = {};
+let index = 0;
+let view = null; // null: the question's own position; -1: before the first move; k: after move k of the line
+let db = null;
+
+const $ = (id) => document.getElementById(id);
+const STORE = "tactic-check.answers.v2";
+try {
+  const old = JSON.parse(localStorage.getItem("tactic-check.answers.v1") || "{}");
+  for (const [id, a] of Object.entries(old)) answers[id] = { answer: a, rev: 1 };
+  Object.assign(answers, JSON.parse(localStorage.getItem(STORE) || "{}"));
+} catch {}
+const given = (q) => answers[q.id]?.answer;
+const current = (q) => !!answers[q.id] && (answers[q.id].rev || 1) >= q.rev;
+const keepLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(answers)); } catch {} };
+
+function parseFen(fen) {
+  const rows = fen.split(" ")[0].split("/");
+  const board = [];
+  rows.forEach((row, r) => {
+    let f = 0;
+    for (const ch of row) {
+      if (/\d/.test(ch)) { f += Number(ch); continue; }
+      board.push({ rank: 7 - r, file: f, piece: ch });
+      f++;
+    }
+  });
+  return board;
+}
+
+function drawBoard(q, fen, arrowList) {
+  const S = 60, flip = q.orientation === "black";
+  const xy = (file, rank) => flip ? [(7 - file) * S, rank * S] : [file * S, (7 - rank) * S];
+  const center = (sq) => { const [x, y] = xy(sq.charCodeAt(0) - 97, Number(sq[1]) - 1); return [x + S / 2, y + S / 2]; };
+  let svg = `<svg viewBox="0 0 ${8 * S} ${8 * S}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<defs>
+    <marker id="hm" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3" markerHeight="3" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--move)"/></marker>
+    <marker id="ht" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--target)"/></marker>
+  </defs>`;
+  for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) {
+    const [x, y] = xy(f, r);
+    svg += `<rect x="${x}" y="${y}" width="${S}" height="${S}" style="fill:var(${(r + f) % 2 ? "--sq-light" : "--sq-dark"})"/>`;
+  }
+  for (let i = 0; i < 8; i++) {
+    const file = String.fromCharCode(97 + i), rank = String(i + 1);
+    const [fx] = xy(i, 0), [, ry] = xy(0, i);
+    svg += `<text x="${fx + S - 4}" y="${flip ? S - 4 : 8 * S - 4}" font-size="11" text-anchor="end" fill="#3b4237" style="font-family:var(--mono)" opacity=".7">${file}</text>`;
+    svg += `<text x="3" y="${ry + 12}" font-size="11" fill="#3b4237" style="font-family:var(--mono)" opacity=".7">${rank}</text>`;
+  }
+  for (const { rank, file, piece } of parseFen(fen)) {
+    const [x, y] = xy(file, rank), white = piece === piece.toUpperCase();
+    svg += `<text x="${x + S / 2}" y="${y + S * 0.8}" font-size="${S * 0.8}" text-anchor="middle" style="font-family:var(--pieces)"
+      fill="${white ? "#fbfaf6" : "#151814"}" stroke="${white ? "#151814" : "#fbfaf6"}" stroke-width="${white ? 1.6 : 0.6}" paint-order="stroke">${GLYPH[piece.toLowerCase()]}</text>`;
+  }
+  for (const [from, to, kind] of arrowList) {
+    const [x1, y1] = center(from), [x2, y2] = center(to);
+    const len = Math.hypot(x2 - x1, y2 - y1), cut = S * 0.32;
+    const ex = x2 - ((x2 - x1) / len) * cut, ey = y2 - ((y2 - y1) / len) * cut;
+    const move = kind === "move";
+    svg += `<line x1="${x1}" y1="${y1}" x2="${ex}" y2="${ey}" style="stroke:var(${move ? "--move" : "--target"})" stroke-width="${move ? 11 : 6}"
+      stroke-linecap="round" opacity="${move ? 0.85 : 0.7}" marker-end="url(#${move ? "hm" : "ht"})"/>`;
+  }
+  $("board").innerHTML = svg + "</svg>";
+  $("board").setAttribute("aria-label", `Chess position, ${q.orientation} at the bottom`);
+}
+
+function render() {
+  const q = QUESTIONS[index];
+  if (view === null) drawBoard(q, q.fen, q.arrows);
+  else if (view < 0) drawBoard(q, q.start, []);
+  else drawBoard(q, q.steps[view].fen, q.steps[view].arrows);
+  $("viewing").textContent = view === null ? (q.fen === q.start ? "Showing the position before the first move." : "Showing the position the question is about.")
+    : view < 0 ? "Showing the position before the first move." : `Showing the board after move ${view + 1}.`;
+  $("steps").innerHTML = "";
+  q.steps.forEach((step, k) => {
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button";
+    const n = document.createElement("b"); n.textContent = `${k + 1}.`;
+    const t = document.createElement("span"); t.textContent = step.text;
+    b.append(n, t);
+    if (view === k) b.setAttribute("aria-current", "true");
+    b.onclick = () => { view = k; render(); };
+    li.appendChild(b); $("steps").appendChild(li);
+  });
+  $("play").textContent = view === null || view < 0 ? "Play the moves ▶" : view < q.steps.length - 1 ? "Next move ▶" : "Play again ▶";
+  $("back").disabled = view === null;
+  $("where").textContent = `Position ${index + 1} of ${QUESTIONS.length}`;
+  $("question").textContent = q.question;
+  $("line").textContent = `In chess notation: ${q.line}`;
+  for (const a of ["yes", "no", "unsure"]) $(`ans-${a}`).setAttribute("aria-pressed", String(current(q) && given(q) === a));
+  $("notice").hidden = !answers[q.id] || current(q);
+  $("prev").disabled = index === 0;
+  $("next").disabled = index === QUESTIONS.length - 1;
+  const done = QUESTIONS.filter(current).length;
+  $("count").textContent = `${done} of ${QUESTIONS.length} answered`;
+  $("fill").style.width = `${(100 * done) / QUESTIONS.length}%`;
+  $("chips").innerHTML = "";
+  QUESTIONS.forEach((x, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = i + 1;
+    if (current(x)) b.dataset.a = given(x);
+    else if (answers[x.id]) b.dataset.old = "";
+    if (i === index) b.setAttribute("aria-current", "true");
+    b.setAttribute("aria-label", `Position ${i + 1}${current(x) ? `, answered ${given(x)}` : answers[x.id] ? ", answered under the old wording" : ""}`);
+    b.onclick = () => { index = i; view = null; render(); };
+    $("chips").appendChild(b);
+  });
+  const all = done === QUESTIONS.length;
+  $("done").hidden = !all;
+  if (all) $("done-text").textContent = db
+    ? "All answered and saved. Tell Claude you're done; you can still change any answer."
+    : "All answered. Saving to the shared store isn't available here, so copy your answers and paste them to Claude.";
+}
+
+async function answer(a) {
+  const q = QUESTIONS[index];
+  answers[q.id] = { answer: a, rev: q.rev };
+  keepLocal();
+  render();
+  if (index < QUESTIONS.length - 1) setTimeout(() => { index++; view = null; render(); }, 220);
+  if (!db) { $("status").textContent = "Saved in this browser."; return; }
+  try {
+    await db.collection("answers").doc(q.id).set({ answer: a, at: Date.now(), rev: q.rev });
+    $("status").textContent = "Saved.";
+  } catch (e) {
+    $("status").textContent = "Couldn't save that one to the shared store; it is kept in this browser.";
+  }
+}
+
+for (const a of ["yes", "no", "unsure"]) $(`ans-${a}`).onclick = () => answer(a);
+$("prev").onclick = () => { if (index > 0) { index--; view = null; render(); } };
+$("next").onclick = () => { if (index < QUESTIONS.length - 1) { index++; view = null; render(); } };
+$("play").onclick = () => {
+  const n = QUESTIONS[index].steps.length;
+  // From the question (or the end of the line), start over: the position before the first move, then move 1.
+  if (view === null || view >= n - 1) {
+    view = -1;
+    render();
+    setTimeout(() => { if (view === -1) { view = 0; render(); } }, 700);
+  } else {
+    view++;
+    render();
+  }
+};
+$("back").onclick = () => { view = null; render(); };
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest && e.target.closest("textarea")) return;
+  const k = e.key.toLowerCase();
+  if (k === "y") answer("yes"); else if (k === "n") answer("no"); else if (k === "u") answer("unsure");
+  else if (e.key === "ArrowRight") $("next").click(); else if (e.key === "ArrowLeft") $("prev").click();
+});
+$("copy").onclick = async () => {
+  const text = JSON.stringify(answers);
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "Copied"; }
+  catch { $("dump").hidden = false; $("dump").value = text; $("dump").select(); }
+};
+
+render();
+(async () => {
+  db = await window.claude?.use?.("db") ?? null;
+  if (!db) return;
+  db.collection("answers").onSnapshot((snap) => {
+    for (const d of snap.docs) {
+      const body = d.data();
+      if (typeof body?.answer === "string") answers[d.id] = { answer: body.answer, rev: Number(body.rev) || 1 };
+    }
+    keepLocal();
+    render();
+  }, () => { db = null; render(); });
+})();
+</script>

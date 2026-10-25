@@ -10,7 +10,7 @@ import { ClassIcon } from "./ClassIcon";
 
 export interface Arrow {
   uci: string;
-  brush: "best" | "played" | "threat";
+  brush: "best" | "played" | "threat" | "bestTarget" | "threatTarget";
 }
 
 export interface Movable {
@@ -38,6 +38,9 @@ const BRUSHES = {
   best: { key: "best", color: "#629924", opacity: 0.85, lineWidth: 11 },
   played: { key: "played", color: "#3b78c7", opacity: 0.8, lineWidth: 11 },
   threat: { key: "threat", color: "#d43b32", opacity: 0.8, lineWidth: 11 },
+  // What a move attacks: thinner and fainter than the move itself.
+  bestTarget: { key: "bestTarget", color: "#629924", opacity: 0.5, lineWidth: 6 },
+  threatTarget: { key: "threatTarget", color: "#d43b32", opacity: 0.5, lineWidth: 6 },
 };
 
 const NO_ARROWS: Arrow[] = [];

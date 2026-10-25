@@ -25,7 +25,7 @@ THEMES = [
 ]
 MAX_RATING = 2000    # beginner-to-intermediate puzzles (about 80% of the database)
 MIN_PLAYS = 20       # drop puzzles too new to have a settled rating
-SAMPLE = 0.4         # fraction of eligible puzzles kept, chosen by a hash of the puzzle id
+SAMPLE = 1.0         # fraction of eligible puzzles kept, chosen by a hash of the puzzle id
 SPLIT = {"train": 0.8, "val": 0.1, "test": 0.1}
 SEED = 7
 OUT = DATA / "puzzles"

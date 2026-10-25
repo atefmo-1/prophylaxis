@@ -1,314 +1,395 @@
 # Tactic classifier: report
 
-PLAN.md §7.1. A model that looks at a position and a move and names the tactic: fork, pin, hanging piece,
-back-rank mate and so on. It is measured against the hand-written motif rules the site already uses, and it is
-put in the browser only for the themes where it beats them.
+PLAN.md §7.1. A model that looks at one of your mistakes and names the tactic behind it: a fork, a pin, a
+skewer, a discovered attack, a hanging piece, a back-rank mate. It is measured against the hand-written rules
+the site already used, first on Lichess puzzles and then on real beginner games. It is put in the browser only for
+the themes where it beats the rules on both.
 
-**Result.** A 730k-parameter ResNet on board planes, quantised to int8 (0.78 MB), reaches a macro F1 of 0.807
-over 15 themes on 192,067 held-out Lichess puzzles. The rules score 0.269, because they can name only 5 of the 15
-themes. On those 5 the CNN scores 0.920 and the rules 0.807. The rules still win on mate-in-2 (0.998 against
-0.919) and tie on mate-in-1, so the site keeps the rules' tags for mates.
+## What it is for
 
-In the site, the model names the mistakes the rules could only call "lost material" or "missed tactic": pins,
-skewers, discovered attacks and trapped pieces. It also decides back-rank mates, where it beats the rule (0.973 against 0.782). It does
-*not* overrule the rules' hanging-piece and fork tags, although its puzzle F1 is higher there. Most of the rules'
-"errors" on those two themes come from a difference in definition: Lichess labels only undefended pieces as
-hanging, and leaves out forks whose forking piece can be taken. They are not wrong calls. On the sample player,
-letting the model veto those tags removed correct ones (see "Puzzles score a definition").
+Stockfish says how much a move cost; the rules said why only for a few kinds of mistake, and filed the rest as
+"you lost material" or "you missed a winning tactic". Those generic tags don't teach anything. The model names
+them, and every name feeds the rest of the site:
 
-Everything here is Lichess puzzle data and the synthetic sample player. No chess.com games were used, and none of
-the owner's.
+- **Habits.** "Walking into pins: 3 of your last 10 games" becomes a ranked habit, with its own advice, and counts
+  towards the piece-safety and spotting-tactics skills.
+- **The board.** In a review, arrows show the tactic on your own board: the forking piece and both targets, or the
+  pinning bishop through your knight to your king.
+- **Practice.** Each habit links to Lichess puzzles of that tactic, at your level, getting harder as you solve them.
+  The loop is: a review names your mistake, the Habits page counts how often you make it, and the puzzles train it.
+
+## Result
+
+| | Rules | LightGBM | CNN v1 | **CNN v2 (shipped)** |
+|---|---:|---:|---:|---:|
+| Input | engine line | position + move (84 features) | position + move (32 planes) | position + move + engine line (96 planes) |
+| Puzzle test, macro F1 over 15 themes | 0.268 | 0.800 | 0.806 | **0.914** |
+| Real beginner games, pin / discovered attack / skewer / trapped piece F1 | 0 / 0 / 0 / 0 | – | 0.65 / 0.69 / 0.56 / 0.64 | **0.81 / 0.89 / 0.83 / 0.78** |
+| Real beginner games, fork F1 | 0.81 | – | 0.82 | **0.91** |
+
+- **The shipped model:** a 915k-parameter ResNet, 0.98 MB as int8 ONNX. It runs in the browser in onnxruntime-web.
+- **A check by a person** (46 real blunders, answered by the owner with some help from Claude) agrees with the
+  model and the tagger when they agree (16 of 18). It accepts about half the extra tactics only the model sees,
+  which puts the share of the model's names a person would accept at about 83%. Pin and trapped piece looked
+  weakest.
+- **Where the rules still win:** mate-in-2 (puzzles 0.998 against 0.991; real games 1.00 against 0.90). The site
+  keeps the rules for mates.
+- **What changed from v1 to v2:** the model now also sees the next moves of the engine's line, which the site has
+  anyway, and it trained on all 4.8M eligible puzzles instead of 40% of them.
+- **Data:** everything here is Lichess data (puzzles and games, CC0) and the site's synthetic sample player. No
+  chess.com games were used, and none of the owner's.
 
 ## Reproduce
 
-Needs [uv](https://docs.astral.sh/uv/), Node 22+ and `npm --prefix web install`. Node runs the TypeScript rules
-and the browser runtime.
+Needs [uv](https://docs.astral.sh/uv/), Stockfish, Node 22+ and `npm --prefix web install`.
 
 ```bash
 cd ml
 uv sync
-uv run tactics all     # fetch, data, rules, encode, lgbm, cnn, export, web, fixtures, report, analysis
+uv run tactics all     # every step below, in order, each in its own process
 uv run pytest
 ```
 
-`all` runs each step in its own process. Each step reads the previous step's output from `ml/data/`, which git
-ignores, so a single step can be re-run on its own (`uv run tactics cnn`). On an M5 MacBook the whole run takes
-about 45 minutes: 5 min of data and encoding, 7 min of LightGBM, 23 min for the CNN on MPS, and 6 min to score the
-model in onnxruntime-web. Seeds are fixed. LightGBM's macOS wheel links against Homebrew's OpenMP; if that is
-missing, `tactics/gbm.py` re-runs the process with the copy that scikit-learn ships.
+| Step | Does | Time (M5 MacBook) |
+|---|---|---|
+| `fetch` | downloads the Lichess puzzle database (293 MB) | 1 min |
+| `data` | builds the train/val/test split | 3 min |
+| `rules` | scores the Python and TypeScript rules | 1 min |
+| `encode` | handcrafted features and bit-packed board planes | 20 min |
+| `lgbm` | LightGBM, one booster per theme | 35 min |
+| `cnn` | the CNN on the GPU (MPS) | 55 min |
+| `export` | int8 ONNX into `web/public/models/` | 2 min |
+| `web` | scores the model as the browser runs it | 20 min |
+| `fixtures`, `report`, `analysis` | parity fixtures, `results/metrics.md`, `results/analysis.json` | 5 min |
+| `games`, `blunders` | 10,000 real games; Stockfish finds the blunders | 3 h on 7 cores |
+| `real` | scores the real blunders and decides what ships | 3 min |
+| `siteline` | the test half again, with the line the site's shallower search gives | 6 min |
+| `bundle` | practice puzzles into `web/public/puzzles/` | 1 min |
 
-What gets committed: the code, the shipped model (`web/public/models/tactics.onnx` and `tactics.json`), the
-summary numbers (`ml/results/`) and a small encoder fixture (`ml/tests/fixtures/planes.json`, 110 positions). The
-raw database, the splits, the encoded arrays and the checkpoints all stay in `ml/data/` and `ml/models/`.
+- **Resuming.** Each step reads the previous one's output from `ml/data/` (ignored by git), so any step can be
+  re-run alone. The Stockfish scan caches every game, so an interrupted run resumes.
+- **Seeds** are fixed.
+- **OpenMP on macOS.** LightGBM's macOS wheel links against Homebrew's OpenMP; without it, `tactics/gbm.py` re-runs
+  itself with the copy scikit-learn ships.
+- **What gets committed:** the code; the shipped model and its `tactics.json`; the practice puzzles; the summary
+  numbers in `ml/results/`; and a small encoder fixture.
 
 ## Data
 
-- **Source:** the [Lichess puzzle database](https://database.lichess.org/#puzzles) (CC0), downloaded
-  2026-10-24: 6,157,341 puzzles (`tactics/fetch.py`; resumes, and skips the download if the file is already
-  complete).
-- **Filter:** puzzle rating ≤ 2000 (beginner to intermediate; about 80% of the database), at least 20 plays, and
-  popularity ≥ 0, which drops puzzles that players voted down.
-- **Sample:** 40% of the eligible puzzles, chosen by a hash of the puzzle id (deterministic): **1,920,746
-  puzzles**.
+- **Source:** the [Lichess puzzle database](https://database.lichess.org/#puzzles), downloaded 2026-10-24:
+  6,157,341 puzzles.
+- **Filter:** puzzle rating ≤ 2000 (beginner to intermediate), at least 20 plays, popularity ≥ 0. That leaves
+  **4,806,250 puzzles**, all of them used.
 - **Example:** a puzzle's FEN is the position *before* the opponent's move. Its first move is that opponent's
-  mistake, and the rest is the solution. Each example is the position after the first move (the puzzle
-  position) plus the key move (the solution's first move). The labels are the puzzle's themes.
+  mistake. Each example is the position after that move, plus the solution, plus the puzzle's themes.
 - **Themes (15):** mateIn1, mateIn2, fork, pin, discoveredAttack, deflection, hangingPiece, attraction,
-  backRankMate, promotion, skewer, trappedPiece, capturingDefender, doubleCheck, smotheredMate. These are chosen
-  for beginner and intermediate players. Lichess's other tags were left out: phase (endgame, middlegame), length
-  (short, long), evaluation (crushing, advantage), and themes that are rare or advanced (xRayAttack,
-  interference, zugzwang, and the named mates beyond smothered). 25% of the puzzles carry none of the 15 themes
-  and stay in the data as all-negative examples.
+  backRankMate, promotion, skewer, trappedPiece, capturingDefender, doubleCheck, smotheredMate. 25% of puzzles have
+  none of them and stay in as all-negative examples.
+- **Split:** 80 / 10 / 10, **grouped by source game** (all puzzles from one game land in the same split) and
+  **stratified by theme** (each game is stratified by the rarest theme among its puzzles). That gives 3,845,004 /
+  480,626 / 480,620 puzzles, with every theme's share within 0.05 points across splits (`tests/test_dataset.py`).
 
-### Split
+## The approaches
 
-80 / 10 / 10, **grouped by source game** and **stratified by theme**. Every puzzle from one Lichess game lands in
-the same split, so positions from one game can't leak between train and test. Each game's stratum is the rarest
-of the 15 themes among its puzzles ("none" if it has none). Games are shuffled within each stratum and dealt out
-by puzzle count (`tactics/dataset.py`, tested in `tests/test_dataset.py`).
+### Rules: the baseline
 
-| Split | Puzzles | mateIn1 | fork | pin | hangingPiece | backRankMate | skewer | smotheredMate |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| train | 1,536,603 | 18.2% | 13.8% | 5.5% | 3.8% | 4.2% | 2.4% | 0.50% |
-| val | 192,076 | 18.2% | 13.8% | 5.5% | 3.8% | 4.2% | 2.4% | 0.50% |
-| test | 192,067 | 18.2% | 13.8% | 5.5% | 3.8% | 4.2% | 2.4% | 0.50% |
+These are `src/coach/motifs.py` and its TypeScript port, `web/src/analysis/motifs.ts`. A puzzle goes through
+`motifs.detect` exactly as a blunder does in a game: the opponent's first move is the mistake, and the solution
+plays the part of the engine's reply. Tags map to themes (`hanging_piece` → hangingPiece, and so on), and the rules
+can name 5 of the 15. On all 480,620 test puzzles, **the Python and TypeScript rules agree on every one.**
 
-All 15 themes are within 0.05 percentage points across the three splits (`results/metrics.json` has the counts).
+**A bug the baseline found.** The back-rank rule's docstring said the king is "boxed in by its own pawns", but its
+code never checked it. Its precision against Lichess was 0.28. It now requires every square in front of the king to
+hold one of its own pieces, with tests, which raises its F1 from 0.43 to 0.78. Almost all the false positives left
+are mates where a boxing piece is also attacked; Lichess's labels exclude that case, and the site's text doesn't.
 
-## The three approaches
+### LightGBM on 84 handcrafted features
 
-### 1. Rules: the baseline
-
-These are the existing detectors, `src/coach/motifs.py`, and their TypeScript port in
-`web/src/analysis/motifs.ts`, unchanged. The detectors work from engine lines, and a puzzle supplies one: the
-opponent's first move is "my move" and the solution is "the engine's reply". So each puzzle goes through
-`motifs.detect` exactly as a blundered game move goes through its "what the move allowed" branch. The mate score
-is taken from the solution: if the line ends in mate, it is mate in ⌈plies / 2⌉. The win-% loss is set high
-enough that every detector runs (`tactics/rules.py`). Tags map to themes as follows:
-
-- `hanging_piece` → hangingPiece
-- `allowed_fork` → fork
-- `allowed_mate` {in: 1 or 2} → mateIn1 or mateIn2
-- `back_rank_mate` → backRankMate
-
-The rules cannot name the other 10 themes, so their F1 there is 0.
-
-`web/scripts/rules-on-puzzles.ts` runs the TypeScript rules over the same split. **The Python and TypeScript
-rules agree on all 192,067 test puzzles.**
-
-### 2. LightGBM on handcrafted features
-
-84 features of the position and the move, computed with python-chess (`tactics/features.py`):
-
-- material and the move: what moved, what it captured, check, mate, double and discovered check;
+What a coach looks at, computed with python-chess (`tactics/features.py`):
+- material and the move itself;
 - whether the captured piece was loose and what it defended;
-- the safety of the moved piece;
-- what it attacks afterwards: the count, the value, how many could be won, and the king;
-- discovered attacks by my other sliders;
-- pin- and skewer-shaped lines and x-rays;
-- pinned pieces before and after;
-- loose enemy material before and after;
-- trapped pieces;
-- both kings: escape squares, back rank, shield, pressure, sealed back rank;
-- reply counts, and pawns about to promote.
+- the safety of the moved piece and what it now attacks;
+- discovered attacks, pin- and skewer-shaped lines, x-rays, pinned pieces;
+- loose material before and after the move, and trapped pieces;
+- both kings' escape squares and back ranks, replies, and pawns about to promote.
 
-There is one binary booster per theme, with early stopping on validation (`tactics/gbm.py`). The most important
-features by gain are what you would hope for:
-- **fork:** `hits_winnable`, `threat_after_best`, `to_attackers`, `hits_king`;
-- **pin:** `their_pinned_after`, `pin_lines`;
-- **hangingPiece:** `captured_loose`, `captured_value`.
+There is one booster per theme. The top features by gain are the ones you would hope for (fork: `hits_winnable`,
+`hits_king`; pin: `their_pinned_after`, `pin_lines`; hangingPiece: `captured_loose`).
 
-### 3. CNN on board planes
+### CNN v1: the position and the move
 
-The input is 32 planes of 8×8, seen from the side to move. Ranks are flipped and colours swapped when black is
-to move, so a tactic looks the same for either colour (`tactics/planes.py`):
+32 planes of 8×8, seen from the side to move: pieces before and after the move, the from-square and to-square,
+both sides' attack counts before and after, and whether the move gives check or mate. The network is a ResNet with
+6 residual blocks of 64 channels and a head that keeps the board layout. It was trained on 40% of the puzzles. This
+is the model the previous version of this report shipped.
 
-- 12 piece planes before the move, and 12 after it;
-- the from-square and the to-square;
-- per-square attack counts for each side, before and after the move;
-- two constant planes: the move gives check, and the move is mate.
+### CNN v2: the position, the move and the engine line (shipped)
 
-The network is a ResNet with a 3×3 stem, 6 residual blocks of 64 channels, and a head that keeps the board layout
-(1×1 conv to 16 channels, then flatten, 256, 15), because tactics happen on particular squares. Training uses
-multi-label BCE, AdamW and a one-cycle learning rate: 10 epochs at batch size 1024 on MPS, about 2.3 minutes per
-epoch. Positions are mirrored left to right at random; the planes carry no castling rights, so a mirrored tactic
-is the same tactic. On the first run (720k puzzles, no mirroring) the model overfitted after epoch 9 and scored
-a macro F1 of 0.769. More data and mirroring removed the overfitting: validation loss fell every epoch, to 0.038.
+Lichess's labeller reads the whole solution. A skewer or a mate-in-2 is often only clear one or two moves after
+the key move. So v2 adds 16 planes for each of the **next 4 moves of the line**: the pieces after it, its from- and
+to-squares, a "move present" plane and a "checkmate" plane. That makes 96 planes in all (`tactics/planes.py`).
 
-All three predictors use per-theme thresholds that maximise F1 on **validation**; the test split is scored once
-at those thresholds.
+- **Which line.** The line is cut where the tactic is over: at mate, or at the first move after which the side to
+  move is at least 2 points up and still is after the reply. Where the line has no such point, only the first move
+  is used. Training puzzles, the site and the real-game evaluation all cut lines the same way. The TypeScript port
+  in `web/src/analysis/planes.ts` is identical on all 114 fixture positions.
+- **Network:** 8 residual blocks of 64 channels. Trained on all 3.8M training puzzles for 6 epochs (9 minutes each
+  on MPS), with left–right mirroring. The planes are stored bit-packed, about 1 KB per example.
+- **Thresholds:** per theme, chosen to maximise F1 on the validation split. The test split is scored once.
 
-## Results (test split, 192,067 puzzles)
+## Results on puzzles (test split, 480,620 puzzles)
 
-| Theme | Test n | Rules F1 | LightGBM F1 | CNN F1 | CNN int8 F1 (P / R) | In the browser F1 | Best | Site uses |
-|---|---:|---:|---:|---:|---:|---:|---|---|
-| mateIn1 | 34,920 | 0.998 | 0.998 | 0.998 | 0.998 (1.00 / 1.00) | 0.998 | rules (tie) | rules |
-| mateIn2 | 30,968 | **0.998** | 0.854 | 0.919 | 0.919 (0.91 / 0.93) | 0.918 | rules | rules |
-| fork | 26,490 | 0.688 | 0.875 | **0.884** | 0.884 (0.93 / 0.84) | 0.884 | CNN | rules' tag, model adds |
-| pin | 10,537 | 0.000 | **0.771** | 0.757 | 0.758 (0.86 / 0.68) | 0.758 | LightGBM | model |
-| discoveredAttack | 9,877 | 0.000 | **0.786** | 0.780 | 0.779 (0.83 / 0.73) | 0.779 | LightGBM | model |
-| deflection | 8,077 | 0.000 | 0.587 | **0.670** | 0.669 (0.68 / 0.66) | 0.669 | CNN | not shown |
-| hangingPiece | 7,218 | 0.567 | **0.871** | 0.826 | 0.825 (0.77 / 0.89) | 0.825 | LightGBM | rules' tag, model adds |
-| attraction | 6,496 | 0.000 | 0.798 | **0.812** | 0.812 (0.86 / 0.77) | 0.812 | CNN | not shown |
-| backRankMate | 7,980 | 0.782 | 0.895 | **0.973** | 0.973 (0.97 / 0.97) | 0.973 | CNN | model |
-| promotion | 4,414 | 0.000 | **0.702** | 0.699 | 0.699 (0.68 / 0.72) | 0.699 | LightGBM | not shown |
-| skewer | 4,632 | 0.000 | 0.675 | **0.744** | 0.747 (0.79 / 0.71) | 0.747 | CNN | model |
-| trappedPiece | 2,071 | 0.000 | **0.686** | 0.679 | 0.678 (0.64 / 0.72) | 0.678 | LightGBM | model |
-| capturingDefender | 1,253 | 0.000 | **0.518** | 0.484 | 0.484 (0.50 / 0.47) | 0.484 | LightGBM | not shown |
-| doubleCheck | 982 | 0.000 | 0.876 | **0.889** | 0.889 (0.97 / 0.82) | 0.889 | CNN | not shown |
-| smotheredMate | 959 | 0.000 | 0.974 | **0.982** | 0.984 (0.98 / 0.99) | 0.984 | CNN | not shown |
-| **Macro F1, all 15** | | 0.269 | 0.791 | 0.806 | 0.807 | 0.807 | | |
-| **Macro F1, the 5 the rules can name** | | 0.807 | 0.899 | 0.920 | 0.920 | 0.920 | | |
+| Theme | Test n | Rules | LightGBM | CNN v2 | CNN v2 int8 (P / R) | In the browser |
+|---|---:|---:|---:|---:|---:|---:|
+| mateIn1 | 87,720 | 0.998 | 0.998 | 0.998 | 0.998 (1.00 / 1.00) | 0.998 |
+| mateIn2 | 77,620 | **0.998** | 0.859 | 0.992 | 0.991 (0.99 / 0.99) | 0.991 |
+| fork | 66,332 | 0.685 | 0.875 | **0.956** | 0.955 (0.97 / 0.94) | 0.955 |
+| pin | 26,296 | 0 | 0.776 | **0.835** | 0.834 (0.90 / 0.78) | 0.834 |
+| discoveredAttack | 24,733 | 0 | 0.797 | **0.930** | 0.930 (0.96 / 0.91) | 0.930 |
+| deflection | 20,218 | 0 | 0.610 | **0.898** | 0.898 (0.93 / 0.87) | 0.898 |
+| hangingPiece | 18,137 | 0.557 | **0.876** | 0.856 | 0.855 (0.82 / 0.90) | 0.855 |
+| attraction | 16,276 | 0 | 0.802 | **0.921** | 0.921 (0.95 / 0.90) | 0.921 |
+| backRankMate | 19,973 | 0.780 | 0.900 | **0.988** | 0.988 (0.99 / 0.99) | 0.988 |
+| promotion | 11,080 | 0 | 0.698 | **0.906** | 0.906 (0.94 / 0.87) | 0.906 |
+| skewer | 11,549 | 0 | 0.698 | **0.938** | 0.938 (0.96 / 0.92) | 0.938 |
+| trappedPiece | 5,210 | 0 | 0.706 | **0.790** | 0.790 (0.78 / 0.80) | 0.790 |
+| capturingDefender | 3,161 | 0 | 0.568 | **0.796** | 0.791 (0.84 / 0.75) | 0.791 |
+| doubleCheck | 2,412 | 0 | 0.869 | **0.928** | 0.929 (0.97 / 0.89) | 0.929 |
+| smotheredMate | 2,406 | 0 | 0.972 | **0.991** | 0.991 (0.99 / 0.99) | 0.991 |
+| **Macro F1, all 15** | | 0.268 | 0.800 | 0.915 | 0.914 | 0.914 |
+| **Macro F1, the 5 the rules can name** | | 0.804 | 0.901 | 0.958 | 0.958 | 0.958 |
 
-`uv run tactics report` regenerates this table as `results/metrics.md`. There, the last column records which
-themes the model beat the rules on ("Model trusted"). Here it says what the site does with each theme (see "In the
-browser").
+`uv run tactics report` regenerates this table as `results/metrics.md`.
 
-- **CNN int8** is the shipped ONNX model under Python's onnxruntime, with thresholds re-chosen on validation for
-  the quantised model. **In the browser** is the same file run the way the site runs it: TypeScript planes
-  (`web/src/analysis/planes.ts`) and onnxruntime-web on WebAssembly (`web/scripts/tactics-on-puzzles.ts`).
-  The two make 9 of 2,881,005 theme decisions differently.
-- **Trusted** themes are decided by test F1, as the task asked: the model is trusted for a theme only if it beats
-  the rules there, which it does for 13 of the 15. Deciding on validation picks exactly the same 13. For fork and
-  hanging piece, the site uses the model only to *add* a name; it never overrules the rule (next section). On
-  puzzles this combination scores 0.816 on fork and 0.716 on hanging piece. That is below the model alone, by
-  design, and still above the rules (0.688 and 0.567).
+- **The int8 model loses at most 0.005 F1** on any theme to the full-precision one.
+- **In the browser** means the same file run the way the site runs it: TypeScript planes and onnxruntime-web on
+  WebAssembly. It makes **0 of 7,209,300 theme decisions** differently from Python's onnxruntime.
+- **CNN v1 can't be shown in this table,** because it was trained on a different 40% sample, and some of this test
+  split was in its training data. On its own 192,067-puzzle test split it scored 0.807 macro F1, against 0.791 for
+  LightGBM. The fair comparison with v2 is on real games, below, which neither model saw.
+- **Where LightGBM still wins:** hangingPiece. One handcrafted feature, "the captured piece was undefended", carries
+  almost all of that theme.
 
-### By puzzle rating
+**By puzzle rating** (rules → v2, test split): the model is best on the easiest puzzles, which are the closest to
+what beginners meet.
 
-Rules F1 → shipped model F1 on the test split, by Lichess puzzle rating:
+| Rating | Puzzles | fork | hangingPiece | backRankMate | pin | skewer | Macro F1 |
+|---|---:|---|---|---|---|---|---:|
+| < 1000 | 137,592 | 0.85 → 0.99 | 0.32 → 0.85 | 0.80 → 0.99 | 0 → 0.92 | 0 → 0.98 | 0.935 |
+| 1000–1399 | 154,200 | 0.70 → 0.97 | 0.60 → 0.87 | 0.76 → 0.98 | 0 → 0.89 | 0 → 0.96 | 0.935 |
+| 1400–2000 | 188,828 | 0.51 → 0.91 | 0.64 → 0.85 | 0.62 → 0.94 | 0 → 0.79 | 0 → 0.88 | 0.884 |
 
-| Rating | Puzzles | fork | hangingPiece | backRankMate | mateIn2 | pin | skewer | Model macro F1 |
-|---|---:|---|---|---|---|---|---|---:|
-| < 1000 | 54,433 | 0.848 → 0.976 | 0.319 → 0.825 | 0.803 → 0.987 | 0.998 → 0.980 | 0 → 0.881 | 0 → 0.912 | 0.875 |
-| 1000–1399 | 62,164 | 0.704 → 0.909 | 0.622 → 0.842 | 0.763 → 0.955 | 0.997 → 0.919 | 0 → 0.829 | 0 → 0.798 | 0.848 |
-| 1400–2000 | 75,470 | 0.521 → 0.779 | 0.649 → 0.814 | 0.597 → 0.848 | 0.998 → 0.793 | 0 → 0.689 | 0 → 0.539 | 0.725 |
+## Results on real beginner games
 
-The model is at its best on the easiest puzzles, which are the closest to the tactics a beginner meets.
+Puzzles are curated. To check that the model works on the mistakes beginners actually make, it was also scored on
+real games (`tactics/games.py`; `results/games.md`, `results/games.json`).
 
-### Where the model loses, and why the rules lose where they do
+- **Games:** the first 10,000 games in the September 2026 Lichess database that are rated rapid, between two
+  players rated 1300 or less, and ended normally or on time. Any game that produced a training puzzle was dropped
+  first. That is roughly chess.com 600–1000; the blunders' games average 1011.
+- **Blunders:** Stockfish 19 read every position at 50,000 nodes. A blunder loses at least 20 points of winning
+  chances and leaves the opponent at 70% or better. Each one then got a 1M-node search with two lines, and was kept
+  only if the best punishment beats the second best by 15 points, and its line wins material or mates within 7
+  plies. Lichess builds its puzzles the same way. That gives **10,324 blunders from 6,181 games**. 59% are punished
+  in a single move, mostly by taking a free piece.
+- **Labels:** Lichess's own puzzle tagger (`cook.py` from lichess-puzzler, AGPL). It is downloaded at a pinned commit
+  (the last one before a 2026-10-23 change to how forks are tagged), checked against pinned hashes, and never
+  committed. On 5,000 of our test puzzles it gives back the database's themes in all but 1 of 4,107 cases, so these
+  labels mean what the training labels meant.
+- **Two halves, split by game.** The *val* half (5,163 blunders) decides which themes the site may use. The *test*
+  half (5,161 blunders, 3,090 games) is only reported.
 
-- **Mate in 2: the rules win (0.998 against 0.919).** The rules are told the length of the forced mate: here it
-  comes from the solution, in a game from Stockfish's score. The model sees only the position and the first
-  move, and has to judge for itself whether mate follows a move later. The site keeps the rules for mates.
-- **Mate in 1: a tie (0.998).** "The move is mate" is one of the model's input planes, so this is no test of
-  either.
-- **CNN against LightGBM.** LightGBM is better on hangingPiece (0.871 against 0.826), pin, discoveredAttack,
-  trappedPiece, promotion and capturingDefender. For those themes a well-chosen handcrafted feature ("the
-  captured piece was undefended", "a piece is pinned after the move") carries most of the signal. The CNN is
-  better on mates, deflection, attraction and skewer. Overall the CNN's macro F1 is 0.806 against 0.791. It ships
-  because it is the better model overall, and because porting 84 python-chess features to the browser would be
-  far more code to keep in step than a 32-plane encoder.
-- **Why the rules miss forks** (recall 0.62): most of the forks they miss come on the solver's *second* move.
-  Lichess tags a puzzle "fork" if any move in the solution forks, but the rule checks only the first move of the
-  reply. The model sees only the first move too, but it learns the positions in which a fork is coming.
-- **Back-rank mates: a bug the baseline found.** The first baseline run gave the rule a precision of 0.28 (F1
-  0.430). Its docstring said the king is "boxed in by its own pawns", but its code only checked that a rook or
-  queen mates along the king's back rank. The rule now also requires every square in front of the king to hold
-  one of its own pieces, in both `motifs.py` and `motifs.ts`, with tests. That raises precision to 0.65 and F1 to
-  0.782, with recall unchanged (0.99), and Python and TypeScript still agree on every puzzle. Of the 4,303
-  false positives left, 4,274 are boards where one of those boxing pieces is also attacked by the mating side.
-  Lichess's tagger excludes that case; the site's description of the tag doesn't. So those are a definition
-  difference, and the rule stays as it is. The model is still better here (0.973) and decides the tag in the site.
-- **The weakest themes** are capturingDefender (0.48), trappedPiece (0.68) and deflection (0.67). These are
-  ideas about what a piece *was doing* before it was removed, and the site does not surface them (below).
+**Test half** (F1 with a 90% interval from resampling whole games):
+
+| Theme | Blunders | Rules | CNN v1 | CNN v2 (P / R) | What the site shows |
+|---|---:|---:|---:|---:|---:|
+| hangingPiece | 1,894 | 0.86 (0.84–0.87) | 0.93 | 0.93 (0.97 / 0.89) | 0.86 (0.85–0.87) |
+| fork | 582 | 0.81 (0.79–0.83) | 0.82 | **0.91** (0.87 / 0.95) | 0.87 (0.85–0.88) |
+| mateIn1 | 277 | 1.00 | 1.00 | 1.00 | 1.00 |
+| pin | 214 | 0 | 0.65 | **0.81** (0.84 / 0.78) | 0.81 (0.77–0.84) |
+| trappedPiece | 197 | 0 | 0.64 | **0.78** (0.79 / 0.77) | 0.78 (0.73–0.81) |
+| discoveredAttack | 152 | 0 | 0.69 | **0.89** (0.90 / 0.87) | 0.89 (0.85–0.92) |
+| mateIn2 | 86 | **1.00** | 0.75 | 0.90 (0.82 / 1.00) | 1.00 |
+| promotion | 60 | 0 | 0.68 | 0.95 (0.95 / 0.95) | not shown |
+| deflection | 57 | 0 | 0.52 | 0.86 (0.89 / 0.84) | not shown |
+| skewer | 53 | 0 | 0.56 | **0.83** (0.78 / 0.89) | 0.83 (0.76–0.89) |
+| backRankMate | 29 | 0.74 (0.64–0.83) | 0.95 | 0.92 (0.85 / 1.00) | 0.92 (0.86–0.97) |
+| attraction | 24 | 0 | 0.38 | 0.79 (0.72 / 0.88) | not shown |
+| capturingDefender | 23 | 0 | 0.39 | 0.67 (0.61 / 0.74) | not shown |
+
+The CNN v1 column is the previous shipped model, run once on the same blunders.
+
+- **The line input is what made the difference on real games.** From v1 to v2: pin 0.65 → 0.81, discovered attack
+  0.69 → 0.89, skewer 0.56 → 0.83, trapped piece 0.64 → 0.78, fork 0.82 → 0.91. v1's skewers were wrong about
+  half the time, and the site stopped naming them; v2's pass the bar.
+- **Back-rank mate dips slightly** (0.95 → 0.92), on 29 cases; the intervals overlap.
+- **Real games are a little harder than puzzles** for the same model (pin 0.83 → 0.81, trapped piece 0.79 → 0.78,
+  fork 0.96 → 0.91), but not by much.
+- **The rules stay perfect on mates.**
+- **When there's nothing to name:** on the 1,712 test-half blunders with none of the 15 themes, the model names one
+  for 9.9% of them. On puzzles with none, it does so for 6.5% (v1: 16.6%; the rules: 9.7%).
+
+**With the line the site would actually have** (`siteline` step, `results/games-site-lines.json`). The labels above
+come from a 1M-node line, and the model was given that same line. In the site, the model gets the line from the
+site's own 400,000-node search instead. So each test-half blunder was searched again at that depth, in a separate
+search, and the model was given that line while the labels stayed the same. (The site runs Stockfish 19 *Lite* in
+the browser; this used full Stockfish 19 at the same node count and number of lines, which is close but not
+identical.)
+
+| Theme | With the labelling line | With the site's line (P / R) |
+|---|---:|---:|
+| fork | 0.91 | 0.89 (0.88 / 0.91) |
+| hangingPiece | 0.93 | 0.93 (0.97 / 0.89) |
+| pin | 0.81 | 0.79 (0.85 / 0.73) |
+| discoveredAttack | 0.89 | 0.84 (0.85 / 0.83) |
+| skewer | 0.83 | 0.75 (0.73 / 0.77) |
+| trappedPiece | 0.78 | 0.73 (0.80 / 0.67) |
+| backRankMate | 0.92 | 0.92 (0.85 / 1.00) |
+
+The shallower search starts with the same move every time, but its line often differs after that. The model loses
+0 to 8 points of F1, mostly in recall. Every theme the site shows keeps a precision of 0.73 or more, so a name the
+site shows is still right about three times in four or better.
+
+**What ships**, decided on the val half (`real` step). A theme the model beat the rules on in the puzzle test must
+also beat them on real blunders, with **precision of at least 0.6, on at least 20 cases**:
+
+- **Shipped**, with val-half F1 (rules' F1 in brackets where they can name it) and precision:
+  - fork 0.93 (0.81), 0.89
+  - hangingPiece 0.92 (0.85), 0.98
+  - pin 0.83, 0.83
+  - discoveredAttack 0.86, 0.87
+  - skewer 0.82, 0.76
+  - trappedPiece 0.74, 0.78
+  - backRankMate 0.87 (0.71), 0.77
+  - deflection 0.88, 0.86
+  - promotion 0.85, 0.88
+  - capturingDefender 0.75, 0.70
+
+  The site names only the first seven; the last three it doesn't show.
+- **Not shipped:** attraction, doubleCheck, smotheredMate, each with fewer than 20 real cases to judge them on.
+
+### A check by a person
+
+Lichess's tagger is a program, so agreeing with it is not the same as being right. To check that, 46 test-half
+blunders were picked for the six tactics the site names (`uv run tactics human`). Each tactic got three kinds of
+case, shown in a shuffled order without saying which was which:
+- both the model and the tagger see the tactic;
+- only the model sees it;
+- only the tagger does.
+
+Each case came with its line in plain English and one yes/no question about the board, on a review page.
+
+- **The rule the answers use:** a tactic counts if the side that moves first uses it *anywhere in the line*, which
+  is how the tagger defines a theme. A pin that is on the board but plays no part in how the line wins counts as
+  no.
+- **Who answered:** the site's owner, who is new to chess, with some answers checked with Claude's help. These are
+  not purely human labels; read them as a cross-check, not as ground truth.
+- **Automatic answers:** two back-rank cases whose line doesn't end in checkmate were answered no automatically,
+  since that is a fact. The site could never show them anyway: it asks about back-rank mate only when the engine's
+  line is a mate. 44 were answered on the page, none "not sure" (`results/human.json`).
+
+| | Both see it | Only the model | Only the tagger |
+|---|---:|---:|---:|
+| The person says the tactic is there | **16 of 18** | **9 of 18** | **8 of 10** |
+| fork | 3 of 3 | 2 of 3 | 2 of 2 |
+| skewer | 3 of 3 | 3 of 3 | 2 of 2 |
+| discoveredAttack | 3 of 3 | 2 of 3 | 2 of 2 |
+| backRankMate | 3 of 3 | 1 of 3 (2 automatic no) | none to ask |
+| trappedPiece | 3 of 3 | 0 of 3 | 1 of 2 |
+| pin | 1 of 3 | 1 of 3 | 1 of 2 |
+
+What this says, with the caveat that each cell holds only 2 or 3 cases:
+
+- **When the model and the tagger agree, they are almost always right** (16 of 18).
+- **When only the model sees a tactic, it is right about half the time** (9 of 18). Against the tagger's labels all
+  of these count as model errors, so the puzzle and real-game precision numbers undercount the model a little.
+  Combining the two rates with how often the model's calls agree with the tagger on real games (84% on average
+  across these six), the share of the model's names a person would accept comes out at about 83%. That is close
+  to the 84% measured against the tagger.
+- **When only the tagger sees a tactic, it is usually really there** (8 of 10): the model's misses are real misses.
+- **Pin and trapped piece look weakest to a person.** For pin, even cases where both programs agree were often
+  judged not to be a pin that matters (1 of 3), so the definition itself is the hard part. For trapped piece, the
+  model's own extra calls weren't accepted (0 of 3). Both are also the two lowest real-game F1 scores among the
+  site's names (0.81, 0.78). Three cases per cell is too few to overrule the 214 and 197 real cases behind those
+  scores, so the site keeps both. A larger check of just these two would be the next step before trusting them as
+  much as the others.
 
 ### Puzzles score a definition
 
-A puzzle label is Lichess's definition of a theme, and for two themes that definition is narrower than what the
-site's tag means (`uv run tactics analysis`, `results/analysis.json`):
+A label is Lichess's definition of a theme, and for two themes that definition is narrower than the site's tag:
 
-- **Hanging piece.** The site's tag means a piece "could be taken for free or by a cheaper piece". Lichess's
-  tagger calls a piece hanging only when it is undefended. Of the 3,905 test puzzles where the rules say
-  hangingPiece and Lichess doesn't, 2,325 (60%) are a defended piece taken by a cheaper one.
-- **Fork.** Lichess leaves out a fork if the forking piece can itself be won. Of the 4,982 puzzles where the rules
-  see a fork and Lichess doesn't, 3,661 (73%) are exactly that. A knight that checks the king and attacks the
-  queen is still a fork to a beginner, even if a rook can take the knight afterwards.
+- **Hanging piece.** The site's tag means a piece "could be taken for free or by a cheaper piece". Lichess calls a
+  piece hanging only when it is undefended. Of the test puzzles where the rules say hangingPiece and Lichess
+  doesn't, 59% are a defended piece taken by a cheaper one.
+- **Fork.** Lichess leaves out a fork when the forking piece can itself be won. Of the puzzles where the rules see
+  a fork and Lichess doesn't, 72% are exactly that. A knight that checks the king and attacks the queen is still a
+  fork to a beginner.
 
-The sample player showed what this does in practice. A first version let the model overrule the rules on every
-trusted theme. It removed 8 of the 14 hanging-piece tags, and all 8 were defended pieces taken by a cheaper piece:
-a queen taken by a pawn, a knight by a pawn, a rook by a bishop. It also turned a royal knight fork (Nd4+ against
-king and queen, with the knight then taken) into a "pin". So on these two themes the site keeps the rules' tag,
-which the engine's line has already confirmed. The model only names what the rules left generic.
-
-For **back-rank mate**, Lichess's definition (the king trapped on its back rank by its own pieces) is the one the
-site's own text gives, so the model decides that tag both ways. Even with its bug fixed, the rule scores 0.782
-against the model's 0.973.
+An earlier version let the model overrule the rules on these two themes. On the sample player it removed 8 correct
+hanging-piece tags and called a royal knight fork a "pin". So for forks and hanging pieces the site keeps the
+rules' tag, which the engine's line has confirmed, and the model only adds the name where the rules had none. On
+real games that combination scores 0.87 on fork and 0.86 on hanging piece. That is below the model alone (which
+matches Lichess's definition), by design, and still above the rules alone.
 
 ## In the browser
 
-- **Export** (`tactics/export.py`). The model is exported to ONNX (opset 17) with the sigmoid included. It is then
-  statically quantised to int8 (QDQ, per-channel weights, 2,048 validation positions for calibration). The final
-  sigmoid stays in float, because a quantised output would snap probabilities to steps of 1/255. The int8 file
-  is **0.78 MB** (fp32: 2.92 MB), and quantising cost at most 0.003 F1 on any theme.
-- **Runtime.** `web/src/analysis/tactics.worker.ts` runs onnxruntime-web 1.30.0 (WebAssembly, one thread, since
-  the pages are not cross-origin isolated) in its own Web Worker, next to Stockfish's. The worker and the model
-  load once, on the first game reviewed. The ORT wasm file is 14 MB, 3.7 MB gzipped. Single-threaded wasm takes
-  about 1.8 ms per position, and a review asks about at most two positions per mistake, and only for mistakes the rules left generic. If anything fails to load, the
-  review falls back to the rules alone. The Chrome extension's offscreen page uses the same worker; it was checked
-  to load and run under the extension's CSP (`'wasm-unsafe-eval'`).
-- **How tags change** (`web/src/analysis/tactics.ts`). The rules still decide *whether* a move lost or missed
-  material, and how much, from Stockfish's lines, with the same gates as before. Only where they could not say
-  how, with `lost_material` ("what you allowed") or `missed_tactic` ("what you missed"), is the model asked about
-  one position:
-  - for what you allowed: the position after your move, with the opponent's best reply;
-  - for what you missed: the position before your move, with your best move.
-
-  The first trusted theme it sees names the tag, in the order hanging piece, fork, discovered attack, pin,
-  skewer, trapped piece. With none, the tag stays generic. This adds eight tags (`allowed_pin`, `missed_pin`,
-  `allowed_skewer`, `missed_skewer`, `allowed_discovered_attack`, `missed_discovered_attack`, `trapped_piece`,
-  `missed_trapped_piece`), each with its own habit text in `catalog.ts` and `stats.py`, and they count towards
-  the "piece safety" and "spotting tactics" skills. A model-named tag says which idea it was, not which piece: the
-  first move of the line may not be the one that pins or forks. For allowed mates, the model decides
-  `back_rank_mate` both ways.
-
-  Themes the model is trusted for but which the site does not name (deflection, attraction, promotion,
-  capturingDefender, doubleCheck, smotheredMate) leave the tags alone. They are advanced, rare, or not something
-  a beginner can act on.
-- **Checks.**
-  - `ml/tests/test_planes.py` checks that the TypeScript encoder matches the Python one on 110 fixture positions
-    (castling both ways, en passant and promotions included).
-  - `web/scripts/check-tactics.ts` checks that onnxruntime-web reaches the same decisions as Python's runtime on
-    them.
-  - The `web` step scores the whole test split through the browser stack (the table's "In the browser" column).
-
-## Honest limits
-
-- **The labels come from Lichess's own tagger.** Lichess themes are computed by a hand-written program
-  (lichess-puzzler), and it reads the *whole* solution. So the model learns to imitate another rule set, from
-  less information than that rule set had. "F1 against Lichess themes" is not the same as "a coach would agree".
-- **Puzzles are not games.** Every puzzle has a winning tactic by construction. In a real game most mistakes are
-  quieter, so base rates differ, and precision on real blunders will be lower than on puzzles. On the 61,084 test
-  puzzles with none of the 15 themes, the model still names some theme for 16.6% of them (the rules: 9.6%). The
-  site limits the damage by asking only when Stockfish's line shows material really changing hands.
-- **No evaluation on real blunders yet.** PLAN.md asks for ~100 of the owner's own blunders, labelled by hand. That
-  is the evaluation that matters, but those games must not enter this repo, so it is left for the owner to run
-  locally. The only chess.com-like data used here is the synthetic sample player, and its reviews were
-  re-generated with the model (below), with no ground truth for them.
-- **Position plus one move.** The model doesn't see the engine line, so it can't know that a mate is forced or
-  that a fork wins material two moves later. In the site, the engine line still gates every tag.
-- **Thresholds and the trusted list were chosen on puzzle splits**, and the trusted list on test (as asked).
-  Validation picks the same list, so this didn't matter here.
-- **Reviews already stored in a browser keep their rule-only tags.** `ANALYSIS_VERSION` was not bumped, because
-  bumping it would re-analyse every game of every user. New reviews get the model's tags.
-- **The Python pipeline (`src/coach/`) still uses only the rules.** It knows the new tags' wording but never
-  emits them.
+- **Export** (`tactics/export.py`). The model goes to ONNX (opset 17, sigmoid included) and is statically quantised
+  to int8: QDQ, per-channel weights, 2,048 calibration positions. The sigmoid stays in float, so probabilities
+  don't snap to steps of 1/255. The result is **0.98 MB**; fp32 is 3.66 MB. `tactics.json` holds the themes,
+  thresholds, the shipped themes and a version (a hash of the model).
+- **Runtime.**
+  - `web/src/analysis/tactics.worker.ts` runs onnxruntime-web 1.30.0, WebAssembly on one thread, in its own Web
+    Worker. It loads on the first review: a 14 MB runtime (3.7 MB gzipped) plus the model. The extension's offscreen
+    page uses the same worker, and runs under the extension's security policy.
+  - If the model can't load within 30 s, or the worker fails, reviews use the rules alone.
+- **How tags change** (`web/src/analysis/tactics.ts`).
+  - The rules still decide *whether* a move lost or missed material, and how much, from Stockfish's lines.
+  - Only where they could not say how (`lost_material`, `missed_tactic`) is the model asked. It sees the position
+    after your move with the opponent's best line, or the position before it with your best line.
+  - The first shipped theme it sees names the tag, in the order hanging piece, fork, discovered attack, pin, skewer,
+    trapped piece. For allowed mates, the model decides `back_rank_mate`.
+  - There are eight model-named tags (pin, skewer, discovered attack and trapped piece, each allowed or missed),
+    each with its own habit text in `catalog.ts` and `stats.py`.
+- **Older reviews are re-tagged.**
+  - Each saved review records the model version that tagged it.
+  - When the site opens, reviews from an older model, or from none, are re-tagged from the engine lines they stored.
+    No Stockfish search is needed: the sample player's 36 games take 37 ms.
+- **Practice puzzles** (`tactics/bundle.py`, `web/src/lib/puzzles.ts`, `web/src/pages/Puzzles.tsx`).
+  - For each tactic: well-liked Lichess puzzles with settled ratings, 400–1700, at most three moves to find, 50 per
+    100 rating points. That is about 5,400 puzzles, 0.5 MB.
+  - They start near the player's level (chess.com rating + 400), and move 40 points up after a first-time solve and
+    40 down otherwise, per habit.
+- **The tactic on the board** (`web/src/lib/shapes.ts`).
+  - Next to the move's arrow, thin arrows go to every piece it newly attacks, from the moved piece or a piece it
+    uncovers. For a long-range piece, the arrow continues to a second piece behind.
+  - This is geometry, not the model, so it can't be wrong about what is attacked. It also only shows attacks, not
+    the full idea.
 
 ## Effect on the sample player
 
-The sample player's reviews (`web/public/sample/reviews.json`) were re-built with `web/scripts/make-sample-reviews.mjs`,
-the same in-browser Stockfish and the model. Every engine value and move grade came out identical to the previous
-file (Stockfish at a fixed node count is deterministic when the games run in the same order with one engine).
-Exactly 4 tags changed, all of them generic tags the model named:
+The sample player's reviews were rebuilt with `web/scripts/make-sample-reviews.mjs`. Every engine value and move
+grade is identical to the rules-only version. Two tags changed, both generic tags the model named: s20 move 30
+(Ra6; the best move Nc4+ was a discovered attack) and s27 move 13 (Nc2; exf5 started a pin). The sample is a weak
+engine's games, with few tactics, so this shows the model is careful, not that it is right; the real-game test
+above is the evidence for that.
 
-| Game, ply | Move | Before | After | The engine's line |
-|---|---|---|---|---|
-| s09, 45 | c4 | `lost_material` | `allowed_discovered_attack` | Nxd2 cxd5 Nxf3+ |
-| s13, 17 | Ne1 | `missed_tactic` | `missed_fork` | best was hxg4 |
-| s20, 60 | Ra6 | `missed_tactic` | `missed_discovered_attack` | best was Nc4+ |
-| s27, 25 | Nc2 | `missed_tactic` | `missed_pin` | best was exf5 |
+## Honest limits
 
-The other 3 `lost_material` and 7 `missed_tactic` tags stayed generic, and all 14 hanging-piece, 12 free-piece
-and 3 fork tags from the rules are unchanged. These are synthetic games with no ground truth, so this shows that
-the model behaves as intended, not that it is right. (The version that let the model veto rule tags changed 13
-tags here, including the 8 hanging pieces described above.)
+- **The labels come from a program, and the check by a person is small.** Lichess's tagger is itself a set of
+  hand-written rules, so the model learned to agree with another rule set. The 46-case check above suggests a
+  person would accept about the same share of the model's names (about 83%), but it was answered by someone new to
+  chess with some help from Claude, and has only 2 or 3 cases per tactic and group. Pin and trapped piece deserve a
+  larger check.
+- **The model sees the line that defines the label.** On puzzles, the line is the solution the tagger labelled.
+  On real games, it is Stockfish's line, cut the same way, and the labels come from that same line. That is by
+  design, since the site has the engine's line, but it makes the task easier than "name the tactic from the
+  position alone" (v1 did that harder task and scored 0.81 on puzzles). Given the site's own shallower line
+  instead, the model drops by 0 to 8 points of F1 and keeps a precision of 0.73 or more on every theme it names.
+- **Rare themes have little real evidence.** Attraction, double check and smothered mate had fewer than 20 real
+  blunders in the deciding half, so the site doesn't use them. Back-rank mate shipped on 29 test cases; its
+  interval is wide (0.86–0.97).
+- **Lichess, not chess.com.** The real games are Lichess rapid games, rated 1300 or less. A chess.com 225 player is
+  weaker than most of them.
+- **The puzzle split for v2 is not v1's.** Comparisons between the two models are made on real games, which neither
+  trained on.
+- **The Python pipeline (`src/coach/`) uses only the rules.** It knows the new tags' wording but never emits them.
