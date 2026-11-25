@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
+import { HoldButton } from "./components/HoldButton";
 import { Mark } from "./components/Mark";
 import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
 import { timeLeft } from "./lib/format";
+import { usePill } from "./lib/motion";
 import { useTheme, type ThemeChoice } from "./lib/theme";
 import { ComparisonProvider, useCurrentComparison } from "./library/Comparison";
 import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library";
@@ -33,8 +35,9 @@ const THEMES: { value: ThemeChoice; label: string }[] = [
 
 function ThemeSwitch() {
   const [choice, setChoice] = useTheme();
+  const pill = usePill<HTMLDivElement>();
   return (
-    <div className="theme" role="group" aria-label="Colour theme">
+    <div className="theme" ref={pill} role="group" aria-label="Colour theme">
       {THEMES.map((t) => (
         <button key={t.value} type="button" aria-pressed={choice === t.value} onClick={() => setChoice(t.value)}>
           {t.label}
@@ -97,17 +100,16 @@ function PlayerMenu({ player }: { player: string }) {
           {isSample ? "Leave the sample" : "Switch player"}
         </button>
         {!isSample && (
-          <button
-            type="button"
+          <HoldButton
             className="me-danger"
-            onClick={() => {
+            onDone={() => {
               close();
-              if (window.confirm(`Delete ${player}'s reviews from this browser? You can review the games again later.`))
-                forgetPlayer();
+              forgetPlayer();
             }}
           >
-            Delete {player}'s reviews from this browser
-          </button>
+            Hold to delete {player}'s reviews
+            <span className="me-note">From this browser only. You can review the games again later.</span>
+          </HoldButton>
         )}
       </div>
     </details>

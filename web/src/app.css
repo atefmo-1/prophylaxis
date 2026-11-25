@@ -199,6 +199,47 @@ p {
   font-variant-numeric: tabular-nums;
 }
 
+/* Odometer digits (components/Roll.tsx): each digit is a column of 0–9 behind a one-line window. */
+.roll-face {
+  display: inline-flex;
+  height: 1lh;
+  vertical-align: top;
+}
+
+.roll-d {
+  overflow: hidden;
+  /* Digits passing through the window fade at its edges instead of being cut. */
+  mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent);
+}
+
+.roll-d::before {
+  content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
+  display: block;
+  white-space: pre;
+  transform: translateY(calc(var(--d) * -10%));
+  transition: transform 600ms var(--c-ease-out);
+}
+
+.roll-s::before {
+  content: attr(data-c);
+}
+
+.roll--in .roll-d::before {
+  animation: roll-in 900ms var(--c-ease-out) calc(var(--i) * 60ms + 120ms) backwards;
+}
+
+@keyframes roll-in {
+  from {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll--in .roll-d::before {
+    animation: none;
+  }
+}
+
 .muted {
   color: var(--c-ink-3);
 }
@@ -334,6 +375,48 @@ p {
 .theme button:hover { color: var(--c-ink); }
 .theme button[aria-pressed="true"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 0 0 1px var(--c-panel-edge); }
 
+/* Sliding pill (usePill in lib/motion.ts): the group draws one indicator under the selected
+   button and slides it on change, instead of each button painting its own background. */
+.has-pill {
+  position: relative;
+  isolation: isolate;
+}
+
+.has-pill::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: var(--pill-w, 0);
+  height: var(--pill-h, 0);
+  border-radius: var(--pill-r, 9px);
+  background: var(--c-panel);
+  box-shadow: var(--pill-shadow, 0 1px 2px var(--c-shade), inset 0 0 0 1px var(--c-hair));
+  opacity: var(--pill-o, 0);
+  transform: translate(var(--pill-x, 0), var(--pill-y, 0));
+  pointer-events: none;
+}
+
+.pill-live::before {
+  transition: transform 280ms var(--c-ease-out), width 280ms var(--c-ease-out), height 280ms var(--c-ease-out), opacity 150ms;
+}
+
+.has-pill > button[aria-pressed="true"],
+.has-pill > button[aria-selected="true"] {
+  background: none;
+  box-shadow: none;
+}
+
+.has-pill > button {
+  transition: color 200ms var(--c-ease);
+}
+
+.theme.has-pill {
+  --pill-r: 7px;
+  --pill-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
 .me {
   position: relative;
   white-space: nowrap;
@@ -370,6 +453,7 @@ p {
   z-index: 20;
   display: grid;
   min-width: 240px;
+  max-width: min(320px, calc(100vw - 20px));
   padding: 6px;
   border-radius: 8px;
   background: var(--c-panel);
@@ -405,6 +489,45 @@ p {
 
 .me-menu .me-danger {
   color: var(--c-loss);
+}
+
+/* Hold to delete (components/HoldButton.tsx): a fill runs across while the button is held. */
+.hold {
+  position: relative;
+  white-space: normal;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hold-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--c-loss) 16%, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms var(--c-ease);
+}
+
+.hold[data-state="holding"] .hold-fill {
+  transform: scaleX(1);
+  transition: transform var(--hold) linear;
+}
+
+/* The menu opens with a little spring from the button that opened it. */
+.me[open] .me-menu {
+  transform-origin: top right;
+  animation: menu-open 320ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes menu-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.95);
+  }
 }
 
 @media (max-width: 640px) {

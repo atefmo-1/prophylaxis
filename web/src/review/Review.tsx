@@ -1,9 +1,11 @@
 // The game review: board first, coach panel beside it. Opens on a summary, then key moments as retry puzzles.
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Board, type Arrow, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { IconFirst, IconLast, IconNext, IconPrev } from "../components/Icons";
 import { FirstReview } from "../components/Progress";
+import { PillGroup } from "../components/PillGroup";
+import { Roll } from "../components/Roll";
 import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
 import { keyMoments, read } from "../lib/coach";
@@ -47,9 +49,19 @@ function HabitLine({ review, tags }: { review: ReviewData; tags: MoveTag[] }) {
   );
 }
 
+// Games whose summary numbers already rolled in, so coming back to the Summary tab doesn't replay it.
+const rolledIn = new Set<string>();
+
 function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: (step: number) => void; onMoves: () => void }) {
   const coach = read(review);
   const g = review.game;
+  // Decided once per game, so a re-render mid-roll doesn't cut the roll short.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const entrance = useMemo(() => !rolledIn.has(g.id), [g.id]);
+  useEffect(() => {
+    rolledIn.add(g.id);
+  }, [g.id]);
+  const figure = (n: number | null | undefined, digits = 0) => (n == null ? "–" : <Roll value={n.toFixed(digits)} entrance={entrance} />);
   const count = (side: "mine" | "theirs", c: MoveClass) => review.summary[side][c] ?? 0;
   const moments = keyMoments(review);
   const k = moments.length;
@@ -92,8 +104,8 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: (s
         <tbody>
           <tr className="summary-acc">
             <th scope="row">Accuracy</th>
-            <td className="num">{g.accuracy?.toFixed(1) ?? "–"}</td>
-            <td className="num">{g.opp_accuracy?.toFixed(1) ?? "–"}</td>
+            <td className="num">{figure(g.accuracy, 1)}</td>
+            <td className="num">{figure(g.opp_accuracy, 1)}</td>
           </tr>
           {SUMMARY_CLASSES.filter((c) => count("mine", c) + count("theirs", c) > 0).map((c) => (
             <tr key={c}>
@@ -103,8 +115,8 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: (s
                   {CLASS_META[c].label}
                 </span>
               </th>
-              <td className="num">{count("mine", c)}</td>
-              <td className="num">{count("theirs", c)}</td>
+              <td className="num">{figure(count("mine", c))}</td>
+              <td className="num">{figure(count("theirs", c))}</td>
             </tr>
           ))}
         </tbody>
@@ -315,7 +327,7 @@ export function ReviewView({
 
         <section className="rv-panel" aria-label="Review">
           <header className="panel-head">
-            <div className="panel-tabs" role="tablist" aria-label="Review mode">
+            <PillGroup className="panel-tabs" role="tablist" aria-label="Review mode">
               <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "summary"} onClick={() => setMode({ kind: "summary" })}>
                 Summary
               </button>
@@ -332,7 +344,7 @@ export function ReviewView({
               <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "moves"} onClick={() => stepMoves(index)}>
                 Moves
               </button>
-            </div>
+            </PillGroup>
           </header>
 
           <div className="panel-body" id="review-panel" role="tabpanel">
@@ -462,7 +474,7 @@ function MomentCard({
         Key moment {step + 1} of {total}
         <span className="coach-dots" aria-hidden="true">
           {keyMoments(review).map((p, i) => (
-            <i key={p} data-on={i <= step || undefined} />
+            <i key={p} data-on={i <= step || undefined} data-now={i === step || undefined} />
           ))}
         </span>
       </p>

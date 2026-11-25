@@ -10,6 +10,7 @@ import type { Color } from "../types";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
 import { Board } from "./Board";
+import { PillGroup } from "./PillGroup";
 import "./openingTree.css";
 
 const MIN_FOR_VERDICT = 3; // games before a move is called a good or bad choice
@@ -90,13 +91,13 @@ export function OpeningTree({
   if (tree.games === 0)
     return (
       <div className="otree-empty">
-        <div className="seg" role="group" aria-label="Colour">
+        <PillGroup className="seg" role="group" aria-label="Colour">
           {(["white", "black"] as Color[]).map((c) => (
             <button key={c} type="button" aria-pressed={color === c} onClick={() => pick(c)}>
               As {c}
             </button>
           ))}
-        </div>
+        </PillGroup>
         <p className="muted">No reviewed games with {color} yet.</p>
       </div>
     );
@@ -108,13 +109,13 @@ export function OpeningTree({
       </div>
       <div className="otree-side" ref={side}>
         <div className="otree-top">
-          <div className="seg" role="group" aria-label="Colour">
+          <PillGroup className="seg" role="group" aria-label="Colour">
             {(["white", "black"] as Color[]).map((c) => (
               <button key={c} type="button" aria-pressed={color === c} onClick={() => pick(c)}>
                 As {c}
               </button>
             ))}
-          </div>
+          </PillGroup>
           <span className="muted num">{plural(tree.games, "game")}</span>
         </div>
 

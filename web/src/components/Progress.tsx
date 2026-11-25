@@ -6,6 +6,7 @@ import { useLibrary, useLibraryStatus } from "../library/Library";
 import { href } from "../router";
 import { Board } from "./Board";
 import { IconPause, IconPlay } from "./Icons";
+import { Roll } from "./Roll";
 import "./progress.css";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -25,7 +26,7 @@ export function ProgressPill() {
   return (
     <span className="pill">
       <span aria-live="polite">
-        Reviewing game {status.done + 1} of {status.total}
+        Reviewing game <Roll value={status.done + 1} /> of {status.total}
         <span className="pill-eta">{status.paused ? ` · ${pausedLabel(status.paused)}` : ` · ${timeLeft(status.eta)} left`}</span>
       </span>
       <span className="pill-bar" aria-hidden="true">
@@ -96,10 +97,15 @@ export function FirstReview() {
         {wins.length > 1 && <polyline points={`0,100 ${points} ${((wins.length - 1) / plies) * 100},100`} className="area" />}
         {wins.length > 1 && <polyline points={points} className="line" />}
       </svg>
-      <p className="first-foot">
-        <span className="num">{c.percent < 85 ? `Position ${Math.min(wins.length, plies)} of ${plies}` : "Scoring better moves for your mistakes"}</span>
-        <span className="num">{status.paused ? `${c.percent}%` : `${timeLeft(c.eta)} left`}</span>
-      </p>
+      <Steps
+        steps={[
+          { label: status.total > 1 ? `Loaded ${status.total} games from chess.com` : "Loaded your game from chess.com", done: 1 },
+          { label: "Read every position", detail: `Position ${Math.min(wins.length, plies)} of ${plies}`, done: Math.min(c.percent / 85, 1) },
+          { label: "Find better moves for your mistakes", done: c.percent < 85 ? 0 : Math.min((c.percent - 85) / 15, 0.99) },
+          { label: "Open your review", done: 0 },
+        ]}
+        aside={status.paused ? `${c.percent}%` : `${timeLeft(c.eta)} left`}
+      />
       {status.paused && (
         <p className="first-paused">
           Reviewing is {pausedLabel(status.paused)}.{" "}
@@ -109,6 +115,35 @@ export function FirstReview() {
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * What the first review is doing, as steps that tick off. `done` runs 0–1; the step in progress
+ * shows it as a ring filling up, and a finished step draws its tick.
+ */
+function Steps({ steps, aside }: { steps: { label: string; detail?: string; done: number }[]; aside: string }) {
+  const now = steps.findIndex((s) => s.done < 1);
+  return (
+    <ol className="steps">
+      {steps.map((s, i) => {
+        const state = s.done >= 1 ? "done" : i === now ? "now" : "later";
+        return (
+          <li key={s.label} data-state={state} aria-current={state === "now" ? "step" : undefined}>
+            <svg className="step-mark" viewBox="0 0 20 20" aria-hidden="true">
+              <circle className="step-track" cx="10" cy="10" r="8" />
+              <circle className="step-fill" cx="10" cy="10" r="8" pathLength="1" style={{ strokeDashoffset: 1 - s.done }} />
+              <path className="step-tick" d="M6 10.4l2.6 2.6L14 7.6" pathLength="1" />
+            </svg>
+            <span className="step-label">
+              {s.label}
+              {state === "done" && <span className="visually-hidden"> (done)</span>}
+            </span>
+            {state === "now" && <span className="step-detail num">{s.detail ? `${s.detail} · ${aside}` : aside}</span>}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

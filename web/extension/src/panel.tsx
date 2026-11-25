@@ -237,7 +237,7 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
         )}
       </label>
       <label className="xp-check">
-        <input type="checkbox" checked={settings.autoOpen} onChange={(e) => setSettings({ ...settings, autoOpen: e.target.checked })} />
+        <input type="checkbox" role="switch" checked={settings.autoOpen} onChange={(e) => setSettings({ ...settings, autoOpen: e.target.checked })} />
         Open this panel when a game ends
       </label>
       <label>

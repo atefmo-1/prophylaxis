@@ -7,6 +7,7 @@ import { href } from "../router";
 import type { Color, Result } from "../types";
 import "./pages.css";
 import { LoadError } from "../components/LoadError";
+import { PillGroup } from "../components/PillGroup";
 
 const RESULTS: { label: string; value: Result | "all" }[] = [
   { label: "All", value: "all" },
@@ -54,7 +55,7 @@ export function Games() {
       </header>
 
       <div className="filters">
-        <div className="seg" role="group" aria-label="Result">
+        <PillGroup className="seg" role="group" aria-label="Result">
           {RESULTS.map((f) => (
             <button
               key={f.value}
@@ -66,14 +67,14 @@ export function Games() {
               {f.label}
             </button>
           ))}
-        </div>
-        <div className="seg" role="group" aria-label="Colour">
+        </PillGroup>
+        <PillGroup className="seg" role="group" aria-label="Colour">
           {COLORS.map((f) => (
             <button key={f.value} type="button" aria-pressed={color === f.value} onClick={() => setColor(f.value)}>
               {f.label}
             </button>
           ))}
-        </div>
+        </PillGroup>
         <span className="filters-count num">{plural(rows.length, "game")}</span>
       </div>
 

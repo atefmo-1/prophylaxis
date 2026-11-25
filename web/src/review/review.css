@@ -576,9 +576,26 @@
   height: 4px;
   border-radius: 2px;
   background: var(--c-line);
+  overflow: hidden;
 }
 
-.coach-dots i[data-on] { background: var(--c-accent-ink); }
+/* Each finished moment's segment fills left to right; the one just reached fills as it opens. */
+.coach-dots i::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: var(--c-accent-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 450ms var(--c-ease-out);
+}
+
+.coach-dots i[data-on]::after { transform: scaleX(1); }
+.coach-dots i[data-now]::after { animation: dot-fill 600ms var(--c-ease-out) 100ms backwards; }
+
+@keyframes dot-fill {
+  from { transform: scaleX(0); }
+}
 
 .coach-feedback {
   padding: 8px 10px;
