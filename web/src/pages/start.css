@@ -1,30 +1,31 @@
-/* The first screen: what it is, one field, three steps. Same quiet system as the rest of the site. */
+/* The first screen. One idea: show the coach working on a real (sample) game instead of describing it.
+   The replay is the only loud thing; everything around it stays quiet. */
 .start {
-  max-width: 1080px;
+  max-width: 1160px;
   margin: 0 auto;
-  padding: 56px 24px 72px;
+  padding: 64px 24px 80px;
 }
 
 .start-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 56px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+  gap: 64px;
   align-items: center;
 }
 
 .start-copy h1 {
   margin: 0;
-  max-width: 16ch;
-  font-size: clamp(32px, 5vw, 48px);
-  line-height: 1.02;
+  max-width: 13ch;
+  font-size: clamp(36px, 5.2vw, 60px);
+  line-height: 1;
   font-weight: 600;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.05em;
   text-wrap: balance;
 }
 
 .start-lede {
-  max-width: 52ch;
-  margin: 18px 0 0;
+  max-width: 44ch;
+  margin: 22px 0 0;
   color: var(--c-ink-2);
   font-size: 17px;
   line-height: 1.55;
@@ -126,13 +127,9 @@
   color: var(--c-loss);
 }
 
-.start-sample {
-  margin: 16px 0 0;
-  color: var(--c-ink-3);
-}
-
 /* The sample is how most visitors see the coach: a real button, one step quieter than Review my games. */
 .start-sample {
+  margin: 14px 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -157,70 +154,281 @@
   background: var(--c-hover);
 }
 
-.start-board .board {
+/* Boards drawn by chessground inside the landing page. */
+.replay-board .board,
+.frag-board .board {
   position: relative;
   width: 100%;
-  max-width: 420px;
   aspect-ratio: 1;
-  margin-left: auto;
   border-radius: 6px;
-  overflow: hidden;
   background: var(--sq-dark);
-  box-shadow: 0 18px 40px -20px rgb(0 0 0 / 0.6);
   pointer-events: none;
 }
 
-.start-board .board-ground {
+.replay-board .board-ground,
+.frag-board .board-ground {
   width: 100%;
   height: 100%;
 }
 
-.start-board cg-board {
+.replay-board cg-board,
+.frag-board cg-board {
+  border-radius: 6px;
   background-color: var(--sq-light);
   background-image: repeating-conic-gradient(var(--sq-dark) 0 25%, var(--sq-light) 0 50%);
   background-size: 25% 25%;
 }
 
-.start-board cg-board square.last-move {
+.replay-board cg-board square.last-move {
   background-color: rgb(155 199 0 / 0.41);
 }
 
-.start-steps {
+/* ---------- The replay ---------- */
+
+.replay {
+  margin: 0;
+}
+
+.replay-stage {
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge), 0 24px 48px -28px rgb(29 42 63 / 0.35);
+}
+
+.replay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 12px;
+  color: var(--c-ink-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.replay-tag {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--c-panel-2);
+  color: var(--c-ink-3);
+  font-size: 12px;
+}
+
+.replay-main {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 32px;
-  margin: 64px 0 0;
-  padding: 28px 0 0;
-  border-top: 1px solid var(--c-line);
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 12px;
+}
+
+.replay-sheet {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   list-style: none;
-  counter-reset: step;
+  font-size: 13px;
 }
 
-.start-steps li {
-  counter-increment: step;
+.replay-sheet li {
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr;
+  align-items: center;
+  min-height: 26px;
 }
 
-.start-steps li::before {
-  content: counter(step);
+.replay-no {
+  color: var(--c-ink-3);
+}
+
+.replay-mv {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  justify-self: start;
+  padding: 2px 5px;
+  border-radius: 6px;
+  color: var(--c-ink-2);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 200ms var(--c-ease), color 200ms var(--c-ease);
+}
+
+.replay-mv[data-now] {
+  background: var(--c-panel-2);
+  color: var(--c-ink);
+}
+
+.replay-graph {
+  position: relative;
+  height: 56px;
+  margin-top: 12px;
+  border-radius: 8px;
+  background: var(--c-panel-2);
+}
+
+.replay-graph svg {
   display: block;
-  margin-bottom: 10px;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.replay-graph .mid { stroke: var(--c-line-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.replay-graph .area { fill: var(--c-ink); fill-opacity: 0.08; }
+.replay-graph .line { fill: none; stroke: var(--c-ink-2); stroke-width: 1.75; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+
+.replay-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  box-shadow: 0 0 0 3px var(--c-panel-2);
+  transform: translate(-50%, -50%);
+  transition: left 500ms var(--c-ease-out), top 500ms var(--c-ease-out), background-color 200ms;
+}
+
+.replay-dot[data-bad] {
+  background: var(--c-loss);
+  animation: dot-ring 1.6s var(--c-ease-out) 400ms infinite;
+}
+
+@keyframes dot-ring {
+  from { box-shadow: 0 0 0 3px var(--c-panel-2), 0 0 0 3px color-mix(in srgb, var(--c-loss) 45%, transparent); }
+  to { box-shadow: 0 0 0 3px var(--c-panel-2), 0 0 0 14px transparent; }
+}
+
+.replay-coach {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 66px;
+  padding: 14px 4px 2px;
+  animation: coach-in 300ms var(--c-ease-out);
+}
+
+.replay-coach svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.replay-coach p {
+  margin: 0;
+  color: var(--c-ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.replay-coach b {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+.replay-coach .mv {
+  white-space: nowrap;
+}
+
+.replay-pct {
+  margin-left: 8px;
+  color: var(--c-ink-3);
+}
+
+@keyframes coach-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+/* ---------- The pattern ---------- */
+
+.start-pattern {
+  margin-top: 112px;
+}
+
+.start-pattern h2 {
+  max-width: 24ch;
+  margin: 0;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.start-pattern-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.frag {
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--c-panel-2);
+}
+
+.frag-label {
+  margin: 0;
   color: var(--c-ink-3);
   font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
-.start-steps h2 {
-  margin: 0;
-  font-size: 17px;
+.frag-title {
+  margin: 4px 0 0;
+  font-size: 19px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
-.start-steps p {
-  margin: 6px 0 0;
+.frag-text {
+  max-width: 40ch;
+  margin: 8px 0 0;
   color: var(--c-ink-2);
   line-height: 1.5;
+}
+
+.habit-row {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.habit-row li {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: var(--c-panel);
+  box-shadow: inset 0 0 0 1px var(--c-hair);
+}
+
+.habit-row li[data-hit] {
+  background: var(--c-ink);
+  box-shadow: none;
+}
+
+.frag-foot {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0 0;
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.frag-foot b {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+.frag-practice {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
 }
 
 .start a {
@@ -228,37 +436,53 @@
 }
 
 .start-note {
-  max-width: 65ch;
-  margin: 40px 0 0;
+  max-width: 68ch;
+  margin: 56px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--c-line);
   color: var(--c-ink-3);
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 960px) {
   .start {
-    padding-top: 32px;
+    padding-top: 36px;
   }
 
   .start-hero {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 40px;
   }
 
-  .start-board .board {
-    max-width: 320px;
-    margin: 0;
+  .start-pattern {
+    margin-top: 72px;
   }
 
-  .start-steps {
+  .start-pattern-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
-    margin-top: 48px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .start-row {
     flex-direction: column;
+  }
+
+  .replay-stage {
+    padding: 10px;
+  }
+
+  .replay-main {
+    grid-template-columns: 1fr;
+  }
+
+  .replay-sheet {
+    display: none;
+  }
+
+  .frag-practice {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 16px;
   }
 }
