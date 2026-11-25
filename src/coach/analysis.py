@@ -47,13 +47,10 @@ def positions_to_analyse(rows: list[sqlite3.Row]) -> set[str]:
     return keys
 
 
-def _is_great(
-    before: chess.Board, move: chess.Move, prev: chess.Move | None, lines: list[dict], win_before: float
-) -> bool:
-    """Played the only good move in a position that mattered (not a routine recapture or check escape)."""
+def _is_great(before: chess.Board, lines: list[dict], win_before: float) -> bool:
+    """Played the only good move in a position that mattered (not a check escape). An only-move recapture counts,
+    as it does on chess.com, so the two counts agree side by side."""
     if len(lines) < 2 or before.is_check() or win_before < GREAT_MIN_WIN:
-        return False
-    if prev is not None and move.to_square == prev.to_square and before.is_capture(move):
         return False
     second = grading.pov(grading.line_win_white(lines[1]), before.turn)
     return win_before - second >= GREAT_MIN_GAP
@@ -84,8 +81,7 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
 
         best_uci = lines_before[0]["pv"][0] if lines_before else None
         cls = grading.classify(win_loss, move.uci() == best_uci)
-        prev = nodes[ply - 2].move if ply >= 2 else None
-        if cls == "best" and _is_great(before, move, prev, lines_before, win_before):
+        if cls == "best" and _is_great(before, lines_before, win_before):
             cls = "great"
         if grading.is_brilliant(before, move, win_before, win_after, win_loss):
             cls = "brilliant"

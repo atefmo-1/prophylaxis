@@ -154,10 +154,10 @@ export async function buildReview(
     accuracyAt.set(ply, moveAccuracy(wb, wa));
     const bestUci = lb[0]?.pv[0] ?? null;
     let cls = classify(loss, uci === bestUci);
-    if (cls === "best" && lb.length > 1 && !before.isCheck() && wb >= 25) {
-      const prev = moves[ply - 2];
-      const recapture = prev && prev.uci.slice(2, 4) === uci.slice(2, 4) && !!before.board.get(move.to);
-      if (!recapture && wb - pov(lineWinWhite(lb[1]), mover === "white") >= 20) cls = "great";
+    // Great: the only good move (the next best is 20+ points of winning chance worse), out of check and not already
+    // lost. An only-move recapture counts, as it does on chess.com, so the counts agree side by side.
+    if (cls === "best" && lb.length > 1 && !before.isCheck() && wb >= 25 && wb - pov(lineWinWhite(lb[1]), mover === "white") >= 20) {
+      cls = "great";
     }
     if (isBrilliant(before, move, wb, wa, loss)) cls = "brilliant";
     if (ply <= inBook && loss < BOOK_MAX_LOSS) cls = "book";

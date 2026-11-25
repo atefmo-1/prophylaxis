@@ -23,8 +23,9 @@ import { moveAccuracy, pov } from "./grading";
 /** Reviews saved before the hyphen was added say "Caro Kann". */
 const tidyOpening = (name: string) => name.replace("Caro Kann", "Caro-Kann");
 
-/** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier; 3: Brilliant and Book). */
-export const ANALYSIS_VERSION = 3;
+/** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier; 3: Brilliant and Book;
+ * 4: only-move recaptures count as Great, as on chess.com). */
+export const ANALYSIS_VERSION = 4;
 const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
 const CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const HABIT_WINDOW = 10;
