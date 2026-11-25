@@ -16,9 +16,9 @@
   margin: 0;
   max-width: 16ch;
   font-size: clamp(32px, 5vw, 48px);
-  line-height: 1.05;
-  font-weight: 750;
-  letter-spacing: -0.03em;
+  line-height: 1.02;
+  font-weight: 600;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 
@@ -61,7 +61,7 @@
 .start-form label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .start-row {
@@ -97,11 +97,11 @@
   min-height: 46px;
   padding: 0 18px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--c-accent);
-  color: #fff;
+  color: var(--c-on-accent);
   font: inherit;
-  font-weight: 650;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 150ms var(--c-ease);
@@ -205,14 +205,14 @@
   margin-bottom: 10px;
   color: var(--c-ink-3);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .start-steps h2 {
   margin: 0;
   font-size: 17px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 

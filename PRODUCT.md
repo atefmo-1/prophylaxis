@@ -38,7 +38,7 @@ It works for any chess.com player, on their own real games. Habits and mistakes 
 
 ## Brand Commitments
 
-The name is Prophylaxis ("seeing a problem coming and stopping it before it happens"). The visual identity is in DESIGN.md: quiet dark chrome, a classic brown board and chess.com's grade colours. No logo beyond the favicon.
+The name is Prophylaxis ("seeing a problem coming and stopping it before it happens"). The visual identity is in DESIGN.md: navy ink on white (dark navy in dark mode), a classic brown board and chess.com's grade colours. The mark is a white pawn on an ink tile, in the top bar and as the favicon.
 
 ## Evidence on Hand
 

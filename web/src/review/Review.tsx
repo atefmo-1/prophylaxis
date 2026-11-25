@@ -8,7 +8,7 @@ import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
 import { keyMoments, read } from "../lib/coach";
 import { chancesAround, explain, tagSentence } from "../lib/explain";
-import { CLASS_META, dayTime, moveLabel, plural, timeControl } from "../lib/format";
+import { CLASS_META, dayTime, moveLabel, timeControl } from "../lib/format";
 import { recordAttempt } from "../lib/practice";
 import { dragToUci, isCheck, legalDests, pieceAt, playUci, sanOf, uciOfSan } from "../lib/rules";
 import { tacticArrows } from "../lib/shapes";
@@ -20,7 +20,6 @@ import { LoadError } from "../components/LoadError";
 
 const BAD: MoveClass[] = ["inaccuracy", "mistake", "miss", "blunder"];
 const SUMMARY_CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
-const PHASE_NAME: Record<string, string> = { opening: "Opening", middlegame: "Middlegame", endgame: "Endgame" };
 
 type Mode = { kind: "summary" } | { kind: "moments"; step: number } | { kind: "moves" } | { kind: "done" };
 type Attempt = { status: "trying" | "found" | "shown" | "skipped"; tries: string[]; last: string | null };
@@ -48,16 +47,37 @@ function HabitLine({ review, tags }: { review: ReviewData; tags: MoveTag[] }) {
   );
 }
 
-function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: () => void; onMoves: () => void }) {
+function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: (step: number) => void; onMoves: () => void }) {
   const coach = read(review);
   const g = review.game;
   const count = (side: "mine" | "theirs", c: MoveClass) => review.summary[side][c] ?? 0;
-  const k = keyMoments(review).length;
+  const moments = keyMoments(review);
+  const k = moments.length;
+  // The moment that cost the most: the one the game turned on.
+  const turn = [...coach.moments].sort((a, b) => b.loss - a.loss)[0];
   return (
     <div className="summary">
       {/* Reviews saved before "Lost by resignation" said only "Resigned". */}
       <h2>{g.ending === "Resigned" ? "Lost by resignation" : g.ending}</h2>
-      <p className="summary-story">{coach.story}</p>
+      <p className="summary-meta">
+        <span>{Math.ceil(review.moves.length / 2)} moves</span>
+        <span>{timeControl(g.time_control)}</span>
+        <span>{dayTime(g.t)}</span>
+      </p>
+
+      {turn ? (
+        <button type="button" className="turn" onClick={() => onStart(Math.max(0, moments.indexOf(turn.ply)))}>
+          <ClassIcon cls={turn.cls} size={22} />
+          <span className="turn-text">
+            The game turned on <b>{turn.label}</b>
+          </span>
+          <span className="turn-chances num" aria-label={`your winning chances went from ${Math.round(turn.before)}% to ${Math.round(turn.after)}%`}>
+            {Math.round(turn.before)}% → {Math.round(turn.after)}%
+          </span>
+        </button>
+      ) : (
+        <p className="summary-story">{coach.story}</p>
+      )}
 
       <table className="rv-sumtable">
         <thead>
@@ -90,29 +110,9 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: ()
         </tbody>
       </table>
 
-      <ul className="summary-phases" aria-label="Your play by phase">
-        {review.phases.map((ph) => {
-          const slips = review.moves.filter((m) => m.mine && m.phase === ph.phase && m.class === "inaccuracy").length;
-          const note = ph.mistakes
-            ? ph.mistakes === 1
-              ? `1 ${CLASS_META[ph.worst_class].label.toLowerCase()}`
-              : `${ph.mistakes} mistakes or worse`
-            : slips
-              ? plural(slips, "inaccuracy", "inaccuracies")
-              : "clean";
-          return (
-            <li key={ph.phase}>
-              <ClassIcon cls={ph.mistakes ? ph.worst_class : slips ? "inaccuracy" : "good"} size={16} />
-              <span>{PHASE_NAME[ph.phase]}</span>
-              <small className="num">{note}</small>
-            </li>
-          );
-        })}
-      </ul>
-
       <div className="summary-actions">
         {k > 0 ? (
-          <button type="button" className="btn btn--primary" onClick={onStart}>
+          <button type="button" className="btn btn--primary" onClick={() => onStart(0)}>
             Review {k === 1 ? "the key moment" : `${k} key moments`}
           </button>
         ) : (
@@ -315,12 +315,6 @@ export function ReviewView({
 
         <section className="rv-panel" aria-label="Review">
           <header className="panel-head">
-            <div className="panel-title">
-              <span>vs {g.opponent}</span>
-              <small>
-                {timeControl(g.time_control)} · {dayTime(g.t)}
-              </small>
-            </div>
             <div className="panel-tabs" role="tablist" aria-label="Review mode">
               <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "summary"} onClick={() => setMode({ kind: "summary" })}>
                 Summary
@@ -342,7 +336,7 @@ export function ReviewView({
           </header>
 
           <div className="panel-body" id="review-panel" role="tabpanel">
-            {mode.kind === "summary" && <Summary review={review} onStart={() => startMoments(0)} onMoves={() => stepMoves(-1)} />}
+            {mode.kind === "summary" && <Summary review={review} onStart={startMoments} onMoves={() => stepMoves(-1)} />}
 
             {mode.kind === "moments" && moment && beforeFen && (
               <MomentCard

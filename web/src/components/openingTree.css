@@ -33,7 +33,7 @@
 
 .otree-board .board coords {
   font-family: var(--c-font);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 11px;
 }
 
@@ -97,7 +97,7 @@
 .otree-name {
   margin: 4px 0 0;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .otree-here {
@@ -108,7 +108,7 @@
 .otree-h {
   margin: 14px 0 0;
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--c-ink-2);
 }
 
@@ -126,7 +126,7 @@
   background: none;
   color: var(--c-ink);
   font: inherit;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 

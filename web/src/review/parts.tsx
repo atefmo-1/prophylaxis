@@ -23,14 +23,14 @@ export function PlayerStrip({
   name,
   rating,
   change,
-  accuracy,
   color,
   you,
 }: {
   name: string;
   rating: number;
   change?: number | null;
-  accuracy: number | null;
+  /** Shown in the summary, not beside the name. */
+  accuracy?: number | null;
   color: Color;
   you?: boolean;
 }) {
@@ -46,9 +46,6 @@ export function PlayerStrip({
         </span>
       )}
       {you && <span className="strip-you">you</span>}
-      <span className="strip-acc">
-        <b className="num">{accuracy?.toFixed(1) ?? "–"}</b> accuracy
-      </span>
     </div>
   );
 }
@@ -127,8 +124,6 @@ function useWidth<T extends HTMLElement>() {
   return [ref, width] as const;
 }
 
-const PHASE_LABEL: Record<string, string> = { middlegame: "Middlegame", endgame: "Endgame" };
-
 /** Your winning chances after every move, with phase dividers, numbered key moments and a cursor. */
 export function Graph({
   review,
@@ -177,9 +172,6 @@ export function Graph({
             .map((ph) => (
               <g key={ph.phase} className="g-phase">
                 <line x1={x(ph.first_ply - 1)} x2={x(ph.first_ply - 1)} y1={pad.top} y2={pad.top + h} />
-                <text x={x(ph.first_ply - 1) + 4} y={pad.top + h - 3}>
-                  {PHASE_LABEL[ph.phase]}
-                </text>
               </g>
             ))}
           <path className="g-area" d={area} />
@@ -191,8 +183,6 @@ export function Graph({
           <line className="g-cursor" x1={x(current)} x2={x(current)} y1={pad.top} y2={pad.top + h} />
         </svg>
       )}
-      <span className="g-label g-label--top">Winning</span>
-      <span className="g-label g-label--bottom">Losing</span>
       {hover !== null && width > 0 && (
         <div className="g-tip" style={{ left: Math.min(width - 64, Math.max(64, x(hover))) }}>
           <b className="num">{Math.round(series[hover])}%</b> {hover === 0 ? "start" : moveLabel(hover, review.moves[hover - 1].san, review.moves[hover - 1].color)}

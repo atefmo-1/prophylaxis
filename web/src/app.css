@@ -1,33 +1,33 @@
-/* App shell and shared tokens. Quiet dark surfaces; colour is reserved for move grades and the current move. */
+/* App shell and shared tokens. Navy ink on white, inverted for dark. Colour is reserved for the board and move grades. */
 :root {
-  --c-bg: #161718;
-  --c-panel: #1f2022;
-  --c-panel-2: #28292c;
-  --c-line: #34363a;
-  --c-ink: #ecebe8;
-  --c-ink-2: #b9b8b3;
-  --c-ink-3: #969590;
-  --c-accent: #366fb5;
-  --c-accent-ink: #8dbbf0;
-  --c-current: rgb(61 124 201 / 0.32);
+  --c-bg: #121821;
+  --c-panel: #1a212c;
+  --c-panel-2: #242c39;
+  --c-line: #2a3240;
+  --c-ink: #f2ede3;
+  --c-ink-2: #c4c0b7;
+  --c-ink-3: #9d9b96;
+  --c-accent: #f2ede3;
+  --c-accent-ink: #f2ede3;
+  --c-current: rgb(242 237 227 / 0.13);
   --c-win: #8fc45c;
   --c-loss: #ef7a6c;
-  --c-hover: #33353a;
-  --c-pressed: #3a3c41;
-  --c-accent-hover: #3d78c1;
-  --c-foot: #1b1c1e;
+  --c-hover: #29313f;
+  --c-pressed: #313a49;
+  --c-accent-hover: #ffffff;
+  --c-foot: #121821;
   --c-font: "Hanken Grotesk Variable", system-ui, sans-serif;
   --c-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --c-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --sq-light: #f0d9b5;
   --sq-dark: #b58863;
-  --c-line-strong: #4a4c51;
-  --c-panel-edge: transparent;
+  --c-line-strong: #3a4352;
+  --c-panel-edge: rgb(255 255 255 / 0.07);
   --c-current-ink: #ffffff;
-  --c-scroll: #45474c;
+  --c-scroll: #3a4352;
   --c-row-hover: rgb(255 255 255 / 0.03);
   --c-row-alt: rgb(255 255 255 / 0.025);
-  --c-band: rgb(236 235 232 / 0.18);
+  --c-band: rgb(242 237 227 / 0.18);
   --c-shade: rgb(0 0 0 / 0.22);
   --gi-brilliant: #3fc7bf;
   --gi-great: #7fa9c9;
@@ -38,36 +38,38 @@
   --gi-mistake: #ee9a49;
   --gi-miss: #f07c5a;
   --gi-blunder: #ec5a56;
+  --c-on-accent: #121821;
+  --c-hair: rgb(255 255 255 / 0.1);
   color-scheme: dark;
 }
 
 /* Light theme: follows the system unless the viewer picked a theme. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --c-bg: #f3f3f1;
+    --c-bg: #ffffff;
     --c-panel: #ffffff;
-    --c-panel-2: #ececea;
-    --c-line: #dededa;
-    --c-line-strong: #c4c4bf;
-    --c-panel-edge: #e3e3df;
-    --c-ink: #18191b;
-    --c-ink-2: #45474b;
-    --c-ink-3: #66686c;
-    --c-accent: #2f6db5;
-    --c-accent-ink: #2a62a3;
-    --c-current: rgb(47 109 181 / 0.16);
-    --c-current-ink: #0e2a4d;
+    --c-panel-2: #f2f3f6;
+    --c-line: #e6e8ec;
+    --c-line-strong: #cfd3db;
+    --c-panel-edge: rgb(29 42 63 / 0.1);
+    --c-ink: #1d2a3f;
+    --c-ink-2: #3d4759;
+    --c-ink-3: #5f6777;
+    --c-accent: #1d2a3f;
+    --c-accent-ink: #1d2a3f;
+    --c-current: rgb(29 42 63 / 0.1);
+    --c-current-ink: #1d2a3f;
     --c-win: #3f7d1f;
     --c-loss: #bf3a2d;
-    --c-hover: #e2e2de;
-    --c-pressed: #d8d8d3;
-    --c-accent-hover: #3573bb;
-    --c-foot: #fafaf8;
-    --c-scroll: #c4c4bf;
-    --c-row-hover: rgb(0 0 0 / 0.03);
-    --c-row-alt: rgb(0 0 0 / 0.025);
-    --c-band: rgb(24 25 27 / 0.14);
-    --c-shade: rgb(0 0 0 / 0.05);
+    --c-hover: #eef0f4;
+    --c-pressed: #e4e7ec;
+    --c-accent-hover: #2c3c57;
+    --c-foot: #ffffff;
+    --c-scroll: #cfd3db;
+    --c-row-hover: rgb(29 42 63 / 0.035);
+    --c-row-alt: rgb(29 42 63 / 0.03);
+    --c-band: rgb(29 42 63 / 0.14);
+    --c-shade: rgb(29 42 63 / 0.06);
     --gi-brilliant: #13807b;
     --gi-great: #3f6f94;
     --gi-best: #4c8620;
@@ -77,35 +79,37 @@
     --gi-mistake: #b25b16;
     --gi-miss: #c04b29;
     --gi-blunder: #b52c29;
+    --c-on-accent: #ffffff;
+    --c-hair: rgb(29 42 63 / 0.15);
     color-scheme: light;
   }
 }
 
 :root[data-theme="light"] {
-  --c-bg: #f3f3f1;
+  --c-bg: #ffffff;
   --c-panel: #ffffff;
-  --c-panel-2: #ececea;
-  --c-line: #dededa;
-  --c-line-strong: #c4c4bf;
-  --c-panel-edge: #e3e3df;
-  --c-ink: #18191b;
-  --c-ink-2: #45474b;
-  --c-ink-3: #66686c;
-  --c-accent: #2f6db5;
-  --c-accent-ink: #2a62a3;
-  --c-current: rgb(47 109 181 / 0.16);
-  --c-current-ink: #0e2a4d;
+  --c-panel-2: #f2f3f6;
+  --c-line: #e6e8ec;
+  --c-line-strong: #cfd3db;
+  --c-panel-edge: rgb(29 42 63 / 0.1);
+  --c-ink: #1d2a3f;
+  --c-ink-2: #3d4759;
+  --c-ink-3: #5f6777;
+  --c-accent: #1d2a3f;
+  --c-accent-ink: #1d2a3f;
+  --c-current: rgb(29 42 63 / 0.1);
+  --c-current-ink: #1d2a3f;
   --c-win: #3f7d1f;
   --c-loss: #bf3a2d;
-  --c-hover: #e2e2de;
-  --c-pressed: #d8d8d3;
-  --c-accent-hover: #3573bb;
-  --c-foot: #fafaf8;
-  --c-scroll: #c4c4bf;
-  --c-row-hover: rgb(0 0 0 / 0.03);
-  --c-row-alt: rgb(0 0 0 / 0.025);
-  --c-band: rgb(24 25 27 / 0.14);
-  --c-shade: rgb(0 0 0 / 0.05);
+  --c-hover: #eef0f4;
+  --c-pressed: #e4e7ec;
+  --c-accent-hover: #2c3c57;
+  --c-foot: #ffffff;
+  --c-scroll: #cfd3db;
+  --c-row-hover: rgb(29 42 63 / 0.035);
+  --c-row-alt: rgb(29 42 63 / 0.03);
+  --c-band: rgb(29 42 63 / 0.14);
+  --c-shade: rgb(29 42 63 / 0.06);
   --gi-brilliant: #13807b;
   --gi-great: #3f6f94;
   --gi-best: #4c8620;
@@ -115,6 +119,8 @@
   --gi-mistake: #b25b16;
   --gi-miss: #c04b29;
   --gi-blunder: #b52c29;
+  --c-on-accent: #ffffff;
+  --c-hair: rgb(29 42 63 / 0.15);
   color-scheme: light;
 }
 
@@ -137,7 +143,7 @@ body {
 
 ::selection {
   background: var(--c-accent);
-  color: #fff;
+  color: var(--c-on-accent);
 }
 
 :focus-visible {
@@ -205,7 +211,7 @@ p {
   padding: 8px 12px;
   border-radius: 6px;
   background: var(--c-accent);
-  color: #fff;
+  color: var(--c-on-accent);
 }
 
 .skip:focus {
@@ -219,16 +225,21 @@ p {
   display: flex;
   align-items: center;
   gap: 28px;
-  height: 52px;
+  height: 60px;
   padding: 0 24px;
   background: var(--c-bg);
   border-bottom: 1px solid var(--c-line);
 }
 
 .brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
   color: var(--c-ink);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
   text-decoration: none;
 }
 
@@ -248,11 +259,11 @@ p {
 
 .topnav a {
   flex: none;
-  padding: 6px 12px;
+  padding: 7px 13px;
   white-space: nowrap;
-  border-radius: 6px;
+  border-radius: 10px;
   color: var(--c-ink-2);
-  font-weight: 550;
+  font-weight: 500;
   text-decoration: none;
   transition: background-color 150ms var(--c-ease), color 150ms var(--c-ease);
 }
@@ -263,8 +274,9 @@ p {
 }
 
 .topnav a[aria-current="page"] {
-  background: var(--c-panel-2);
+  background: var(--c-panel);
   color: var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--c-hair);
 }
 
 .topbar-end {
@@ -295,7 +307,8 @@ p {
 
 @media (max-width: 800px) {
   .brand {
-    display: none;
+    font-size: 0;
+    gap: 0;
   }
 }
 
@@ -309,7 +322,7 @@ p {
 .theme button {
   padding: 3px 9px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 7px;
   background: none;
   color: var(--c-ink-3);
   font: inherit;
@@ -450,34 +463,30 @@ p {
   }
 }
 
-/* The review fits the board to the screen below the top bar (52px); the sample note adds a line. */
-.shell--sample {
-  --chrome: 90px;
-}
-
-.sample-note {
-  margin: 0;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--c-line);
-  background: var(--c-panel);
-  color: var(--c-ink-2);
-  font-size: 14px;
-  text-align: center;
-}
-
-.sample-note button {
-  padding: 0;
+/* While the sample player is open: a small way out in the top bar, beside "Sample player". */
+.sample-cta {
+  min-height: 34px;
+  padding: 0 12px;
   border: 0;
-  background: none;
-  color: var(--c-accent-ink);
+  border-radius: 10px;
+  background: var(--c-accent);
+  color: var(--c-on-accent);
   font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
 }
 
+.sample-cta:hover {
+  background: var(--c-accent-hover);
+}
 
+@media (max-width: 640px) {
+  .sample-cta {
+    display: none;
+  }
+}
 
 /* Typing a move: out of sight until reached with Tab, then a field over the bottom of the board. */
 .board-type {
@@ -563,7 +572,7 @@ p {
   cursor: pointer;
 }
 
-/* Thumb-sized targets on a phone: the scoresheet, game rows and the sample note's link. */
+/* Thumb-sized targets on a phone: the scoresheet and game rows. */
 @media (max-width: 640px) {
   .rv .sheet-cell {
     min-height: 40px;
@@ -571,10 +580,6 @@ p {
 
   .row-link {
     padding: 10px 0;
-  }
-
-  .sample-note button {
-    padding: 8px 4px;
   }
 }
 

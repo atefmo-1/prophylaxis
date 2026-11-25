@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Mark } from "./components/Mark";
 import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
 import { timeLeft } from "./lib/format";
@@ -114,7 +115,7 @@ function PlayerMenu({ player }: { player: string }) {
 }
 
 function TopBar({ route }: { route: Route }) {
-  const { player } = useLibrary();
+  const { player, isSample, leave } = useLibrary();
   const { target } = useCurrentComparison();
   // When the sections scroll sideways (narrow screens), keep the current one in view.
   const nav = useRef<HTMLElement>(null);
@@ -124,6 +125,7 @@ function TopBar({ route }: { route: Route }) {
   return (
     <header className="topbar">
       <a className="brand" href={href({ name: "latest" })}>
+        <Mark />
         Prophylaxis
       </a>
       {player && (
@@ -136,6 +138,11 @@ function TopBar({ route }: { route: Route }) {
         </nav>
       )}
       <div className="topbar-end">
+        {isSample && (
+          <button type="button" className="sample-cta" onClick={leave} title="These are made-up beginner games, played by a weak engine.">
+            Review your own games
+          </button>
+        )}
         {player && <ProgressPill />}
         {player && route.name !== "compare" && <ComparePill />}
         <ThemeSwitch />
@@ -155,34 +162,20 @@ export function App() {
   );
 }
 
-/** Under the top bar while the sample player is open, so nobody mistakes it for a real person's games. */
-function SampleNote() {
-  const { leave } = useLibrary();
-  return (
-    <aside className="sample-note" aria-label="Sample player">
-      You're looking at a sample player: made-up beginner games, played by a weak engine.{" "}
-      <button type="button" onClick={leave}>
-        Review your own games
-      </button>
-    </aside>
-  );
-}
-
 function Shell() {
   const route = useRoute();
-  const { player, isSample } = useLibrary();
+  const { player } = useLibrary();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [route.name, route.name === "game" ? route.id : null]);
 
   return (
-    <div className={isSample ? "shell shell--sample" : "shell"}>
+    <div className="shell">
       <a className="skip" href="#main">
         Skip to content
       </a>
       <TopBar route={route} />
-      {isSample && <SampleNote />}
       <main id="main">
         {!player ? (
           <Start />
