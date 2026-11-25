@@ -116,6 +116,12 @@ export function explain(review: GameReview, i: number): Explanation {
   if (!move.mine && bad && move.reply_line.length > 0) {
     lines.push(`Your best answer was ${move.reply_line[0]}.`);
   }
+  // Your mistake, and the reply that didn't punish it: say so, or the next move's jump in your chances looks unexplained.
+  const reply = review.moves[i + 1];
+  if (move.mine && (bad || move.class === "miss") && reply && reply.win_loss >= 10) {
+    const label = `${Math.ceil(reply.ply / 2)}${reply.color === "white" ? "." : "…"} ${reply.san}`;
+    lines.push(`Your opponent missed the chance: ${label} put your winning chances back up to ${pct(chancesAround(review, i + 1)[1])}.`);
+  }
 
   return {
     heading: `${Math.ceil(move.ply / 2)}${move.color === "white" ? "." : "…"} ${move.san}`,

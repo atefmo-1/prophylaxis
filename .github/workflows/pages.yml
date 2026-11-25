@@ -1,4 +1,5 @@
-# Builds the static site (web/) and publishes it to GitHub Pages.
+# Checks the Python reference and the site, builds the static site (web/) and publishes it to GitHub Pages.
+# Nothing deploys unless the checks pass.
 name: Deploy site
 
 on:
@@ -16,16 +17,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --group dev
+      - run: uv run ruff check src tests
+      - run: uv run pytest -q
+
   build:
+    needs: python
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+        working-directory: web
+      # The site's Brilliant and Book rules against the Python reference's recorded answers.
+      - run: node scripts/check-grading.ts
         working-directory: web
       - run: npm run build
         working-directory: web

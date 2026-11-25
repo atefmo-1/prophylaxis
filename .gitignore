@@ -8,7 +8,7 @@ web/dist/
 .ruff_cache/
 .pytest_cache/
 
-# Design-review screenshots and decision-page scratch files
+# Design-review screenshots, critiques and decision-page scratch files
 .impeccable/review/
 .impeccable/decision/
 *.tsbuildinfo
@@ -18,3 +18,5 @@ web/dist-extension/
 # A player's analysis stays on their machine: the site analyses games in the browser, and the Python pipeline
 # writes to data/ (ignored above).
 web/public/data/
+.impeccable/critique/
+.impeccable/rebrand/

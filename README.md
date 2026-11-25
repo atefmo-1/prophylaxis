@@ -92,7 +92,7 @@ npm --prefix web install
 npm --prefix web run dev   # http://localhost:5173
 ```
 
-Every push to `main` deploys the site to GitHub Pages (`.github/workflows/pages.yml`). It's a static site with no data in it, so it also runs from any other host or sub-folder (`npm --prefix web run build` → `web/dist/`).
+Every push to `main` deploys the site to GitHub Pages (`.github/workflows/pages.yml`), once ruff, the Python tests and the site's grading check pass. It's a static site with no data in it, so it also runs from any other host or sub-folder (`npm --prefix web run build` → `web/dist/`).
 
 ## How the extension works
 
