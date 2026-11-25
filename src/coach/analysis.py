@@ -65,6 +65,10 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
         grading.terminal_win_white(b) if l is None else grading.line_win_white(l[0])
         for b, l in zip(boards, lines)
     ]
+    cp_white = [
+        grading.terminal_cp_white(b) if l is None else grading.line_cp_white(l[0])
+        for b, l in zip(boards, lines)
+    ]
 
     in_book = book.book_plies(boards)
     clocks: dict[chess.Color, float | None] = {chess.WHITE: row["base_s"], chess.BLACK: row["base_s"]}
@@ -80,7 +84,8 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
         win_loss = max(0.0, win_before - win_after)
 
         best_uci = lines_before[0]["pv"][0] if lines_before else None
-        cls = grading.classify(win_loss, move.uci() == best_uci)
+        cp_loss = max(0, (cp_white[ply - 1] - cp_white[ply]) * (1 if mover == chess.WHITE else -1))
+        cls = grading.classify(win_loss, move.uci() == best_uci, cp_loss)
         if cls == "best" and _is_great(before, lines_before, win_before):
             cls = "great"
         if grading.is_brilliant(before, move, win_before, win_after, win_loss):

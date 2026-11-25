@@ -18,6 +18,10 @@ const THRESHOLDS: [number, MoveClass][] = [
   [20, "mistake"],
 ];
 
+/** Excellent also means giving up less than this many centipawns. Winning chances hardly move in a position that is
+ * already won or lost, so without it a move that throws away a pawn there still reads as Excellent. Fitted to
+ * chess.com's own counts on 22 real games (it cut the gap by about 40% on games it wasn't fitted to). */
+export const EXCELLENT_MAX_CP = 30;
 export const BOOK_MAX_LOSS = 10; // a known opening move the engine calls a mistake stays a mistake
 const BRILLIANT_MAX_LOSS = 2; // the best move or close to it (excellent)
 const BRILLIANT_MAX_WIN = 90; // not already winning anyway
@@ -40,9 +44,16 @@ export function moveAccuracy(before: number, after: number): number {
   return Math.min(100, Math.max(0, raw + 1));
 }
 
-export function classify(loss: number, playedBest: boolean): MoveClass {
+/** White's score in centipawns for one engine line; a forced mate counts as far more than any material. */
+export const lineCpWhite = (line: Pick<Line, "cp" | "mate">): number =>
+  line.mate !== null ? (line.mate > 0 ? 100_000 : -100_000) : (line.cp ?? 0);
+
+/** The class from the drop in winning chances, and the material given up (centipawns, mover's side). */
+export function classify(loss: number, playedBest: boolean, cpLoss = 0): MoveClass {
   if (playedBest) return "best";
-  for (const [bound, name] of THRESHOLDS) if (loss < bound) return name;
+  for (const [bound, name] of THRESHOLDS) {
+    if (loss < bound) return name === "excellent" && cpLoss >= EXCELLENT_MAX_CP ? "good" : name;
+  }
   return "blunder";
 }
 

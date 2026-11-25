@@ -13,6 +13,7 @@ import chess
 # (upper bound of win % lost, class), checked in order; anything larger is a blunder
 THRESHOLDS = [(2.0, "excellent"), (5.0, "good"), (10.0, "inaccuracy"), (20.0, "mistake")]
 CLASSES = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"]
+EXCELLENT_MAX_CP = 30     # excellent also means giving up under 0.3 pawns (see classify)
 BOOK_MAX_LOSS = 10.0      # a known opening move the engine calls a mistake stays a mistake
 BRILLIANT_MAX_LOSS = 2.0  # the best move or close to it (excellent)
 BRILLIANT_MAX_WIN = 90.0  # not already winning anyway
@@ -50,12 +51,28 @@ def move_accuracy(win_before: float, win_after: float) -> float:
     return min(100.0, max(0.0, raw + 1))
 
 
-def classify(win_loss: float, played_best: bool) -> str:
+def line_cp_white(line: dict) -> int:
+    """White's score in centipawns for one engine line; a forced mate counts as far more than any material."""
+    if line["mate"] is not None:
+        return 100_000 if line["mate"] > 0 else -100_000
+    return line["cp"]
+
+
+def terminal_cp_white(board: chess.Board) -> int:
+    if board.is_checkmate():
+        return -100_000 if board.turn == chess.WHITE else 100_000
+    return 0
+
+
+def classify(win_loss: float, played_best: bool, cp_loss: float = 0.0) -> str:
+    """The class from the drop in winning chances. Excellent also needs under EXCELLENT_MAX_CP of material given up:
+    in a position already won or lost the chances hardly move, so a move that throws away a pawn would otherwise read
+    as excellent. The cap was fitted to chess.com's own counts on 22 real games."""
     if played_best:
         return "best"
     for bound, name in THRESHOLDS:
         if win_loss < bound:
-            return name
+            return "good" if name == "excellent" and cp_loss >= EXCELLENT_MAX_CP else name
     return "blunder"
 
 

@@ -101,3 +101,16 @@ def test_brilliant_needs_a_sound_sacrifice_from_a_position_that_isnt_won():
     assert not grading.is_brilliant(board, rxf6, win_before=55, win_after=40, win_loss=15)  # unsound
     assert not grading.is_brilliant(board, rxf6, win_before=95, win_after=96, win_loss=0)  # already winning
     assert not grading.is_brilliant(board, board.parse_san("h3"), win_before=55, win_after=55, win_loss=0)  # no sacrifice
+
+
+@pytest.mark.parametrize(
+    "loss, cp_loss, expected",
+    [(0.5, 10, "excellent"), (0.5, 29, "excellent"), (0.5, 30, "good"), (0.1, 250, "good"), (3, 250, "good"), (8, 0, "inaccuracy")],
+)
+def test_excellent_needs_little_material_given_up(loss, cp_loss, expected):
+    # In a won or lost position the chances barely move, so a move that throws away material is not excellent.
+    assert grading.classify(loss, False, cp_loss) == expected
+
+
+def test_best_ignores_material():
+    assert grading.classify(0, True, 500) == "best"

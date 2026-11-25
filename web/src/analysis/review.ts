@@ -11,7 +11,7 @@ import type { GameFacts } from "./stats";
 import { ENDINGS, TAG_INFO } from "./catalog";
 import type { Analyser } from "./engine";
 import { bookPlies, type OpeningBook } from "./book";
-import { BOOK_MAX_LOSS, classify, gameAccuracy, isBrilliant, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
+import { BOOK_MAX_LOSS, classify, gameAccuracy, isBrilliant, lineCpWhite, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
 import { detect, toMove } from "./motifs";
 import { refineTags, type TacticModel } from "./tactics";
 
@@ -133,6 +133,9 @@ export async function buildReview(
   const winWhite = positions.map((p) =>
     terminal(p) ? (p.isCheckmate() ? (p.turn === "white" ? 0 : 100) : 50) : lineWinWhite(linesAt(p)![0] ?? { cp: 0, mate: null }),
   );
+  const cpWhite = positions.map((p) =>
+    terminal(p) ? (p.isCheckmate() ? (p.turn === "white" ? -100_000 : 100_000) : 0) : lineCpWhite(linesAt(p)![0] ?? { cp: 0, mate: null }),
+  );
 
   // Grade every move
   const inBook = book ? bookPlies(book, positions) : 0;
@@ -153,7 +156,8 @@ export async function buildReview(
     const loss = Math.max(0, wb - wa);
     accuracyAt.set(ply, moveAccuracy(wb, wa));
     const bestUci = lb[0]?.pv[0] ?? null;
-    let cls = classify(loss, uci === bestUci);
+    const cpLoss = Math.max(0, (cpWhite[ply - 1] - cpWhite[ply]) * (mover === "white" ? 1 : -1));
+    let cls = classify(loss, uci === bestUci, cpLoss);
     // Great: the only good move (the next best is 20+ points of winning chance worse), out of check and not already
     // lost. An only-move recapture counts, as it does on chess.com, so the counts agree side by side.
     if (cls === "best" && lb.length > 1 && !before.isCheck() && wb >= 25 && wb - pov(lineWinWhite(lb[1]), mover === "white") >= 20) {
