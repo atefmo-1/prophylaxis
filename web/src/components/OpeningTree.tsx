@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { StoredGame } from "../analysis/stats";
 import { bookKey, loadOpeningNames } from "../analysis/book";
 import { day, plural, share } from "../lib/format";
-import { accuracy, branches, buildTree, moveLabel, score, TREE_DEPTH, type TreeNode } from "../lib/openingTree";
+import { branches, buildTree, moveLabel, score, TREE_DEPTH, type TreeNode } from "../lib/openingTree";
 import { RESULT_META } from "../lib/format";
 import type { Color } from "../types";
 import { Chess } from "chessops/chess";
@@ -133,9 +133,8 @@ export function OpeningTree({
 
         <p className="otree-name">{name ?? (ply === 0 ? "Starting position" : "Off the named lines")}</p>
         <p className="otree-here">
-          {plural(at.games, "game")} reached this position: {at.win} won, {at.loss} lost
-          {at.draw > 0 && <>, {at.draw} drawn</>}. A {share(score(at))} score
-          {accuracy(at) !== null && <> and {accuracy(at)!.toFixed(1)} accuracy</>}.
+          {plural(at.games, "game")}: {at.win} won, {at.loss} lost
+          {at.draw > 0 && <>, {at.draw} drawn</>}. {share(score(at))} score.
         </p>
 
         {moves.length > 0 ? (
@@ -173,9 +172,6 @@ export function OpeningTree({
                 ))}
               </tbody>
             </table>
-            <p className="otree-note muted">
-              Scores are from {you ? "your" : `${who}'s`} side. A move needs {MIN_FOR_VERDICT} games before it's called best or worst.
-            </p>
           </>
         ) : (
           <p className="muted">{ply < TREE_DEPTH ? "Every game that got here ended here." : "The tree stops at ten moves each."}</p>
@@ -183,7 +179,7 @@ export function OpeningTree({
 
         <H className="otree-h">Latest games from here</H>
         <ul className="otree-games">
-          {at.recent.map((g) => {
+          {at.recent.slice(0, 3).map((g) => {
             const link = gameLink(g);
             return (
               <li key={g.id}>

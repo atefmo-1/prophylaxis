@@ -14,8 +14,7 @@ export function Openings() {
       <header className="page-top">
         <h1>Openings</h1>
         <p>
-          Your first ten moves across {plural(played.length, "reviewed game")}, merged into one tree for each colour. Click a move to follow
-          it; each one shows how those games went.
+          Your first ten moves in {plural(played.length, "reviewed game")}, as one tree per colour. Click a move to follow it.
         </p>
       </header>
       <OpeningTree stored={played} who="You" gameLink={(g) => href({ name: "game", id: g.id, ply: null })} level={2} />

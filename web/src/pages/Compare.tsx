@@ -40,7 +40,7 @@ function rateEdge(mine: Interval | null, theirs: Interval | null): Edge {
 }
 
 function EdgeCell({ edge, name }: { edge: Edge; name: string }) {
-  return <td className={`cmp-edge cmp-edge--${edge}`}>{edge === "you" ? "You" : edge === "them" ? name : "Too close to call"}</td>;
+  return <td className={`cmp-edge cmp-edge--${edge}`}>{edge === "you" ? "You" : edge === "them" ? name : "Even"}</td>;
 }
 
 function Picker({ suggestions, initial }: { suggestions: string[]; initial: string }) {
@@ -115,16 +115,16 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
             {tc}, {plural(them.player.played, "game")}
           </span>
         </div>
-        <p className="cmp-h2h">
-          {h2h.win + h2h.loss + h2h.draw > 0
-            ? `Against each other, in your reviewed games: you won ${h2h.win}, lost ${h2h.loss}, drew ${h2h.draw}.`
-            : "You haven't played each other in your reviewed games."}
-        </p>
+        {h2h.win + h2h.loss + h2h.draw > 0 && (
+          <p className="cmp-h2h">
+            Against each other: you won {h2h.win}, lost {h2h.loss}, drew {h2h.draw}.
+          </p>
+        )}
       </section>
 
       <section className="block" aria-labelledby="tips-title">
         <h2 id="tips-title">How to beat {name}</h2>
-        <p className="block-lede">From their last {plural(them.player.played, "game")}. Each tip shows what it's based on.</p>
+        <p className="block-lede">From their last {plural(them.player.played, "game")}.</p>
         {tips.length ? (
           <ol className="cmp-tips">
             {tips.map((t) => (
@@ -142,10 +142,7 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
 
       <section className="block" aria-labelledby="side-title">
         <h2 id="side-title">Side by side</h2>
-        <p className="block-lede">
-          Your last {plural(me.player.played, tc + " game")} against theirs; the skill areas use the latest 20 of each. A side gets the edge
-          only when the gap is clear: a set margin for each area, and ranges that don't overlap for mistake rates.
-        </p>
+        <p className="block-lede">A side gets the edge only when the gap is clear.</p>
         <div className="table-scroll">
           <table className="ptable ptable--grid cmp-table">
             <thead>
@@ -171,9 +168,8 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
                 if (!t) return null;
                 return (
                   <tr key={s.key}>
-                    <th scope="row">
+                    <th scope="row" title={s.question}>
                       {s.title}
-                      <small>{s.question}</small>
                     </th>
                     <td className="num">{formatSkill(s, s.recent)}</td>
                     <td className="num">{formatSkill(t, t.recent)}</td>
@@ -185,9 +181,8 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
                 const t = them.phases.find((x) => x.phase === p.phase);
                 return (
                   <tr key={p.phase}>
-                    <th scope="row">
+                    <th scope="row" title="Share of moves that were mistakes or worse">
                       Mistakes in the {p.phase}
-                      <small>Share of moves that were mistakes or worse</small>
                     </th>
                     <td className="num">{p.mistake_rate ? share(p.mistake_rate.rate) : "–"}</td>
                     <td className="num">{t?.mistake_rate ? share(t.mistake_rate.rate) : "–"}</td>
@@ -200,30 +195,6 @@ function Results({ me, them, name, h2h }: { me: Overview; them: Overview; name: 
         </div>
       </section>
 
-      <section className="block" aria-labelledby="habits-cmp-title">
-        <h2 id="habits-cmp-title">Costliest habits</h2>
-        <div className="cmp-habits">
-          {[
-            { who: "You", o: me },
-            { who: name, o: them },
-          ].map(({ who, o }) => (
-            <div key={who}>
-              <h3>{who}</h3>
-              <ol>
-                {o.weaknesses.slice(0, 3).map((w) => (
-                  <li key={w.tag}>
-                    <b>{w.title}</b>
-                    <span className="muted">
-                      {w.games.k} of {w.games.n} games
-                    </span>
-                  </li>
-                ))}
-                {o.weaknesses.length === 0 && <li className="muted">None recognised yet.</li>}
-              </ol>
-            </div>
-          ))}
-        </div>
-      </section>
     </>
   );
 }
@@ -265,8 +236,7 @@ export function Compare({ player }: { player: string | null }) {
       <header className="page-top">
         <h1>Compare</h1>
         <p>
-          You against any chess.com player: their last {COMPARE_GAMES} rated {tc} games from the past year, reviewed in your browser like yours, and
-          how to play them.
+          Any chess.com player against you: their last {COMPARE_GAMES} rated {tc} games get reviewed in your browser, with tips for playing them.
         </p>
       </header>
 
@@ -309,7 +279,7 @@ export function Compare({ player }: { player: string | null }) {
       {shown && enough && (
         <section className="block" aria-labelledby="their-openings-title">
           <h2 id="their-openings-title">{name}'s openings</h2>
-          <p className="block-lede">What they play and how it goes for them, from their side.{lib.isSample ? "" : " Games open on chess.com."}</p>
+          <p className="block-lede">What they play, scored from their side.</p>
           <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => (g.url.startsWith("https://www.chess.com/") ? g.url : null)} />
         </section>
       )}

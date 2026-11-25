@@ -1,14 +1,13 @@
-// Habits: the one thing to work on first, then skill areas, every habit, and the analysis behind them.
+// Habits: the one thing to work on first, then skill areas, every habit, trends and where mistakes happen.
 import type { ReactNode } from "react";
 import { Board, type Arrow } from "../components/Board";
-import { BarRows, GameChart, Legend, PairedBars, RateRows } from "../components/charts";
-import { ClassIcon } from "../components/ClassIcon";
+import { GameChart, Legend, RateRows } from "../components/charts";
 import { useOverview } from "../data";
 import { useLibrary } from "../library/Library";
-import { CLASS_META, RESULT_META, day, plural, share } from "../lib/format";
+import { RESULT_META, day } from "../lib/format";
 import { hasPuzzles } from "../lib/puzzles";
 import { href } from "../router";
-import type { MoveClass, Overview, Skill, Weakness } from "../types";
+import type { Overview, Skill, Weakness } from "../types";
 import "./pages.css";
 import { NotEnough } from "../components/Progress";
 import { SKILL_RECENT } from "../analysis/stats";
@@ -82,8 +81,8 @@ function Focus({ w }: { w: Weakness }) {
         </div>
         {ex && (
           <p className="focus-caption">
-            Your most recent one: move {ex.move_number} against {ex.opponent}, {day(ex.date)}. You played <b>{ex.played}</b> (blue
-            arrow); <b>{ex.best}</b> (green) was better. <a href={href({ name: "game", id: ex.game_id, ply: ex.ply })}>Open in review</a>
+            Move {ex.move_number} against {ex.opponent}, {day(ex.date)}: you played <b>{ex.played}</b>, <b>{ex.best}</b> was better.{" "}
+            <a href={href({ name: "game", id: ex.game_id, ply: ex.ply })}>Open in review</a>
           </p>
         )}
       </div>
@@ -98,7 +97,7 @@ function Skills({ skills, played }: { skills: Skill[]; played: number }) {
       <h2 id="skills-title">Skill areas</h2>
       <p className="block-lede">
         {played > games
-          ? `Your last ${games} games, compared with the ${played - games} before them.`
+          ? `Your last ${games} games against the ${played - games} before.`
           : `Your ${games} games so far. Once you have more than ${SKILL_RECENT}, each area compares your last ${SKILL_RECENT} with the ones before.`}
       </p>
       <ul className="skills">
@@ -124,7 +123,7 @@ function AllHabits({ list }: { list: Weakness[] }) {
   return (
     <section className="block" aria-labelledby="habits-title">
       <h2 id="habits-title">All habits</h2>
-      <p className="block-lede">Ranked by how much winning chance each one costs you in an average game, across all your reviewed games.</p>
+      <p className="block-lede">Ranked by the winning chances each one costs you in an average game.</p>
       <ol className="habit-list">
         {list.map((w, i) => (
           <li key={w.tag}>
@@ -137,11 +136,11 @@ function AllHabits({ list }: { list: Weakness[] }) {
               <b className="num">
                 {w.windows.last} of {w.windows.size}
               </b>
-              <span>recent games{w.windows.prev !== null ? `, was ${w.windows.prev}` : ""}</span>
+              <span>recent games</span>
             </div>
             <div className="habit-cost">
               <b className="num">{w.impact < 1 ? "under 1%" : `−${Math.round(w.impact)}%`}</b>
-              <span>a game, −{Math.round(w.avg_loss)}% each time</span>
+              <span>a game</span>
             </div>
             <a className="pbtn" href={href({ name: hasPuzzles(w.tag) ? "puzzles" : "practice", tag: w.tag })}>
               {hasPuzzles(w.tag) ? "Puzzles" : "Practice"}
@@ -184,7 +183,6 @@ function Trends({ data }: { data: Overview }) {
   return (
     <section className="block" aria-labelledby="trends-title">
       <h2 id="trends-title">Trends</h2>
-      <p className="block-lede">Every reviewed game, oldest on the left; the rating chart shows your {p.rating_time_class} games. Hover for the game.</p>
       <div className="cards">
         <Card title={`${kind} rating`} takeaway={`From ${p.start_rating} to ${p.rating}, with a peak of ${p.peak}.`}>
           <GameChart
@@ -205,7 +203,7 @@ function Trends({ data }: { data: Overview }) {
         </Card>
         <Card
           title="Accuracy"
-          takeaway={`${recentAvg.toFixed(1)} over your last 10 games, against ${p.accuracy?.toFixed(1)} overall. Your opponents average ${p.opp_accuracy?.toFixed(1)}.`}
+          takeaway={`${recentAvg.toFixed(1)} over your last 10 games, ${p.accuracy?.toFixed(1)} overall.`}
         >
           <Legend
             items={[
@@ -245,9 +243,9 @@ function Mistakes({ data }: { data: Overview }) {
     <section className="block" aria-labelledby="where-title">
       <h2 id="where-title">Where and when mistakes happen</h2>
       <p className="block-lede">
-        Share of your moves that were a mistake, miss or blunder. The band shows where the true rate likely is with this many games.
+        Share of your moves that were a mistake, miss or blunder. The band is the likely range.
       </p>
-      <div className="cards cards--3">
+      <div className="cards">
         <Card
           title="By game phase"
           takeaway={
@@ -258,9 +256,6 @@ function Mistakes({ data }: { data: Overview }) {
           }
         >
           <RateRows rows={data.phases.map((ph) => ({ label: ph.phase[0].toUpperCase() + ph.phase.slice(1), sub: `${ph.moves} moves`, ci: ph.mistake_rate }))} />
-        </Card>
-        <Card title="By time left" takeaway={`You lost ${plural(data.clock.lost_on_time, "game")} on time.`}>
-          <RateRows rows={data.clock.buckets.map((b) => ({ label: b.label, sub: `${b.moves} moves`, ci: b.mistake_rate }))} />
         </Card>
         <Card
           title="By time spent on the move"
@@ -279,111 +274,6 @@ function Mistakes({ data }: { data: Overview }) {
   );
 }
 
-const QUALITY: MoveClass[] = ["brilliant", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
-
-function VersusAndResults({ data }: { data: Overview }) {
-  const p = data.player;
-  const q = new Map(data.move_quality.map((m) => [m.class, m]));
-  const blunders = q.get("blunder");
-  const wins = data.terminations.filter((t) => t.result === "win");
-  const losses = data.terminations.filter((t) => t.result === "loss");
-  const conv = data.conversion.winning;
-  const after = data.sessions;
-  return (
-    <section className="block" aria-labelledby="vs-title">
-      <h2 id="vs-title">You and your opponents</h2>
-      <p className="block-lede">How your moves compare with the moves played against you, and how your games end.</p>
-      <div className="cards">
-        <Card
-          title="Moves per game, by grade"
-          takeaway={blunders && `You blunder ${blunders.mine_per_game.toFixed(1)} times a game; your opponents ${blunders.theirs_per_game.toFixed(1)}.`}
-        >
-          <Legend
-            items={[
-              { key: "a", label: "You", kind: "dot" },
-              { key: "b", label: "Your opponents", kind: "dot" },
-            ]}
-          />
-          <PairedBars
-            format={(v) => v.toFixed(1)}
-            rows={QUALITY.filter((c) => q.has(c)).map((c) => ({
-              label: CLASS_META[c].label,
-              icon: <ClassIcon cls={c} size={15} />,
-              a: q.get(c)!.mine_per_game,
-              b: q.get(c)!.theirs_per_game,
-            }))}
-          />
-        </Card>
-        <Card
-          title="How games end"
-          takeaway={
-            <>
-              {conv && <>You won {conv.k} of the {conv.n} games where you reached a winning position. </>}
-              After a loss in the same session you scored {share(after.loss.score ?? 0)}; after a win, {share(after.win.score ?? 0)}.
-            </>
-          }
-        >
-          <p className="bars-title">Wins ({p.win})</p>
-          <BarRows tone="win" rows={wins.map((t) => ({ label: t.label, value: t.count }))} />
-          <p className="bars-title">Losses ({p.loss})</p>
-          <BarRows tone="loss" rows={losses.map((t) => ({ label: t.label, value: t.count }))} />
-          <p className="bars-note">
-            {p.draw} draws.{p.unplayed > 0 && ` All ${p.games} games, including ${plural(p.unplayed, "game")} that ended before the first move.`}
-          </p>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
-function Openings({ data }: { data: Overview }) {
-  const colors = data.colors;
-  return (
-    <section className="block" aria-labelledby="openings-title">
-      <h2 id="openings-title">Openings and colours</h2>
-      <p className="block-lede">
-        {colors.map((c, i) => (
-          <span key={c.color}>
-            {i > 0 && " "}
-            As {c.color}: {c.win}–{c.loss}–{c.draw} ({share(c.score ?? 0)} score, accuracy {c.accuracy?.toFixed(1)}).
-          </span>
-        ))}
-      </p>
-      <div className="table-scroll">
-        <table className="ptable ptable--grid">
-          <thead>
-            <tr>
-              <th scope="col">Opening family</th>
-              <th scope="col">You played</th>
-              <th scope="col" className="num">Games</th>
-              <th scope="col" className="num">W–L–D</th>
-              <th scope="col" className="num">Score</th>
-              <th scope="col" className="num hide-sm">Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.openings
-              .filter((o) => o.games >= 2)
-              .slice(0, 12)
-              .map((o) => (
-                <tr key={`${o.family}-${o.color}`}>
-                  <td>{o.family}</td>
-                  <td>{o.color}</td>
-                  <td className="num">{o.games}</td>
-                  <td className="num">
-                    {o.win}–{o.loss}–{o.draw}
-                  </td>
-                  <td className="num">{share(o.score ?? 0)}</td>
-                  <td className="num hide-sm">{o.accuracy?.toFixed(1) ?? "–"}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
 export function Habits() {
   const overview = useOverview();
   if (overview.status === "error") return <LoadError what="your stats" detail={overview.error} />;
@@ -396,7 +286,7 @@ export function Habits() {
       <header className="page-top">
         <h1>Habits</h1>
         <p>
-          From your {data.player.played} played games, up to your game of {day(data.series[data.series.length - 1]?.t ?? data.generated_at)}.
+          From your {data.player.played} played games.
         </p>
       </header>
       <Focus w={data.weaknesses[0]} />
@@ -404,8 +294,6 @@ export function Habits() {
       <AllHabits list={data.weaknesses} />
       <Trends data={data} />
       <Mistakes data={data} />
-      <VersusAndResults data={data} />
-      <Openings data={data} />
     </div>
   );
 }

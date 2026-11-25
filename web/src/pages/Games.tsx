@@ -1,7 +1,7 @@
-// Every game: a sortable-by-date table with the result, accuracy and the habit that cost the most.
+// Every game, newest first: result, accuracy, blunders and the habit that cost the most.
 import { useState } from "react";
 import { useGames, useOverview } from "../data";
-import { RESULT_META, accuracy, day, plural, timeControl, timeLeft } from "../lib/format";
+import { RESULT_META, accuracy, day, plural, timeLeft } from "../lib/format";
 import { useLibrary, useLibraryStatus } from "../library/Library";
 import { href } from "../router";
 import type { Color, Result } from "../types";
@@ -15,7 +15,7 @@ const RESULTS: { label: string; value: Result | "all" }[] = [
   { label: "Draws", value: "draw" },
 ];
 const COLORS: { label: string; value: Color | "all" }[] = [
-  { label: "Both colours", value: "all" },
+  { label: "Both", value: "all" },
   { label: "White", value: "white" },
   { label: "Black", value: "black" },
 ];
@@ -40,7 +40,7 @@ export function Games() {
       <header className="page-top">
         <h1>Games</h1>
         <p>
-          {games.data.length} games, newest first.
+          {games.data.length} games, newest first. Open one to review it.
           {unplayed > 0 && ` ${plural(unplayed, "more game")} ended before the first move.`}
         </p>
         {more && status.kind === "idle" && (
@@ -84,9 +84,8 @@ export function Games() {
               <th scope="col">Opponent</th>
               <th scope="col">Result</th>
               <th scope="col" className="num">Accuracy</th>
-              <th scope="col" className="num hide-sm">Mistakes</th>
               <th scope="col" className="num hide-sm">Blunders</th>
-              <th scope="col" className="hide-sm">Costliest habit</th>
+              <th scope="col" className="hide-sm games-habit-col">Habit</th>
               <th scope="col" className="hide-md">Opening</th>
             </tr>
           </thead>
@@ -98,19 +97,17 @@ export function Games() {
                     <span className={`piece-dot piece-dot--${g.color}`} role="img" aria-label={`you played ${g.color}`} />
                     {g.opponent} <span className="muted num">{g.opp_rating}</span>
                   </a>
-                  <small>
-                    {day(g.t)} · {timeControl(g.time_control)} · {g.moves} moves
-                  </small>
+                  <small>{day(g.t)}</small>
                 </td>
                 <td>
-                  <span className={`result result--${g.result}`}>{RESULT_META[g.result].label}</span>
-                  <small>{g.ending}</small>
+                  <span className={`result result--${g.result}`} title={g.ending}>
+                    {RESULT_META[g.result].label}
+                  </span>
                 </td>
                 <td className="num">{accuracy(g.accuracy)}</td>
-                <td className="num hide-sm">{g.mistakes}</td>
                 <td className="num hide-sm">{g.blunders}</td>
-                <td className="hide-sm">
-                  {g.habit ? <a href={href({ name: "practice", tag: g.habit.tag })}>{g.habit.title}</a> : <span className="muted">no habit tagged</span>}
+                <td className="hide-sm games-habit-col">
+                  {g.habit ? <span className="games-habit">{g.habit.title}</span> : <span className="muted">–</span>}
                 </td>
                 <td className="hide-md">{g.family}</td>
               </tr>

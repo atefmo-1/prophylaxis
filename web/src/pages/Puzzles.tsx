@@ -178,9 +178,7 @@ function PuzzleBoard(props: {
             label={solving ? `Find the best move for ${solver}` : `Puzzle position, ${solver} to play`}
           />
         </div>
-        <div className="rv-bottom strip">
-          <span className="strip-name">You play {solver}</span>
-        </div>
+        <div className="rv-bottom" />
 
         <section className="rv-panel" aria-label="Puzzle">
           <header className="panel-head">
@@ -195,7 +193,7 @@ function PuzzleBoard(props: {
             <div className="coach" aria-live="polite">
               {!done ? (
                 <>
-                  <h2>{status === "opening" ? "Watch your opponent's move…" : `Your move: find the best move for ${solver}.`}</h2>
+                  <h2>{status === "opening" ? "Watch your opponent's move…" : `Find the best move for ${solver}.`}</h2>
                   {missed && (
                     <p className="coach-feedback coach-feedback--no" key={missed}>Not this one: {sanOf(fen, missed)} doesn't work here. Try another move.</p>
                   )}

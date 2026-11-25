@@ -216,9 +216,7 @@ function Session({
             label={trying ? `Find a better move for ${p.color}` : "Solution"}
           />
         </div>
-        <div className="rv-bottom strip">
-          <span className="strip-name">You played {p.color}</span>
-        </div>
+        <div className="rv-bottom" />
 
         <section className="rv-panel" aria-label="Practice">
           <header className="panel-head">
@@ -231,14 +229,6 @@ function Session({
           </header>
           <div className="panel-body">
             <div className="coach" aria-live="polite">
-              <p className="coach-step">
-                Position {step + 1}
-                <span className="coach-dots" aria-hidden="true">
-                  {session.map((s, i) => (
-                    <i key={s.id} data-on={i <= step || undefined} />
-                  ))}
-                </span>
-              </p>
               {trying ? (
                 <>
                   <h2>

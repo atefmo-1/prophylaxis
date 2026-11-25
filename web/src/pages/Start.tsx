@@ -106,10 +106,7 @@ export function Start() {
         </li>
         <li>
           <h2>Get your first review in seconds</h2>
-          <p>
-            Your latest game comes first. Then about five minutes' worth of your recent games are reviewed in the
-            background while you read, newest first, and Games can review more.
-          </p>
+          <p>Your latest game comes first; about five minutes' worth of recent games follow in the background.</p>
         </li>
         <li>
           <h2>Add the Chrome extension, if you like</h2>

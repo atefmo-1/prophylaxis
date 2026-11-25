@@ -400,7 +400,6 @@
   box-shadow: 0 0 0 2px var(--c-panel);
 }
 
-
 /* ---------- Analysis cards and charts ---------- */
 
 .cards {
@@ -511,92 +510,15 @@
   width: 40%;
 }
 
-.pairs th {
-  width: 36%;
-  padding: 7px 10px 7px 0;
-}
+/* ---------- Games ---------- */
 
-.pairs td {
-  padding: 6px 0;
-}
-
-.pairs-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pair {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 12px;
-  font-size: 12px;
-  color: var(--c-ink-3);
-}
-
-.pair + .pair {
-  margin-top: 3px;
-}
-
-.pair-bar {
-  height: 8px;
-  min-width: 2px;
-  border-radius: 0 4px 4px 0;
-}
-
-.pair-bar--a { background: var(--c-accent); }
-.pair-bar--b { background: var(--c-ink-3); opacity: 0.6; }
-
-.bars {
-  display: grid;
-  gap: 6px;
-  margin: 0 0 12px;
-  padding: 0;
-  list-style: none;
-  font-size: 13px;
-}
-
-.bars li {
-  display: grid;
-  grid-template-columns: minmax(120px, 42%) minmax(0, 1fr) 28px;
-  gap: 10px;
-  align-items: center;
-}
-
-.bars-track {
-  display: block;
-}
-
-.bars-bar {
-  display: block;
-  height: 10px;
-  min-width: 2px;
-  border-radius: 0 4px 4px 0;
-}
-
-.bars-bar--win { background: var(--c-win); }
-.bars-bar--loss { background: var(--c-loss); }
-.bars-bar--draw { background: var(--c-ink-3); }
-
-.bars li .num {
-  text-align: right;
+.games-habit {
   color: var(--c-ink-2);
 }
 
-.bars-title {
-  margin: 0 0 6px;
-  font-size: 13px;
-  font-weight: 600;
+.games .games-habit-col {
+  padding-left: 28px;
 }
-
-.bars-note {
-  margin: 0;
-  color: var(--c-ink-3);
-  font-size: 12px;
-}
-
-/* ---------- Games ---------- */
 
 .filters {
   display: flex;
