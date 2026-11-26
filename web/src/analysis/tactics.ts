@@ -14,9 +14,13 @@ import { toMove, type Tag } from "./motifs";
 import type { Line } from "./grading";
 
 export interface TacticModel {
-  /** Changes whenever the shipped model does, so reviews tagged by an older one can be re-tagged. */
+  /** Changes whenever the shipped model or the themes it may name do, so older reviews can be re-tagged. */
   version: string;
   trusted: Set<string>;
+  /** True once the runtime has failed to start: reviews then use the rules alone and aren't marked as tagged. */
+  readonly failed: boolean;
+  /** Starts the runtime ahead of a review that will likely need it; resolves either way. */
+  warm(): Promise<void>;
   /** Themes present for each position and engine line (UCI) for the side to move: the line's first move is theirs. */
   classify(items: { pos: Position; line: string[] }[]): Promise<Set<string>[]>;
 }
@@ -31,49 +35,94 @@ interface Meta {
   trusted: string[];
 }
 
-/** Loads the model in its own worker; resolves to null (rules only) if anything about it fails. */
-export async function loadTacticModel(base: string): Promise<TacticModel | null> {
+/** A short, stable hash, so the version also changes when the list of themes the site names does. */
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36);
+};
+
+type Call = (msg: object, transfer?: Transferable[]) => Promise<Float32Array | undefined>;
+
+/** Starts the worker and loads the model into it. Rejects if either fails or takes too long. */
+async function start(base: string): Promise<Call> {
+  const worker = new Worker(new URL("./tactics.worker.ts", import.meta.url), { type: "module" });
+  let next = 0;
+  const pending = new Map<number, { resolve: (v: Float32Array | undefined) => void; reject: (e: Error) => void }>();
+  worker.onmessage = (e: MessageEvent<{ id: number; probs?: Float32Array; error?: string }>) => {
+    const p = pending.get(e.data.id);
+    pending.delete(e.data.id);
+    if (e.data.error) p?.reject(new Error(e.data.error));
+    else p?.resolve(e.data.probs);
+  };
+  // A worker that fails to start never answers: fail everything waiting, so reviews fall back to the rules.
+  worker.onerror = (e) => {
+    for (const p of pending.values()) p.reject(new Error(e.message || "tactic worker failed"));
+    pending.clear();
+  };
+  const call: Call = (msg, transfer = []) =>
+    new Promise((resolve, reject) => {
+      const id = next++;
+      pending.set(id, { resolve, reject });
+      worker.postMessage({ id, ...msg }, transfer);
+    });
+  let timer = 0;
+  const timeout = new Promise<never>((_, reject) => (timer = window.setTimeout(() => reject(new Error("tactic model took too long to load")), LOAD_TIMEOUT_MS)));
   try {
-    const meta = (await (await fetch(`${base}models/tactics.json`)).json()) as Meta;
-    if (meta.planes !== PLANES) throw new Error("tactics.json was made for a different encoding");
-    const worker = new Worker(new URL("./tactics.worker.ts", import.meta.url), { type: "module" });
-    let next = 0;
-    const pending = new Map<number, { resolve: (v: Float32Array | undefined) => void; reject: (e: Error) => void }>();
-    worker.onmessage = (e: MessageEvent<{ id: number; probs?: Float32Array; error?: string }>) => {
-      const p = pending.get(e.data.id);
-      pending.delete(e.data.id);
-      if (e.data.error) p?.reject(new Error(e.data.error));
-      else p?.resolve(e.data.probs);
-    };
-    // A worker that fails to start never answers: fail everything waiting, so reviews fall back to the rules.
-    worker.onerror = (e) => {
-      for (const p of pending.values()) p.reject(new Error(e.message || "tactic worker failed"));
-      pending.clear();
-    };
-    const call = (msg: object, transfer: Transferable[] = []) =>
-      new Promise<Float32Array | undefined>((resolve, reject) => {
-        const id = next++;
-        pending.set(id, { resolve, reject });
-        worker.postMessage({ id, ...msg }, transfer);
-      });
-    const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("tactic model took too long to load")), LOAD_TIMEOUT_MS));
     await Promise.race([call({ url: new URL(`${base}models/tactics.onnx`, location.href).href }), timeout]);
-    const k = meta.themes.length;
-    return {
-      version: meta.version,
-      trusted: new Set(meta.trusted),
-      async classify(items) {
-        const planes = new Float32Array(items.length * PLANES * 64);
-        const ok = items.map(({ pos, line }, i) => encode(pos, modelLine(pos, line), planes, i * PLANES * 64) !== null);
-        if (!items.length) return [];
-        const probs = (await call({ planes, n: items.length, size: PLANES }, [planes.buffer]))!;
-        return items.map((_, i) => new Set(ok[i] ? meta.themes.filter((_, j) => probs[i * k + j] >= meta.thresholds[j]) : []));
-      },
-    };
+  } catch (e) {
+    worker.terminate();
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+  return call;
+}
+
+/**
+ * The model's settings, read up front (a few hundred bytes). The 14 MB runtime and the model itself load only the
+ * first time a mistake needs a name, which most visits never reach. Resolves to null (rules only) if the settings
+ * can't be read.
+ */
+export async function loadTacticModel(base: string): Promise<TacticModel | null> {
+  let meta: Meta;
+  try {
+    meta = (await (await fetch(`${base}models/tactics.json`)).json()) as Meta;
+    if (meta.planes !== PLANES) throw new Error("tactics.json was made for a different encoding");
   } catch (e) {
     console.warn("Tactic classifier unavailable, using the rules alone:", e);
     return null;
   }
+  let runtime: Promise<Call> | null = null;
+  let failed = false;
+  const load = () => {
+    if (failed) return Promise.reject(new Error("tactic model unavailable"));
+    return (runtime ??= start(base).catch((e) => {
+      failed = true;
+      console.warn("Tactic classifier unavailable, using the rules alone:", e);
+      throw e;
+    }));
+  };
+  const k = meta.themes.length;
+  return {
+    version: `${meta.version}.${hash([...meta.trusted].sort().join(","))}`,
+    trusted: new Set(meta.trusted),
+    get failed() {
+      return failed;
+    },
+    warm: () => load().then(
+      () => undefined,
+      () => undefined,
+    ),
+    async classify(items) {
+      if (!items.length) return [];
+      const call = await load();
+      const planes = new Float32Array(items.length * PLANES * 64);
+      const ok = items.map(({ pos, line }, i) => encode(pos, modelLine(pos, line), planes, i * PLANES * 64) !== null);
+      const probs = (await call({ planes, n: items.length, size: PLANES }, [planes.buffer]))!;
+      return items.map((_, i) => new Set(ok[i] ? meta.themes.filter((_, j) => probs[i * k + j] >= meta.thresholds[j]) : []));
+    },
+  };
 }
 
 // The tag each theme becomes on either side of a mistake, in the order a coach would name them.
@@ -125,7 +174,12 @@ export async function refineTags(
   const askMissed = missedAt >= 0 && best.length > 0;
   if (!askAllowed && !askMissed) return tags;
   const items = [...(askAllowed ? [{ pos: after, line: reply }] : []), ...(askMissed ? [{ pos: before, line: best }] : [])];
-  const found = await model.classify(items);
+  let found: Set<string>[];
+  try {
+    found = await model.classify(items);
+  } catch {
+    return tags; // the runtime didn't start: the rules' tags stand
+  }
   const allowed = askAllowed ? found[0] : null;
   const missed = askMissed ? found[found.length - 1] : null;
   const out = [...tags];

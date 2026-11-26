@@ -205,7 +205,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         for (const entry of stale) {
           if (!live()) return;
           const review = await retagReview(model, entry.review).catch(() => null);
-          if (!review) continue; // left as it was; tried again next visit
+          if (!review || model.failed) continue; // left as it was; tried again next visit
           if (!live()) return;
           const next = { ...entry, review, tagged: model.version };
           await saveGame(who.toLowerCase(), next);
@@ -245,7 +245,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         setStatus({ kind: "analysing", done: i, total: todo.length, current: { ...current }, eta: etaFrom(i, current.percent), paused: paused.current });
       };
       show();
-      await getTactics(); // loading the model isn't part of the game's time
+      await (await getTactics())?.warm(); // loading the model isn't part of the game's time
       const started = performance.now();
       const pausesBefore = pauses.current;
       const pausedBefore = paused.current; // a game that starts paused waits; that wait isn't speed

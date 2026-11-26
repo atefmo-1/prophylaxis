@@ -1,0 +1,1916 @@
+{
+ "source": "chess.com public games, one per random player (ml/rating), reviewed for blunders like games.py",
+ "trusted": [
+  "fork",
+  "discoveredAttack",
+  "deflection",
+  "hangingPiece",
+  "backRankMate",
+  "promotion",
+  "skewer",
+  "trappedPiece",
+  "capturingDefender"
+ ],
+ "beginners": {
+  "n": 385,
+  "games": 196,
+  "themes": {
+   "mateIn1": {
+    "support": 10,
+    "site_shows": true,
+    "rules": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    },
+    "model": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "mateIn2": {
+    "support": 9,
+    "site_shows": true,
+    "rules": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    },
+    "model": {
+     "precision": 0.75,
+     "recall": 1.0,
+     "f1": 0.8571428571428571,
+     "f1_90": [
+      0.6666666666666666,
+      0.9697835497835497
+     ]
+    },
+    "site": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "fork": {
+    "support": 58,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.8867924528301887,
+     "recall": 0.8103448275862069,
+     "f1": 0.8468468468468469,
+     "f1_90": [
+      0.7871981831221612,
+      0.9009108009108009
+     ]
+    },
+    "model": {
+     "precision": 0.8833333333333333,
+     "recall": 0.9137931034482759,
+     "f1": 0.8983050847457628,
+     "f1_90": [
+      0.8461225766103815,
+      0.9431259705855486
+     ]
+    },
+    "site": {
+     "precision": 0.8208955223880597,
+     "recall": 0.9482758620689655,
+     "f1": 0.8799999999999999,
+     "f1_90": [
+      0.8264462809917356,
+      0.9307101399795152
+     ]
+    }
+   },
+   "pin": {
+    "support": 12,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.8181818181818182,
+     "recall": 0.75,
+     "f1": 0.7826086956521738,
+     "f1_90": [
+      0.5882352941176471,
+      0.9230769230769231
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "discoveredAttack": {
+    "support": 13,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "deflection": {
+    "support": 5,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 1.0,
+     "recall": 0.8,
+     "f1": 0.888888888888889,
+     "f1_90": [
+      0.5714285714285714,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "hangingPiece": {
+    "support": 137,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.764367816091954,
+     "recall": 0.9708029197080292,
+     "f1": 0.8553054662379421,
+     "f1_90": [
+      0.8178807830123735,
+      0.8928626037570992
+     ]
+    },
+    "model": {
+     "precision": 0.9745762711864406,
+     "recall": 0.8394160583941606,
+     "f1": 0.9019607843137254,
+     "f1_90": [
+      0.8658288072081175,
+      0.9328358208955224
+     ]
+    },
+    "site": {
+     "precision": 0.7569060773480663,
+     "recall": 1.0,
+     "f1": 0.8616352201257861,
+     "f1_90": [
+      0.8259168060104909,
+      0.8996960486322189
+     ]
+    }
+   },
+   "attraction": {
+    "support": 5,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.7142857142857143,
+     "recall": 1.0,
+     "f1": 0.8333333333333333,
+     "f1_90": [
+      0.5714285714285714,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "backRankMate": {
+    "support": 2,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.5,
+     "recall": 1.0,
+     "f1": 0.6666666666666666,
+     "f1_90": [
+      0.0,
+      1.0
+     ]
+    },
+    "model": {
+     "precision": 0.6666666666666666,
+     "recall": 1.0,
+     "f1": 0.8,
+     "f1_90": [
+      0.0,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 0.6666666666666666,
+     "recall": 1.0,
+     "f1": 0.8,
+     "f1_90": [
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "promotion": {
+    "support": 8,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.8,
+     "recall": 1.0,
+     "f1": 0.888888888888889,
+     "f1_90": [
+      0.6997826086956521,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "skewer": {
+    "support": 6,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 1.0,
+     "recall": 0.8333333333333334,
+     "f1": 0.9090909090909091,
+     "f1_90": [
+      0.6666666666666666,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 1.0,
+     "recall": 0.8333333333333334,
+     "f1": 0.9090909090909091,
+     "f1_90": [
+      0.6666666666666666,
+      1.0
+     ]
+    }
+   },
+   "trappedPiece": {
+    "support": 7,
+    "site_shows": true,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.75,
+     "recall": 0.8571428571428571,
+     "f1": 0.7999999999999999,
+     "f1_90": [
+      0.5714285714285714,
+      0.956843800322061
+     ]
+    },
+    "site": {
+     "precision": 0.75,
+     "recall": 0.8571428571428571,
+     "f1": 0.7999999999999999,
+     "f1_90": [
+      0.5714285714285714,
+      0.956843800322061
+     ]
+    }
+   },
+   "capturingDefender": {
+    "support": 1,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "f1_90": [
+      0.0,
+      1.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "doubleCheck": {
+    "support": 0,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "smotheredMate": {
+    "support": 0,
+    "site_shows": false,
+    "rules": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "model": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    },
+    "site": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "f1_90": [
+      0.0,
+      0.0
+     ]
+    }
+   }
+  },
+  "no_theme": {
+   "n": 125,
+   "model_names_one": 0.088
+  }
+ },
+ "bands": {
+  "Under 600": {
+   "n": 218,
+   "games": 106,
+   "themes": {
+    "mateIn1": {
+     "support": 2,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "mateIn2": {
+     "support": 3,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666,
+      "f1_90": [
+       0.2857142857142857,
+       0.9340350877192977
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "fork": {
+     "support": 34,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.8709677419354839,
+      "recall": 0.7941176470588235,
+      "f1": 0.8307692307692308,
+      "f1_90": [
+       0.75,
+       0.9014084507042254
+      ]
+     },
+     "model": {
+      "precision": 0.8157894736842105,
+      "recall": 0.9117647058823529,
+      "f1": 0.861111111111111,
+      "f1_90": [
+       0.780446465481604,
+       0.9275511728671747
+      ]
+     },
+     "site": {
+      "precision": 0.7674418604651163,
+      "recall": 0.9705882352941176,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.782608695652174,
+       0.920655806182122
+      ]
+     }
+    },
+    "pin": {
+     "support": 6,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666,
+      "f1_90": [
+       0.3333333333333333,
+       0.9090909090909091
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "discoveredAttack": {
+     "support": 10,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "deflection": {
+     "support": 4,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "hangingPiece": {
+     "support": 79,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.7264150943396226,
+      "recall": 0.9746835443037974,
+      "f1": 0.8324324324324325,
+      "f1_90": [
+       0.7718875502008031,
+       0.884009774755631
+      ]
+     },
+     "model": {
+      "precision": 0.9701492537313433,
+      "recall": 0.8227848101265823,
+      "f1": 0.8904109589041096,
+      "f1_90": [
+       0.8444300144300144,
+       0.9324365776819765
+      ]
+     },
+     "site": {
+      "precision": 0.7181818181818181,
+      "recall": 1.0,
+      "f1": 0.8359788359788359,
+      "f1_90": [
+       0.7749434673366834,
+       0.8867041546612139
+      ]
+     }
+    },
+    "attraction": {
+     "support": 2,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "backRankMate": {
+     "support": 1,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "promotion": {
+     "support": 8,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.8888888888888888,
+      "recall": 1.0,
+      "f1": 0.9411764705882353,
+      "f1_90": [
+       0.8181818181818182,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "skewer": {
+     "support": 2,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "trappedPiece": {
+     "support": 4,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "capturingDefender": {
+     "support": 1,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "doubleCheck": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "smotheredMate": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    }
+   },
+   "no_theme": {
+    "n": 71,
+    "model_names_one": 0.1267605633802817
+   }
+  },
+  "600 to 999": {
+   "n": 167,
+   "games": 90,
+   "themes": {
+    "mateIn1": {
+     "support": 8,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "mateIn2": {
+     "support": 6,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "fork": {
+     "support": 24,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.9090909090909091,
+      "recall": 0.8333333333333334,
+      "f1": 0.8695652173913043,
+      "f1_90": [
+       0.7619047619047619,
+       0.9412874583795782
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.9166666666666666,
+      "f1": 0.9565217391304348,
+      "f1_90": [
+       0.8888888888888888,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.9166666666666666,
+      "recall": 0.9166666666666666,
+      "f1": 0.9166666666666666,
+      "f1_90": [
+       0.814752040175769,
+       0.9777777777777777
+      ]
+     }
+    },
+    "pin": {
+     "support": 6,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.8333333333333334,
+      "f1": 0.9090909090909091,
+      "f1_90": [
+       0.6666666666666666,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "discoveredAttack": {
+     "support": 3,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "deflection": {
+     "support": 1,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "hangingPiece": {
+     "support": 58,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.8235294117647058,
+      "recall": 0.9655172413793104,
+      "f1": 0.888888888888889,
+      "f1_90": [
+       0.8428195488721805,
+       0.9333771929824561
+      ]
+     },
+     "model": {
+      "precision": 0.9803921568627451,
+      "recall": 0.8620689655172413,
+      "f1": 0.9174311926605505,
+      "f1_90": [
+       0.8627450980392157,
+       0.9655172413793104
+      ]
+     },
+     "site": {
+      "precision": 0.8169014084507042,
+      "recall": 1.0,
+      "f1": 0.8992248062015504,
+      "f1_90": [
+       0.8590604026845637,
+       0.9401709401709402
+      ]
+     }
+    },
+    "attraction": {
+     "support": 3,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "backRankMate": {
+     "support": 1,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "promotion": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "skewer": {
+     "support": 4,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.4,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.4,
+       1.0
+      ]
+     }
+    },
+    "trappedPiece": {
+     "support": 3,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "capturingDefender": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "doubleCheck": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "smotheredMate": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    }
+   },
+   "no_theme": {
+    "n": 54,
+    "model_names_one": 0.037037037037037035
+   }
+  },
+  "1000 and up": {
+   "n": 305,
+   "games": 196,
+   "themes": {
+    "mateIn1": {
+     "support": 9,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "mateIn2": {
+     "support": 1,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "fork": {
+     "support": 38,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.8064516129032258,
+      "recall": 0.6578947368421053,
+      "f1": 0.7246376811594202,
+      "f1_90": [
+       0.6037436358191075,
+       0.835820895522388
+      ]
+     },
+     "model": {
+      "precision": 0.8461538461538461,
+      "recall": 0.868421052631579,
+      "f1": 0.8571428571428572,
+      "f1_90": [
+       0.775484693877551,
+       0.9176470588235294
+      ]
+     },
+     "site": {
+      "precision": 0.75,
+      "recall": 0.9473684210526315,
+      "f1": 0.8372093023255814,
+      "f1_90": [
+       0.7605098948119094,
+       0.898876404494382
+      ]
+     }
+    },
+    "pin": {
+     "support": 13,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.9230769230769231,
+      "recall": 0.9230769230769231,
+      "f1": 0.9230769230769231,
+      "f1_90": [
+       0.8,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "discoveredAttack": {
+     "support": 13,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.8461538461538461,
+      "f1": 0.9166666666666666,
+      "f1_90": [
+       0.7777777777777778,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 0.8461538461538461,
+      "f1": 0.9166666666666666,
+      "f1_90": [
+       0.7777777777777778,
+       1.0
+      ]
+     }
+    },
+    "deflection": {
+     "support": 6,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "f1_90": [
+       0.6666666666666666,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "hangingPiece": {
+     "support": 89,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.7168141592920354,
+      "recall": 0.9101123595505618,
+      "f1": 0.8019801980198019,
+      "f1_90": [
+       0.7499358974358974,
+       0.8497854077253219
+      ]
+     },
+     "model": {
+      "precision": 0.9534883720930233,
+      "recall": 0.9213483146067416,
+      "f1": 0.9371428571428573,
+      "f1_90": [
+       0.8988523703659196,
+       0.967741935483871
+      ]
+     },
+     "site": {
+      "precision": 0.7096774193548387,
+      "recall": 0.9887640449438202,
+      "f1": 0.8262910798122065,
+      "f1_90": [
+       0.7782977558839629,
+       0.868421052631579
+      ]
+     }
+    },
+    "attraction": {
+     "support": 5,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.6666666666666666,
+      "recall": 0.8,
+      "f1": 0.7272727272727272,
+      "f1_90": [
+       0.4,
+       0.9411764705882353
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "backRankMate": {
+     "support": 1,
+     "site_shows": true,
+     "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     }
+    },
+    "promotion": {
+     "support": 2,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8,
+      "f1_90": [
+       0.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "skewer": {
+     "support": 3,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_90": [
+       1.0,
+       1.0
+      ]
+     }
+    },
+    "trappedPiece": {
+     "support": 9,
+     "site_shows": true,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "f1_90": [
+       0.5714285714285714,
+       1.0
+      ]
+     },
+     "site": {
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "f1_90": [
+       0.5714285714285714,
+       1.0
+      ]
+     }
+    },
+    "capturingDefender": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "doubleCheck": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "smotheredMate": {
+     "support": 0,
+     "site_shows": false,
+     "rules": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "model": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     },
+     "site": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_90": [
+       0.0,
+       0.0
+      ]
+     }
+    }
+   },
+   "no_theme": {
+    "n": 130,
+    "model_names_one": 0.1
+   }
+  }
+ }
+}

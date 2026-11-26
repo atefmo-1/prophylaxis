@@ -4,7 +4,7 @@ in order, each in its own process (LightGBM and PyTorch each bring their own Ope
 import subprocess
 import sys
 
-STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis", "games", "blunders", "real", "siteline", "bundle"]  # then, by hand: human, and human-score <answers.json>
+STEPS = ["fetch", "data", "rules", "encode", "lgbm", "cnn", "export", "web", "fixtures", "report", "analysis", "games", "blunders", "real", "siteline", "person", "bundle"]  # then, by hand: human, and human-score <answers.json>; chesscom needs ml/rating's games
 
 
 def _print_scores(scores: dict) -> None:
@@ -107,6 +107,16 @@ def run(step: str) -> None:
         from .human import score as score_human
 
         print(score_human(sys.argv[2]))
+    elif step == "person":
+        from .games import person_check
+
+        result = person_check()
+        for theme, m in result["themes"].items():
+            print(f"  {theme:18s} a person accepts about {m['accepted']:.0%}: {'kept' if m['kept'] else 'no longer named'}")
+    elif step == "chesscom":
+        from .chesscom import main as chesscom
+
+        chesscom()
     elif step == "bundle":
         from .bundle import build
 

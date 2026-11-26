@@ -265,8 +265,35 @@ also beat them on real blunders, with **precision of at least 0.6, on at least 2
   - promotion 0.85, 0.88
   - capturingDefender 0.75, 0.70
 
-  The site names only the first seven; the last three it doesn't show.
+  The site named the first seven; the last three it doesn't show. Pin was later taken off the list by the check
+  by a person below, so the site now names six.
 - **Not shipped:** attraction, doubleCheck, smotheredMate, each with fewer than 20 real cases to judge them on.
+
+### On chess.com beginners
+
+The site is for chess.com players, many rated well under the 1300 Lichess cutoff above. So the same blunder search
+and labels were run on chess.com games (`uv run tactics chesscom`; `results/chesscom.md`, `results/chesscom.json`):
+the 670 random public games collected for the rating study (one game per random player, kept out of git; only the
+numbers are committed). That gives **690 blunders with one clear punishment**, **385** of them from 196 games where the
+two players average under 1000. Nothing is decided on these games; they are only reported.
+
+| Theme | Blunders (under 1000) | Rules | Model (P / R) | What the site shows |
+|---|---:|---:|---:|---:|
+| hangingPiece | 137 | 0.86 | 0.90 (0.97 / 0.84) | 0.86 |
+| fork | 58 | 0.85 | 0.90 (0.88 / 0.91) | 0.88 |
+| discoveredAttack | 13 | 0 | 1.00 (1.00 / 1.00) | 1.00 |
+| pin | 12 | 0 | 0.78 (0.82 / 0.75) | not shown |
+| trappedPiece | 7 | 0 | 0.80 (0.75 / 0.86) | 0.80 |
+| skewer | 6 | 0 | 0.91 (1.00 / 0.83) | 0.91 |
+| mateIn1 / mateIn2 | 10 / 9 | 1.00 / 1.00 | 1.00 / 0.86 | 1.00 / 1.00 |
+
+- **It holds up on the players the site is for.** Every name the site shows scores 0.80 or more here, about what
+  it scored on Lichess. Below 600 the shown names score 0.75 to 1.00.
+- **The counts are small** beyond hanging pieces and forks: 6 to 13 cases for the rarer tactics, so their
+  intervals are wide (skewer 0.67–1.00, trapped piece 0.57–0.96).
+- **Most beginner blunders are simple.** Hanging pieces and forks are three in four of the named ones, and the
+  rules already catch most of those. A third of the blunders (125 of 385) have none of the 15 themes; the model
+  names one for 9% of those.
 
 ### A check by a person
 
@@ -307,12 +334,27 @@ What this says, with the caveat that each cell holds only 2 or 3 cases:
   across these six), the share of the model's names a person would accept comes out at about 83%. That is close
   to the 84% measured against the tagger.
 - **When only the tagger sees a tactic, it is usually really there** (8 of 10): the model's misses are real misses.
-- **Pin and trapped piece look weakest to a person.** For pin, even cases where both programs agree were often
-  judged not to be a pin that matters (1 of 3), so the definition itself is the hard part. For trapped piece, the
-  model's own extra calls weren't accepted (0 of 3). Both are also the two lowest real-game F1 scores among the
-  site's names (0.81, 0.78). Three cases per cell is too few to overrule the 214 and 197 real cases behind those
-  scores, so the site keeps both. A larger check of just these two would be the next step before trusting them as
-  much as the others.
+- **Pin is the one a person doesn't accept.** Even cases where both programs agree were often judged not to be a pin
+  that matters (1 of 3), so the definition itself is the hard part. For trapped piece, the model's own extra calls
+  weren't accepted (0 of 3), but those are the minority of its calls.
+
+**The check as a ship rule** (`uv run tactics person`, `results/person-check.json`). For each theme the site names,
+the share of the model's names a person would accept is estimated from the two groups: the cases where the model and
+the tagger agree, weighted by how often they agree on the val half of the real games (the model's precision there),
+and the model-only cases for the rest. A theme under **60%**, the same bar as precision against the tagger, stops
+being named:
+
+| Theme | Agrees with the tagger | Person accepts: both / model only | Estimated share accepted | |
+|---|---:|---:|---:|---|
+| fork | 0.89 | 3 of 3 / 2 of 3 | 96% | kept |
+| discoveredAttack | 0.87 | 3 of 3 / 2 of 3 | 96% | kept |
+| skewer | 0.76 | 3 of 3 / 3 of 3 | 100% | kept |
+| backRankMate | 0.77 | 3 of 3 / 1 of 3 | 85% | kept |
+| trappedPiece | 0.78 | 3 of 3 / 0 of 3 | 78% | kept |
+| **pin** | 0.83 | 1 of 3 / 1 of 3 | **33%** | **no longer named** |
+
+So the site no longer calls a mistake a pin; those moves keep the rules' plain "you lost material" or "you missed a
+tactic". With 3 cases a cell this is a rough estimate, and a larger check could bring pin back.
 
 ### Puzzles score a definition
 
@@ -336,11 +378,15 @@ matches Lichess's definition), by design, and still above the rules alone.
 - **Export** (`tactics/export.py`). The model goes to ONNX (opset 17, sigmoid included) and is statically quantised
   to int8: QDQ, per-channel weights, 2,048 calibration positions. The sigmoid stays in float, so probabilities
   don't snap to steps of 1/255. The result is **0.98 MB**; fp32 is 3.66 MB. `tactics.json` holds the themes,
-  thresholds, the shipped themes and a version (a hash of the model).
+  thresholds, the shipped themes and a version (a hash of the model). The site's version also hashes the list of
+  themes it names, so changing that list re-tags saved reviews too.
 - **Runtime.**
   - `web/src/analysis/tactics.worker.ts` runs onnxruntime-web 1.30.0, WebAssembly on one thread, in its own Web
-    Worker. It loads on the first review: a 14 MB runtime (3.7 MB gzipped) plus the model. The extension's offscreen
-    page uses the same worker, and runs under the extension's security policy.
+    Worker: a 14 MB runtime (3.7 MB gzipped) plus the model. The extension's offscreen page uses the same worker,
+    and runs under the extension's security policy.
+  - **It loads only when it is needed.** A visit reads `tactics.json` (a few hundred bytes); the runtime and the
+    model start only when there are games to review, or a saved review was tagged by an older model. A return visit
+    with no new games downloads none of it.
   - If the model can't load within 30 s, or the worker fails, reviews use the rules alone.
 - **How tags change** (`web/src/analysis/tactics.ts`).
   - The rules still decide *whether* a move lost or missed material, and how much, from Stockfish's lines.

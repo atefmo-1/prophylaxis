@@ -1,0 +1,58 @@
+{
+ "min_accepted": 0.6,
+ "themes": {
+  "fork": {
+   "accepted": 0.963,
+   "both": 1.0,
+   "model_only": 0.6666666666666666,
+   "agree": 0.89,
+   "kept": true
+  },
+  "pin": {
+   "accepted": 0.333,
+   "both": 0.3333333333333333,
+   "model_only": 0.3333333333333333,
+   "agree": 0.834,
+   "kept": false
+  },
+  "discoveredAttack": {
+   "accepted": 0.958,
+   "both": 1.0,
+   "model_only": 0.6666666666666666,
+   "agree": 0.873,
+   "kept": true
+  },
+  "backRankMate": {
+   "accepted": 0.848,
+   "both": 1.0,
+   "model_only": 0.3333333333333333,
+   "agree": 0.771,
+   "kept": true
+  },
+  "skewer": {
+   "accepted": 1.0,
+   "both": 1.0,
+   "model_only": 1.0,
+   "agree": 0.757,
+   "kept": true
+  },
+  "trappedPiece": {
+   "accepted": 0.784,
+   "both": 1.0,
+   "model_only": 0.0,
+   "agree": 0.784,
+   "kept": true
+  }
+ },
+ "trusted": [
+  "fork",
+  "discoveredAttack",
+  "deflection",
+  "hangingPiece",
+  "backRankMate",
+  "promotion",
+  "skewer",
+  "trappedPiece",
+  "capturingDefender"
+ ]
+}

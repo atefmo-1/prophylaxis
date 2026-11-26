@@ -37,7 +37,6 @@
  ],
  "trusted": [
   "fork",
-  "pin",
   "discoveredAttack",
   "deflection",
   "hangingPiece",

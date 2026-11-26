@@ -407,3 +407,40 @@ def site_lines(workers: int = max(1, (os.cpu_count() or 2) - 1)) -> dict:
 
     (RESULTS / "games-site-lines.json").write_text(json.dumps(result, indent=1))
     return result
+
+
+SHIP_MIN_PERSON = 0.6  # the share of the model's names a person accepts, like SHIP_MIN_PRECISION against the tagger
+
+
+def person_check() -> dict:
+    """The check by a person (human.py, results/human.json) as a ship rule. For each shipped theme it estimates
+    how often a person accepts the model's name: cases where the model and the tagger agree, weighted by how often
+    they agree on the val half of the real games (the model's precision there), plus the model-only cases for the
+    rest. A theme under SHIP_MIN_PERSON leaves tactics.json's trusted list, so the site stops naming it."""
+    from .export import WEB_MODELS
+    from .report import RESULTS
+
+    human = json.loads((RESULTS / "human.json").read_text())["by_theme"]
+    real = json.loads((RESULTS / "games.json").read_text())["val"]["themes"]
+    meta_path = WEB_MODELS / "tactics.json"
+    meta = json.loads(meta_path.read_text())
+
+    def rate(h: dict, group: str) -> float | None:
+        g = h.get(group)
+        return g["yes"] / (g["yes"] + g["no"]) if g and g["yes"] + g["no"] else None
+
+    checked = {}
+    for t in meta["trusted"]:
+        h = human.get(t)
+        both, only = (rate(h, "both"), rate(h, "model")) if h else (None, None)
+        if both is None or only is None:
+            continue
+        agree = real[t]["model"]["precision"]
+        accepted = agree * both + (1 - agree) * only
+        checked[t] = {"accepted": round(accepted, 3), "both": both, "model_only": only, "agree": round(agree, 3),
+                      "kept": accepted >= SHIP_MIN_PERSON}
+    meta["trusted"] = [t for t in meta["trusted"] if checked.get(t, {}).get("kept", True)]
+    meta_path.write_text(json.dumps(meta, indent=1) + "\n")
+    result = {"min_accepted": SHIP_MIN_PERSON, "themes": checked, "trusted": meta["trusted"]}
+    (RESULTS / "person-check.json").write_text(json.dumps(result, indent=1) + "\n")
+    return result

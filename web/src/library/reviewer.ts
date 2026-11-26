@@ -15,5 +15,5 @@ export const getBook = () => (book ??= loadBook(import.meta.env.BASE_URL));
 export async function reviewGame(game: ChessComGame, who: string, device: Device, progress?: Progress): Promise<StoredGame> {
   const [model, openings] = await Promise.all([getTactics(), getBook()]);
   const review = await buildReview(game, who, device.pool, null, progress, { tactics: model, book: openings });
-  return { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION, tagged: model?.version };
+  return { review, facts: gameFacts(game, who), version: ANALYSIS_VERSION, tagged: model && !model.failed ? model.version : undefined };
 }
