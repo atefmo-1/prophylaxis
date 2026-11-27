@@ -9,6 +9,7 @@ import type {
   GameReview,
   GameSummary,
   Interval,
+  Move,
   MoveClass,
   MoveTag,
   Overview,
@@ -59,6 +60,8 @@ export interface StoredGame {
   version: number;
   /** The tactic model that named its tags (tactics.json "version"), if any. */
   tagged?: string;
+  /** The Maia model that annotated your mistakes (HumanModel "version"), if any. */
+  human?: string;
 }
 
 // ---------- numbers ----------
@@ -219,6 +222,7 @@ interface MoveRow {
   tags: MoveTag[];
   decided: boolean;
   retry: { accept: string[]; wins: { [uci: string]: number } } | null;
+  human: Move["human"] | null;
 }
 
 function baseClock(timeControl: string): number | null {
@@ -287,6 +291,7 @@ function rowsOf(stored: StoredGame[]): { games: GameRow[]; moves: MoveRow[] } {
         tags: m.tags,
         decided: m.decided,
         retry: m.retry,
+        human: m.human ?? null,
       });
       lastClock[m.color] = m.clock;
       prevWhite = m.win_white;
@@ -674,6 +679,7 @@ export function practicePositions(stored: StoredGame[]): PracticePosition[] {
         t: g.start_time,
         accept: m.retry!.accept,
         wins: m.retry!.wins,
+        findable: m.human?.best ?? null,
       };
     });
 }

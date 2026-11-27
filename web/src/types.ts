@@ -86,6 +86,8 @@ export interface PracticePosition {
   t: number;
   accept: string[];
   wins: { [uci: string]: number };
+  /** Maia's chance that a player at your rating finds the best move here (Move.human.best), if known. */
+  findable: number | null;
 }
 
 export interface Bucket {
@@ -186,6 +188,9 @@ export interface Move {
   tags: MoveTag[];
   decided: boolean;
   retry: { accept: string[]; wins: { [uci: string]: number } } | null;
+  /** Maia-3's view of one of your mistakes, at your rating (analysis/maia.ts): the chance a player at your level
+   *  plays the best move, the move you played, and the move they play most. */
+  human?: { best: number; played: number; top: string; top_p: number; rating: number };
 }
 
 export interface GameReview {

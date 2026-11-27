@@ -65,3 +65,6 @@ export function timeLeft(ms: number): string {
   const rest = Math.round((min % 60) / 10) * 10;
   return rest && rest < 60 ? `about ${h} h ${rest} min` : `about ${rest === 60 ? h + 1 : h} h`;
 }
+
+/** The source code. The site runs AGPL-3.0 code (Maia-3), so the app always links to it. */
+export const REPO = "https://github.com/atefmo-1/prophylaxis";

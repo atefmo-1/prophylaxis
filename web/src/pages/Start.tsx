@@ -2,7 +2,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
-import { CLASS_META, moveLabel } from "../lib/format";
+import { CLASS_META, moveLabel, REPO } from "../lib/format";
 import { sanOf, uciOfSan } from "../lib/rules";
 import type { MoveClass } from "../types";
 import { helloExtension } from "../library/bridge";
@@ -11,7 +11,6 @@ import { useLibrary } from "../library/Library";
 import { DEMO } from "./startDemo";
 import "./start.css";
 
-const REPO = "https://github.com/atefmo-1/prophylaxis";
 const T = DEMO.turn;
 const cls = (i: number) => DEMO.moves[i].cls as MoveClass;
 

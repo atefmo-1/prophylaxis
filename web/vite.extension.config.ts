@@ -17,7 +17,11 @@ export default defineConfig({
       name: "copy-engine",
       closeBundle() {
         for (const dir of ["engine", "models", "openings"]) {
-          cpSync(resolve(import.meta.dirname, `public/${dir}`), resolve(import.meta.dirname, `dist-extension/${dir}`), { recursive: true });
+          // Maia (the site's human-move model) isn't used by the extension, so it isn't shipped there.
+          cpSync(resolve(import.meta.dirname, `public/${dir}`), resolve(import.meta.dirname, `dist-extension/${dir}`), {
+            recursive: true,
+            filter: (src) => !/[\\/]maia3[^\\/]*$/.test(src),
+          });
         }
       },
     },

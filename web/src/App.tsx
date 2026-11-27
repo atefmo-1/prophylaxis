@@ -3,7 +3,7 @@ import { HoldButton } from "./components/HoldButton";
 import { Mark } from "./components/Mark";
 import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
-import { timeLeft } from "./lib/format";
+import { REPO, timeLeft } from "./lib/format";
 import { usePill } from "./lib/motion";
 import { useTheme, type ThemeChoice } from "./lib/theme";
 import { ComparisonProvider, useCurrentComparison } from "./library/Comparison";
@@ -90,6 +90,10 @@ function PlayerMenu({ player }: { player: string }) {
             Profile on chess.com
           </a>
         )}
+        <a href={`${REPO}#licence`} target="_blank" rel="noreferrer" onClick={close}>
+          Source code and licences
+          <span className="me-note">Free software: GPL-3.0, with Maia-3 (CSSLab) under AGPL-3.0.</span>
+        </a>
         <button
           type="button"
           onClick={() => {

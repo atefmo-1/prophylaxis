@@ -44,6 +44,9 @@ jobs:
       # The practice scheduler against the reference FSRS-5 implementation's recorded answers.
       - run: node scripts/check-fsrs.ts
         working-directory: web
+      # Maia's board encoding and move list against the authors' code, and the shipped model against PyTorch.
+      - run: node scripts/check-maia.ts ../tests/fixtures/maia.json
+        working-directory: web
       - run: npm run build
         working-directory: web
       - uses: actions/upload-pages-artifact@v3

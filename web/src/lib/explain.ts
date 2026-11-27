@@ -1,4 +1,5 @@
-// Plain-English explanation of one move, built only from engine facts in the export.
+// Plain-English explanation of one move, built from engine facts in the export and, on your mistakes, Maia-3's
+// chances for players at your rating (analysis/maia.ts).
 import type { GameReview, Move, MoveTag } from "../types";
 import { CLASS_META, pct } from "./format";
 
@@ -73,6 +74,43 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
   }
 }
 
+const NICE = [7, 10, 15, 20, 30, 50, 100];
+
+/** "about 3 in 10 players at your rating find it", from Maia's chance for the move at your rating. Maia's chances
+ *  are honest on chess.com beginners (ml/results/maia.md), so these are fair statements about players at your
+ *  rating; they say nothing about you. */
+export function findable(p: number): { text: string; hard: boolean } {
+  if (p >= 0.95) return { text: "almost every player at your rating finds", hard: false };
+  if (p >= 0.15) return { text: `about ${Math.round(p * 10)} in 10 players at your rating find`, hard: false };
+  if (p < 0.01) return { text: "fewer than 1 in 100 players at your rating find", hard: true };
+  const m = NICE.reduce((a, b) => (Math.abs(Math.log(b * p)) < Math.abs(Math.log(a * p)) ? b : a));
+  return { text: `only about 1 in ${m} players at your rating find`, hard: true };
+}
+
+/** After a practice try: how findable the answer was at your rating, as a sentence. */
+export function findableLine(p: number): string {
+  const text = findable(p).text;
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)} it in this position.`;
+}
+
+/** The best-move line, with how findable the move was at your rating when Maia has looked at it. */
+function bestLine(move: Move): string {
+  const h = move.human;
+  if (!h) return `The best move was ${move.best}.`;
+  const f = findable(h.best);
+  return f.hard
+    ? `The best move was ${move.best}, which ${f.text} here: a hard one to see.`
+    : `The best move was ${move.best}: ${f.text} it here.`;
+}
+
+/** Said when the move you played is the one players at your rating play most here. */
+function commonMistake(move: Move): string | null {
+  const h = move.human;
+  if (!h || h.top !== move.uci) return null;
+  const n = Math.round(h.played * 10);
+  return n >= 3 ? `It's a common mistake: about ${n} in 10 players at your rating play it here too.` : null;
+}
+
 export interface Explanation {
   heading: string;
   verdict: string;
@@ -112,12 +150,14 @@ export function explain(review: GameReview, i: number): Explanation {
 
   const lines: string[] = [];
   if (move.mine && !["brilliant", "great", "best", "book"].includes(move.class) && move.best) {
-    lines.push(`The best move was ${move.best}.`);
+    lines.push(bestLine(move));
   }
   for (const tag of move.tags) {
     const sentence = tagSentence(tag, move);
     if (sentence) lines.push(sentence);
   }
+  const common = move.mine ? commonMistake(move) : null;
+  if (common) lines.push(common);
   // A forced mate on the board after this move, stated once (the mate tags already cover short mates).
   if (move.eval_mate !== null && !move.tags.some((t) => t.tag === "allowed_mate")) {
     // eval_mate is from white's side: positive means white mates

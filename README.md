@@ -48,6 +48,7 @@ chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, one
                                        └─► grading: win %, accuracy, move classes
                                        └─► tactic rules: hung pieces, forks, missed mates, clock
                                        └─► tactic classifier (ONNX, onnxruntime-web, its own Web Worker): names pins, skewers, …
+                                       └─► Maia-3 (ONNX, its own Web Worker): how many players at your rating find the better move
                                        └─► stats: Jeffreys intervals, habit ranking
                                        └─► saved in IndexedDB ──► Review · Habits · Practice · Games · Openings · Compare
 ```
@@ -59,6 +60,7 @@ chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, one
 | How many engines this device runs, a one-second speed check, time estimates; the engines sharing a game | `web/src/library/device.ts`, `web/src/analysis/pool.ts` |
 | One game: engine lines, grades, tactic tags, puzzles for each mistake | `web/src/analysis/review.ts`, `motifs.ts`, `grading.ts` |
 | The trained tactic classifier, and how its tags combine with the rules' | `web/src/analysis/tactics.ts`, `tactics.worker.ts`, `planes.ts` |
+| Maia-3 on your mistakes: the rating map, the board encoding, findable and common-mistake sentences (study: `ml/results/maia.md`) | `web/src/analysis/maia.ts`, `maia.worker.ts`, `web/src/lib/explain.ts` |
 | Statistics across games: intervals, habits, skills, practice positions | `web/src/analysis/stats.ts` |
 | The opening tree | `web/src/lib/openingTree.ts`, `web/src/components/OpeningTree.tsx` |
 | Comparing with another player, and the tips for beating them | `web/src/library/compare.ts`, `web/src/library/Comparison.tsx`, `web/src/lib/tips.ts` |
@@ -110,6 +112,7 @@ uv run pytest                                      # grading (incl. Brilliant an
 (cd ml && uv run pytest)                           # tactic classifier: data, features, encoder parity with TypeScript
 npm --prefix web run typecheck
 node web/scripts/check-grading.ts                            # Brilliant and Book in TypeScript give Python's answers
+node web/scripts/check-maia.ts tests/fixtures/maia.json      # Maia's encoding matches the authors' code; the shipped model matches PyTorch
 node web/scripts/check-review.mjs                            # the review in Chrome with the sample player: summary, key moment, wrong and right tries (dev server running)
 node web/scripts/check-pages.mjs                             # every page at desktop and phone size, plus a practice solve (dev server running)
 node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
@@ -125,3 +128,5 @@ See [PLAN.md](PLAN.md): a blunder-risk model, grounded LLM move explanations and
 ## Licence
 
 GPL-3.0-or-later (see [LICENSE](LICENSE)). Stockfish, which the site and extension run, is also GPLv3. The opening book is [Lichess's openings list](https://github.com/lichess-org/chess-openings) (CC0), in `web/public/openings/`.
+
+The site also runs **Maia-3 5M** (CSSLab, University of Toronto; [github.com/CSSLab/maia3](https://github.com/CSSLab/maia3)), which is AGPL-3.0 (see [LICENSES/AGPL-3.0.txt](LICENSES/AGPL-3.0.txt)). It predicts the moves players make at a given rating; the review uses it to say how many players at your rating find the better move. The model file, `web/public/models/maia3.onnx`, is exported from the authors' official checkpoint ([huggingface.co/UofTCSSLab/Maia3-5M](https://huggingface.co/UofTCSSLab/Maia3-5M)) by `ml/maia/export.py`, which rebuilds it. The files that encode positions for it (`web/src/analysis/maia.ts`, `maia.worker.ts`, `web/scripts/check-maia.ts` and `ml/maia/`) are AGPL-3.0 too. Prophylaxis's own code stays GPL-3.0-or-later. The site as a whole, and any fork of it that keeps Maia, also comes under AGPL-3.0 section 13: if you run a modified copy for others to use, offer them its source. GPLv3 section 13 allows this combination. The Chrome extension doesn't include Maia. Maia-3 is described in Monroe, Eilender, Chalmers, Tang and Anderson, [*Chessformer: A Unified Architecture for Chess Modeling*](https://openreview.net/forum?id=2ltBRzEHyd), ICLR 2026.

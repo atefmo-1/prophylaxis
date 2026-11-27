@@ -10,7 +10,7 @@ import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridg
 import { fetchGames, findPlayer, gameId } from "./chesscom";
 import { getDevice, inView, pliesOf, type Device } from "./device";
 import { forgetCompared } from "./compared";
-import { getTactics, reviewGame } from "./reviewer";
+import { getHuman, getTactics, reviewGame, withHuman } from "./reviewer";
 import { forget, loadGames, saveGame } from "./store";
 
 const PLAYER_KEY = "prophylaxis.player";
@@ -208,6 +208,22 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           if (!review || model.failed) continue; // left as it was; tried again next visit
           if (!live()) return;
           const next = { ...entry, review, tagged: model.version };
+          await saveGame(who.toLowerCase(), next);
+          fresh.set(next.review.game.id, next);
+        }
+        if (fresh.size && live()) setStored((s) => s.map((x) => fresh.get(x.review.game.id) ?? x));
+        have = have.map((x) => fresh.get(x.review.game.id) ?? x);
+      }
+      // Reviews from before Maia (or an older Maia) get its view of their mistakes, from the positions they kept.
+      const maia = await getHuman();
+      if (maia) {
+        const stale = have.filter((s) => s.version === ANALYSIS_VERSION && s.human !== maia.version);
+        const fresh = new Map<string, StoredGame>();
+        for (const entry of stale) {
+          if (!live()) return;
+          const next = await withHuman(maia, entry);
+          if (next === entry) break; // Maia can't run here: leave the rest for next visit
+          if (!live()) return;
           await saveGame(who.toLowerCase(), next);
           fresh.set(next.review.game.id, next);
         }

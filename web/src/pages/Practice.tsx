@@ -5,7 +5,7 @@ import { ClassIcon } from "../components/ClassIcon";
 import { IconNext } from "../components/Icons";
 import { NotEnough } from "../components/Progress";
 import { useOverview, usePractice } from "../data";
-import { tagSentence } from "../lib/explain";
+import { findableLine, tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
 import { gradeOf, loadPractice, recordAttempt } from "../lib/practice";
 import { hasPuzzles } from "../lib/puzzles";
@@ -268,6 +268,7 @@ function Session({
                         : `Good move. ${sanOf(p.fen, attempt.found)} works; the engine's choice was ${p.best}.`
                       : `The answer was ${p.best}.`}
                   </p>
+                  {p.findable !== null && <p>{findableLine(p.findable)}</p>}
                   <h2 className="coach-verdict">
                     <ClassIcon cls={p.class} size={20} />
                     In the game, {p.san} was a {CLASS_META[p.class].label.toLowerCase()}: your chances went from {Math.round(p.before)}% to{" "}

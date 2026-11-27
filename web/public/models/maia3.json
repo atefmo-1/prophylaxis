@@ -1,0 +1,33 @@
+{
+ "version": "e82dd3cf3f46",
+ "model": "Maia-3 5M (CSSLab, University of Toronto), exported from huggingface.co/UofTCSSLab/Maia3-5M",
+ "checkpoint_sha256": "ba14208b2992d85502f5fb501934abf6aaaeb355e9f3fdf90e326911f562524f",
+ "license": "AGPL-3.0 (models/maia3-LICENSE.txt)",
+ "source": "https://github.com/atefmo-1/prophylaxis: ml/maia/export.py rebuilds this file from the checkpoint",
+ "paper": "Monroe, Eilender, Chalmers, Tang and Anderson. Chessformer: A Unified Architecture for Chess Modeling. ICLR 2026. https://openreview.net/forum?id=2ltBRzEHyd",
+ "exported": "2026-11-27",
+ "history": 8,
+ "moves": 4352,
+ "chesscom_to_maia": [
+  [
+   300,
+   700
+  ],
+  [
+   500,
+   1000
+  ],
+  [
+   700,
+   1100
+  ],
+  [
+   900,
+   1300
+  ],
+  [
+   1100,
+   1500
+  ]
+ ]
+}

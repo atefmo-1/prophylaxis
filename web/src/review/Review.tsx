@@ -9,7 +9,7 @@ import { Roll } from "../components/Roll";
 import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
 import { keyMoments, read } from "../lib/coach";
-import { chancesAround, explain, tagSentence } from "../lib/explain";
+import { chancesAround, explain, findableLine, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, timeControl } from "../lib/format";
 import { gradeOf, recordAttempt } from "../lib/practice";
 import { dragToUci, isCheck, legalDests, pieceAt, playUci, sanOf, uciOfSan } from "../lib/rules";
@@ -517,6 +517,7 @@ function MomentCard({
           ) : (
             <p className="coach-feedback">The answer was {m.best}.</p>
           )}
+          {m.human && <p>{findableLine(m.human.best)}</p>}
           <h2 className="coach-verdict">
             <ClassIcon cls={m.class} size={20} />
             {m.san} was a {CLASS_META[m.class].label.toLowerCase()}: your chances went from {Math.round(before)}% to {Math.round(after)}%.
