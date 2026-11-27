@@ -16,11 +16,12 @@ MATE_HORIZON = 3         # longer forced mates are not something to expect a beg
 TIME_PRESSURE_S = 60
 RUSHED_S = 3
 RUSHED_MIN_CLOCK_S = 120
+THREAT_PLIES = 4         # a threat wins its material within this many moves of the threatening one
 
 TAGS = [
     "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material",
     "allowed_stalemate", "missed_free_piece", "missed_fork", "missed_mate", "missed_tactic",
-    "time_pressure", "rushed",
+    "ignored_threat", "time_pressure", "rushed",
 ]
 
 
@@ -212,3 +213,43 @@ def detect(
             tags.append(("rushed", {"seconds": round(time_spent, 1)}))
 
     return tags
+
+
+def passed(board: chess.Board) -> chess.Board | None:
+    """The position with the other side to move, as if the player could pass. None when the player is in check."""
+    if board.is_check():
+        return None
+    flipped = board.copy(stack=False)
+    flipped.push(chess.Move.null())
+    return flipped if flipped.is_valid() else None
+
+
+def ignored_threat(
+    before: chess.Board, move: chess.Move, lines_after: list[dict] | None, threat: dict | None, win_loss: float
+) -> tuple[str, dict] | None:
+    """Before the move, the opponent already threatened something (if the player could pass, the engine's line for
+    them wins material within a few moves, or mates soon), and the move left it standing: their best reply is the
+    same move, and it still mates, or still wins at least as much. `threat` is the engine's line in passed(before)."""
+    reply = lines_after[0]["pv"][0] if lines_after and lines_after[0]["pv"] else None
+    pass_ = passed(before)
+    if win_loss < ALLOWED_MIN_LOSS or pass_ is None or not threat or not threat["pv"] or reply != threat["pv"][0]:
+        return None
+    them = pass_.turn
+    after = before.copy(stack=False)
+    after.push(move)
+    mate = _mover_mate(threat, them)
+    if mate is not None and 0 < mate <= MATE_HORIZON:
+        mate_after = _mover_mate(lines_after[0], them)
+        if mate_after is None or not 0 < mate_after <= MATE_HORIZON:
+            return None  # the move stopped the mate
+        detail: dict = {"mate": mate_after}
+    else:
+        won = material(play(pass_, threat["pv"], THREAT_PLIES), them) - material(pass_, them)
+        still = material(play(after, lines_after[0]["pv"], THREAT_PLIES), them) - material(after, them)
+        if won < 1 or still < won:
+            return None
+        detail = {"amount": won}
+    answer = chess.Move.from_uci(reply)
+    if answer not in after.legal_moves:
+        return None
+    return "ignored_threat", {"move": after.san(answer), **detail}

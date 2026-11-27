@@ -59,6 +59,9 @@ pressure.
 2. **"What were they threatening?"** Run the null-move check before each mistake. It's a fact from the engine
    (11 of 12 hand-checked labels were right). It covers 15% of all mistakes, and it teaches the habit coaches name
    first: look at what the opponent wants before you move.
+   *Built (analysis version 7):* the site also checks that the move left the threat standing: after it, the same
+   reply must still mate, or still win at least as much. On the two sample players this gives 20 threat reasons. 6
+   of them are the only reason those mistakes get, and all 6 were right when read by hand.
 3. **Pawn-level and slower material.** Name one-pawn losses and misses, and look 20 plies deep for material. Up to
    21% of mistakes, but only about half the labels were right in the hand-check. Each needs a fact-check (does the
    line really win that pawn, and is it the reason?) before the site says it.

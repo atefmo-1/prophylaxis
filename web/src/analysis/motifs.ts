@@ -1,6 +1,7 @@
 // TypeScript port of src/coach/motifs.py: name the kind of mistake behind a bad move, checked against engine lines.
 import { attacks } from "chessops/attacks";
-import { normalizeMove, type Position } from "chessops/chess";
+import { Chess, normalizeMove, type Position } from "chessops/chess";
+import { makeSan } from "chessops/san";
 import { makeSquare, parseUci } from "chessops/util";
 import type { Color, Move as CMove, NormalMove, Role, Square } from "chessops/types";
 import type { Line } from "./grading";
@@ -8,12 +9,13 @@ import type { Line } from "./grading";
 const VALUE: Record<Role, number> = { pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 0 };
 const HORIZON = 9;
 const MATERIAL_SWING = 2;
-const ALLOWED_MIN_LOSS = 10;
+export const ALLOWED_MIN_LOSS = 10;
 const MISSED_MIN_LOSS = 5;
 const MATE_HORIZON = 3;
 const TIME_PRESSURE_S = 60;
 const RUSHED_S = 3;
 const RUSHED_MIN_CLOCK_S = 120;
+const THREAT_PLIES = 4; // a threat wins its material within this many moves of the threatening one
 
 export type Tag = [string, Record<string, unknown>];
 
@@ -170,4 +172,41 @@ export function detect(
     }
   }
   return tags;
+}
+
+/** The position with the other side to move, as if the player could pass. Null when the player is in check. */
+export function passed(pos: Position): Position | null {
+  if (pos.isCheck()) return null;
+  const setup = pos.toSetup();
+  const flipped = Chess.fromSetup({ ...setup, turn: setup.turn === "white" ? "black" : "white", epSquare: undefined });
+  return flipped.isOk ? flipped.value : null;
+}
+
+/**
+ * Before the move, the opponent already threatened something (if the player could pass, the engine's line for them
+ * wins material within a few moves, or mates soon), and the move left it standing: their best reply is the same move,
+ * and it still mates, or still wins at least as much. `threat` is the engine's line in passed(before).
+ */
+export function ignoredThreat(before: Position, move: CMove, linesAfter: Line[] | null, threat: Line | undefined, winLoss: number): Tag | null {
+  const reply = linesAfter?.[0]?.pv[0];
+  const pass = passed(before);
+  if (winLoss < ALLOWED_MIN_LOSS || !pass || !threat?.pv.length || !reply || reply !== threat.pv[0]) return null;
+  const them = pass.turn;
+  const after = before.clone();
+  after.play(move);
+  const mate = moverMate(threat, them);
+  const mateAfter = moverMate(linesAfter?.[0], them);
+  let detail: Record<string, unknown>;
+  if (mate !== null && mate > 0 && mate <= MATE_HORIZON) {
+    if (mateAfter === null || mateAfter <= 0 || mateAfter > MATE_HORIZON) return null; // the move stopped the mate
+    detail = { mate: mateAfter };
+  } else {
+    const won = material(play(pass, threat.pv, THREAT_PLIES), them) - material(pass, them);
+    const still = material(play(after, linesAfter![0].pv, THREAT_PLIES), them) - material(after, them);
+    if (won < 1 || still < won) return null;
+    detail = { amount: won };
+  }
+  const m = toMove(after, reply);
+  if (!m || !after.isLegal(m)) return null;
+  return ["ignored_threat", { move: makeSan(after, m), ...detail }];
 }

@@ -32,6 +32,12 @@ export const TAG_INFO: Record<string, TagInfo> = {
     "what": "Your move let your opponent win material with a short sequence of moves.",
     "fix": "Look one move deeper: after your opponent's best reply, is anything of yours under attack?"
   },
+  "ignored_threat": {
+    "kind": "allowed",
+    "title": "Missing your opponent's threats",
+    "what": "Your opponent already threatened to win material or give mate, and your move didn't stop it.",
+    "fix": "Before you move, ask what your opponent would play if it were their turn. Deal with that first."
+  },
   "allowed_stalemate": {
     "kind": "allowed",
     "title": "Stalemating won games",

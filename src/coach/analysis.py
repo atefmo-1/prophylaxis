@@ -13,7 +13,9 @@ from . import book, config, engine, grading, motifs
 GREAT_MIN_GAP = 20.0     # win % between the only good move and the next best
 GREAT_MIN_WIN = 25.0     # ignore "only moves" in positions that were already lost
 BAD = ("mistake", "blunder")
-ALLOWED_TAGS = {"hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate"}
+ALLOWED_TAGS = {
+    "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate", "ignored_threat",
+}
 
 
 def _replay(row: sqlite3.Row) -> tuple[list[chess.Board], list[chess.pgn.ChildNode]]:
@@ -56,15 +58,42 @@ def _is_great(before: chess.Board, lines: list[dict], win_before: float) -> bool
     return win_before - second >= GREAT_MIN_GAP
 
 
-def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[str, list[dict]]) -> None:
-    boards, nodes = _replay(row)
-    my_color = chess.WHITE if row["my_color"] == "white" else chess.BLACK
-
-    lines = [None if engine.is_terminal(b) else lines_by_key[engine.position_key(b)] for b in boards]
-    win_white = [
+def _win_white(boards: list[chess.Board], lines: list) -> list[float]:
+    return [
         grading.terminal_win_white(b) if l is None else grading.line_win_white(l[0])
         for b, l in zip(boards, lines)
     ]
+
+
+def threat_positions(row: sqlite3.Row, lines_by_key: dict[str, list[dict]]) -> dict[int, str]:
+    """For each of your moves that loses enough to get a reason: the position as if you could pass, whose engine line
+    says what your opponent already threatened (motifs.ignored_threat). Keyed by ply."""
+    boards, _ = _replay(row)
+    my_color = chess.WHITE if row["my_color"] == "white" else chess.BLACK
+    lines = [None if engine.is_terminal(b) else lines_by_key[engine.position_key(b)] for b in boards]
+    win_white = _win_white(boards, lines)
+    out = {}
+    for ply in range(1, len(boards)):
+        before = boards[ply - 1]
+        loss = grading.pov(win_white[ply - 1], before.turn) - grading.pov(win_white[ply], before.turn)
+        if before.turn == my_color and loss >= motifs.ALLOWED_MIN_LOSS and (p := motifs.passed(before)) is not None:
+            out[ply] = engine.position_key(p)
+    return out
+
+
+def analyse_game(
+    conn: sqlite3.Connection,
+    row: sqlite3.Row,
+    lines_by_key: dict[str, list[dict]],
+    threats: dict[int, dict] | None = None,
+) -> None:
+    """`threats`: the engine's line, by ply, in the positions threat_positions() names."""
+    boards, nodes = _replay(row)
+    my_color = chess.WHITE if row["my_color"] == "white" else chess.BLACK
+    threats = threats or {}
+
+    lines = [None if engine.is_terminal(b) else lines_by_key[engine.position_key(b)] for b in boards]
+    win_white = _win_white(boards, lines)
     cp_white = [
         grading.terminal_cp_white(b) if l is None else grading.line_cp_white(l[0])
         for b, l in zip(boards, lines)
@@ -130,6 +159,10 @@ def analyse_game(conn: sqlite3.Connection, row: sqlite3.Row, lines_by_key: dict[
 
         if mover == my_color:
             tags = motifs.detect(before, move, lines_before, lines_after, win_loss, clock_before, time_spent)
+            threat = motifs.ignored_threat(before, move, lines_after, threats.get(ply), win_loss)
+            if threat:
+                clock = next((i for i, (t, _) in enumerate(tags) if t in ("time_pressure", "rushed")), len(tags))
+                tags.insert(clock, threat)
             tag_rows.extend((row["id"], ply, tag, json.dumps(detail)) for tag, detail in tags)
             # chess.com's "Miss": your opponent had just gone wrong and you didn't punish it
             names = {tag for tag, _ in tags}
@@ -173,8 +206,15 @@ def run(
     analysed = engine.analyse_missing(conn, keys, progress=progress)
     lines_by_key = engine.load_lines(conn, keys)
 
+    # What your opponent already threatened before each of your mistakes: one more search per mistake.
+    threat_keys = {row["id"]: threat_positions(row, lines_by_key) for row in rows}
+    wanted = {key for keys_ in threat_keys.values() for key in keys_.values()}
+    analysed += engine.analyse_missing(conn, wanted, progress=progress)
+    threat_lines = engine.load_lines(conn, wanted)
+
     for row in rows:
-        analyse_game(conn, row, lines_by_key)
+        threats = {ply: threat_lines[key][0] for ply, key in threat_keys[row["id"]].items() if threat_lines.get(key)}
+        analyse_game(conn, row, lines_by_key, threats)
     conn.commit()
 
     # Every legal move scored in the positions where you went wrong, so a retry can accept any good move.

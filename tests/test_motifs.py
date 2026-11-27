@@ -143,3 +143,39 @@ def test_quiet_best_move_is_not_a_missed_tactic():
         after=[line(["d5h1", "e1e2"], cp=-900)],
     )
     assert "missed_tactic" not in tags
+
+
+def threat_for(fen: str, uci: str, threat: dict, reply: list[str], win_loss: float = 30.0, reply_mate=None):
+    board = chess.Board(fen)
+    after = [line(reply, mate=reply_mate) if reply_mate else line(reply, cp=-300)]
+    return motifs.ignored_threat(board, chess.Move.from_uci(uci), after, threat, win_loss)
+
+
+def test_ignored_threat_to_win_a_piece():
+    # The e4 pawn already attacks the f3 knight; h3 does nothing about it, and exf3 follows.
+    found = threat_for("4k3/8/8/8/4p3/5N2/7P/4K3 w - - 0 1", "h2h3", line(["e4f3", "e1f2"], cp=-300), ["e4f3", "e1f2"])
+    assert found == ("ignored_threat", {"move": "exf3", "amount": 3})
+
+
+def test_moving_the_attacked_piece_is_not_ignoring_the_threat():
+    found = threat_for("4k3/8/8/8/4p3/5N2/7P/4K3 w - - 0 1", "f3d4", line(["e4f3", "e1f2"], cp=-300), ["e8d7", "d4f5"])
+    assert found is None
+
+
+def test_ignored_mate_threat():
+    # Ra1 is mate on white's back rank; b3 ignores it.
+    found = threat_for("r5k1/5ppp/8/8/8/8/1P3PPP/6K1 w - - 0 1", "b2b3", line(["a8a1"], mate=-1), ["a8a1"], reply_mate=-1)
+    assert found == ("ignored_threat", {"move": "Ra1#", "mate": 1})
+
+
+def test_a_move_that_stops_the_mate_is_not_ignoring_it():
+    # Kf1 makes room: Ra1+ is still their best reply, but it is only a check now.
+    found = threat_for("r5k1/5ppp/8/8/8/8/1P3PPP/6K1 w - - 0 1", "g1f1", line(["a8a1"], mate=-1), ["a8a1", "f1e2"])
+    assert found is None
+
+
+def test_no_threat_test_from_check_or_for_small_losses():
+    in_check = "4k3/8/8/8/4p3/5N2/4r2P/4K3 w - - 0 1"
+    assert threat_for(in_check, "e1e2", line(["e4f3"], cp=-300), ["e4f3"]) is None
+    small = threat_for("4k3/8/8/8/4p3/5N2/7P/4K3 w - - 0 1", "h2h3", line(["e4f3"], cp=-300), ["e4f3"], win_loss=5)
+    assert small is None

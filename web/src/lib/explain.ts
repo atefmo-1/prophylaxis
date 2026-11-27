@@ -29,6 +29,15 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
       return Number(d.in) === 1 ? "It allowed checkmate on the next move." : `It allowed a forced checkmate in ${str(d.in)}.`;
     case "back_rank_mate":
       return "The mate lands on your back rank, where your own pawns box the king in.";
+    case "ignored_threat": {
+      const move = str(d.move);
+      if (d.mate !== undefined)
+        return Number(d.mate) === 1
+          ? `Your opponent already threatened checkmate with ${move}, and your move didn't stop it.`
+          : `Your opponent already threatened a forced mate starting with ${move}, and your move didn't stop it.`;
+      const what = Number(d.amount) === 1 ? "a pawn" : `about ${str(d.amount)} points of material`;
+      return `Your opponent already threatened ${move}, winning ${what}, and your move didn't stop it.`;
+    }
     case "lost_material":
       return `It let your opponent win about ${str(d.amount)} points of material (a pawn is 1, a knight 3).`;
     case "allowed_stalemate":

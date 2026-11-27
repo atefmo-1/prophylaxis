@@ -12,7 +12,7 @@ import { ENDINGS, TAG_INFO } from "./catalog";
 import type { Analyser } from "./engine";
 import { bookPlies, type OpeningBook } from "./book";
 import { BOOK_MAX_LOSS, classify, gameAccuracy, isBrilliant, lineCpWhite, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
-import { detect, toMove } from "./motifs";
+import { ALLOWED_MIN_LOSS, detect, ignoredThreat, passed, toMove } from "./motifs";
 import { refineTags, type TacticModel } from "./tactics";
 
 export const NODES = 400_000;
@@ -20,7 +20,7 @@ export const RETRY_NODES = 400_000;
 const BAD: MoveClass[] = ["mistake", "miss", "blunder"];
 const ALLOWED = new Set([
   "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate",
-  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece",
+  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece", "ignored_threat",
 ]);
 const DRAWS = new Set(["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
 const RETRY_TOLERANCE = 3;
@@ -179,6 +179,21 @@ export async function buildReview(
     }),
   );
 
+  // Threats: before each of your moves that loses enough to get a reason, what your opponent could do if you could
+  // pass (motifs.ignoredThreat). One more search per mistake, on the lane that read the position.
+  const threats = new Map<number, Line>();
+  await Promise.all(
+    positions.slice(0, n).map(async (before, i) => {
+      const white = before.turn === "white";
+      if (before.turn !== myColor || pov(winWhite[i], white) - pov(winWhite[i + 1], white) < ALLOWED_MIN_LOSS) return;
+      const pass = passed(before);
+      if (!pass) return;
+      const lane = laneOf(Math.max(0, todo.findIndex((f) => epd(f) === epd(fenOf(before)))));
+      const found = (await engine.analyse(fenOf(pass), 2, NODES, lane))[0];
+      if (found) threats.set(i + 1, await extendLine(engine, fenOf(pass), found, lane));
+    }),
+  );
+
   // Grade every move
   const inBook = book ? bookPlies(book, positions) : 0;
   const [base, inc] = game.time_control.split("+").map(Number);
@@ -216,6 +231,11 @@ export async function buildReview(
     if (mover === myColor) {
       let found = detect(before, move, lb, la, loss, clockBefore, spent);
       if (tactics) found = await refineTags(tactics, found, before, uci, lb, la).catch(() => found);
+      const threat = ignoredThreat(before, move, la, threats.get(ply), loss);
+      if (threat) {
+        const clock = found.findIndex(([t]) => t === "time_pressure" || t === "rushed");
+        found.splice(clock < 0 ? found.length : clock, 0, threat);
+      }
       tags = found.map(([tag, detail]) => ({ tag, detail }));
       const names = new Set(tags.map((t) => t.tag));
       const oppErred = moves.length >= 1 && BAD.includes(moves[moves.length - 1].class);
