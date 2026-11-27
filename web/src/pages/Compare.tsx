@@ -1,5 +1,6 @@
 // You against another player on your site: their latest games in your time control, reviewed in this browser like
 // yours, side by side with your own, with tips for playing them drawn from their numbers.
+import { Move as Figurine } from "../components/Notation";
 import { gameSite, nameOf, siteName } from "../lib/player";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
@@ -86,8 +87,12 @@ function TipBoard({ ex, name }: { ex: Example; name: string }) {
     <figure className="cmp-tip-board">
       <Board fen={ex.fen} orientation={ex.color} arrows={arrows} coordinates={false} label={`${name} played ${ex.played}${ex.best ? `; ${ex.best} was better` : ""}`} />
       <figcaption>
-        {name} played {ex.played}
-        {ex.best && <>, {ex.best} was better</>}
+        {name} played <Figurine san={ex.played} />
+        {ex.best && (
+          <>
+            , <Figurine san={ex.best} /> was better
+          </>
+        )}
       </figcaption>
     </figure>
   );

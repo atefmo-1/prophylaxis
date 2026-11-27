@@ -1,4 +1,5 @@
 // Building blocks of the review screen: eval bar, player strips, scoresheet, winning-chances graph.
+import { Move as Figurine, Notation } from "../components/Notation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ClassIcon } from "../components/ClassIcon";
 import { chancesAround } from "../lib/explain";
@@ -61,7 +62,9 @@ function Cell({ move, index, current, onSelect }: { move?: Move; index: number; 
       data-index={index}
       onClick={() => onSelect(index)}
     >
-      <span className="sheet-san">{move.san}</span>
+      <span className="sheet-san">
+        <Figurine san={move.san} />
+      </span>
       {notable && <ClassIcon cls={move.class} size={15} title={move.class} />}
     </button>
   );
@@ -185,7 +188,7 @@ export function Graph({
       )}
       {hover !== null && width > 0 && (
         <div className="g-tip" style={{ left: Math.min(width - 64, Math.max(64, x(hover))) }}>
-          <b className="num">{Math.round(series[hover])}%</b> {hover === 0 ? "start" : moveLabel(hover, review.moves[hover - 1].san, review.moves[hover - 1].color)}
+          <b className="num">{Math.round(series[hover])}%</b> <Notation>{hover === 0 ? "start" : moveLabel(hover, review.moves[hover - 1].san, review.moves[hover - 1].color)}</Notation>
         </div>
       )}
     </div>

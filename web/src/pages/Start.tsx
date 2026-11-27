@@ -1,4 +1,5 @@
 // The first screen: one question, your username on chess.com or Lichess. Everything after it runs in this browser.
+import { Move as Figurine, Notation } from "../components/Notation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
@@ -135,7 +136,8 @@ export function Start() {
               <p className="frag-label">Before your next game</p>
               <p className="frag-title">Find a better move for {DEMO.color}.</p>
               <p className="frag-text">
-                Practice comes from your own mistakes. Here, {T.accept.map((u) => sanOf(DEMO.moves[T.index - 1].fen, u)).join(", ").replace(/, ([^,]*)$/, " or $1")} keep the
+                Practice comes from your own mistakes. Here,{" "}
+                <Notation>{T.accept.map((u) => sanOf(DEMO.moves[T.index - 1].fen, u)).join(", ").replace(/, ([^,]*)$/, " or $1")}</Notation> keep the
                 queen safe.
               </p>
             </div>
@@ -210,7 +212,7 @@ function Replay() {
                 {[i, i + 1].map((j) =>
                   j <= k && j < n ? (
                     <span key={j} className="replay-mv" data-now={j === k || undefined}>
-                      {DEMO.moves[j].san}
+                      <Figurine san={DEMO.moves[j].san} />
                       {!["book", "good", "best", "excellent"].includes(cls(j)) && <ClassIcon cls={cls(j)} size={14} />}
                     </span>
                   ) : (
@@ -234,10 +236,14 @@ function Replay() {
             <>
               <ClassIcon cls="blunder" size={20} />
               <p>
-                <b><span className="mv">{moveLabel(T.index + 1, m.san)}</span> left your {T.piece} hanging.</b> Your chances went from{" "}
+                <b><span className="mv">
+                    <Notation>{moveLabel(T.index + 1, m.san)}</Notation>
+                  </span> left your {T.piece} hanging.</b> Your chances went from{" "}
                 {T.before}% to {T.after}%.{" "} {T.best && (
                   <>
-                    <span className="mv">{moveLabel(T.index + 1, T.best)}</span> kept it safe.
+                    <span className="mv">
+                      <Notation>{moveLabel(T.index + 1, T.best)}</Notation>
+                    </span> kept it safe.
                   </>
                 )}
               </p>
@@ -246,7 +252,9 @@ function Replay() {
             <>
               <ClassIcon cls={cls(k)} size={20} />
               <p>
-                <b>{moveLabel(k + 1, m.san)}</b> {CLASS_META[cls(k)].label.toLowerCase()}
+                <b>
+                  <Notation>{moveLabel(k + 1, m.san)}</Notation>
+                </b> {CLASS_META[cls(k)].label.toLowerCase()}
                 <span className="replay-pct num">your chances {m.win}%</span>
               </p>
             </>

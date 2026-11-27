@@ -1,0 +1,31 @@
+/* Figurine notation (Notation.tsx): the piece letter stays in the page for screen readers and copying, hidden from
+   sight, and the symbol is drawn in its place. The second `content` gives the symbol an empty alternative text; a
+   browser that doesn't know that syntax keeps the first. \FE0E asks for the text form of the symbol, never emoji. */
+.san {
+  white-space: nowrap;
+}
+
+.fig::before {
+  font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif;
+  font-size: 1.12em;
+  line-height: 1;
+  font-variant-emoji: text;
+}
+
+.fig[data-p="K"]::before { content: "\2654\FE0E"; content: "\2654\FE0E" / ""; }
+.fig[data-p="Q"]::before { content: "\2655\FE0E"; content: "\2655\FE0E" / ""; }
+.fig[data-p="R"]::before { content: "\2656\FE0E"; content: "\2656\FE0E" / ""; }
+.fig[data-p="B"]::before { content: "\2657\FE0E"; content: "\2657\FE0E" / ""; }
+.fig[data-p="N"]::before { content: "\2658\FE0E"; content: "\2658\FE0E" / ""; }
+
+.fig-letter {
+  /* Inline, not absolutely placed: an out-of-flow letter would put line breaks into copied text. */
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  margin-right: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  vertical-align: bottom;
+}

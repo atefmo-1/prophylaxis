@@ -1,4 +1,5 @@
 // Habits: the one thing to work on first, then skill areas, every habit, trends and where mistakes happen.
+import { Move as Figurine } from "../components/Notation";
 import type { ReactNode } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { GameChart, Legend, RateRows } from "../components/charts";
@@ -84,7 +85,11 @@ function Focus({ w }: { w: Weakness }) {
         </div>
         {ex && (
           <p className="focus-caption">
-            Move {ex.move_number} against {ex.opponent}, {day(ex.date)}: you played <b>{ex.played}</b>, <b>{ex.best}</b> was better.{" "}
+            Move {ex.move_number} against {ex.opponent}, {day(ex.date)}: you played{" "}
+            <b>
+              <Figurine san={ex.played} />
+            </b>
+            , <b>{ex.best && <Figurine san={ex.best} />}</b> was better.{" "}
             <a href={href({ name: "game", id: ex.game_id, ply: ex.ply })}>Open in review</a>
           </p>
         )}

@@ -1,4 +1,5 @@
 // The game review: board first, coach panel beside it. Opens on a summary, then key moments as retry puzzles.
+import { Notation } from "../components/Notation";
 import { gameSite, nameOf } from "../lib/player";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Board, type Arrow, type Movable } from "../components/Board";
@@ -84,14 +85,19 @@ function Summary({ review, onStart, onMoves }: { review: ReviewData; onStart: (s
         <button type="button" className="turn" onClick={() => onStart(Math.max(0, moments.indexOf(turn.ply)))}>
           <ClassIcon cls={turn.cls} size={22} />
           <span className="turn-text">
-            The game turned on <b>{turn.label}</b>
+            The game turned on{" "}
+            <b>
+              <Notation>{turn.label}</Notation>
+            </b>
           </span>
           <span className="turn-chances num" aria-label={`your winning chances went from ${Math.round(turn.before)}% to ${Math.round(turn.after)}%`}>
             {Math.round(turn.before)}% → {Math.round(turn.after)}%
           </span>
         </button>
       ) : (
-        <p className="summary-story">{coach.story}</p>
+        <p className="summary-story">
+          <Notation>{coach.story}</Notation>
+        </p>
       )}
 
       <table className="rv-sumtable">
@@ -474,6 +480,7 @@ function MomentCard({
 
   return (
     <div className="coach">
+      <Notation>
       <p className="coach-step">
         Key moment {step + 1} of {total}
         <span className="coach-dots" aria-hidden="true">
@@ -524,7 +531,9 @@ function MomentCard({
           {m.human && <p>{findableLine(m.human.best)}</p>}
           <h2 className="coach-verdict">
             <ClassIcon cls={m.class} size={20} />
-            {m.san} was a {CLASS_META[m.class].label.toLowerCase()}: your chances went from {Math.round(before)}% to {Math.round(after)}%.
+            <span>
+              {m.san} was a {CLASS_META[m.class].label.toLowerCase()}: your chances went from {Math.round(before)}% to {Math.round(after)}%.
+            </span>
           </h2>
           {why ? (
             <p>{why}</p>
@@ -553,6 +562,7 @@ function MomentCard({
           </div>
         </>
       )}
+      </Notation>
     </div>
   );
 }
@@ -570,6 +580,7 @@ function MoveNote({ review, index }: { review: ReviewData; index: number }) {
   const e = explain(review, index);
   return (
     <div className="coach coach--compact" aria-live="polite">
+      <Notation>
       <h2 className="coach-move">
         <ClassIcon cls={m.class} size={20} />
         <span>{e.heading}</span>
@@ -589,6 +600,7 @@ function MoveNote({ review, index }: { review: ReviewData; index: number }) {
         </>
       )}
       {index === review.moves.length - 1 && <p className="coach-end">Game over: {review.game.ending === "Resigned" ? "lost by resignation" : review.game.ending.charAt(0).toLowerCase() + review.game.ending.slice(1)}.</p>}
+      </Notation>
     </div>
   );
 }

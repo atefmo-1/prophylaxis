@@ -1,4 +1,5 @@
 // Practice: five positions from your own games, due ones first, then your top habits. Same retry as the review.
+import { Notation } from "../components/Notation";
 import { useMemo, useState } from "react";
 import { Board, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
@@ -145,7 +146,9 @@ function Session({
             <li key={s.id}>
               <ClassIcon cls={results[i] ? "best" : "miss"} size={18} />
               <span>
-                <b>{moveLabel(s.ply, s.san, s.color)}</b> vs {s.opponent}
+                <b>
+                  <Notation>{moveLabel(s.ply, s.san, s.color)}</Notation>
+                </b> vs {s.opponent}
               </span>
               <span className="muted">{backIn(s.game, s.ply)}</span>
               <a href={href({ name: "game", id: s.game, ply: s.ply })}>See it in the game</a>
@@ -236,6 +239,7 @@ function Session({
           </header>
           <div className="panel-body">
             <div className="coach" aria-live="polite">
+              <Notation>
               {trying ? (
                 <>
                   <p className="coach-context">In the game you played {moveLabel(p.ply, p.san, p.color)}.</p>
@@ -274,8 +278,10 @@ function Session({
                   {p.findable !== null && <p>{findableLine(p.findable)}</p>}
                   <h2 className="coach-verdict">
                     <ClassIcon cls={p.class} size={20} />
-                    In the game, {p.san} was a {CLASS_META[p.class].label.toLowerCase()}: your chances went from {Math.round(p.before)}% to{" "}
-                    {Math.round(p.after)}%.
+                    <span>
+                      In the game, {p.san} was a {CLASS_META[p.class].label.toLowerCase()}: your chances went from {Math.round(p.before)}% to{" "}
+                      {Math.round(p.after)}%.
+                    </span>
                   </h2>
                   {why ? <p>{why}</p> : p.reply && <p>It allowed {p.reply}.</p>}
                   {habit && <p className="coach-habit">{habit.fix}</p>}
@@ -289,6 +295,7 @@ function Session({
                   </div>
                 </>
               )}
+              </Notation>
             </div>
           </div>
         </section>

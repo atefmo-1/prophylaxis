@@ -1,5 +1,6 @@
 // An opening explorer for one player's own games: the board at the current position, the moves played from it with
 // how they turned out, and the games that got there. Click a move to go deeper.
+import { Notation } from "./Notation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StoredGame } from "../analysis/stats";
 import { bookKey, loadOpeningNames } from "../analysis/book";
@@ -126,7 +127,7 @@ export function OpeningTree({
             </button>
             {nodes.slice(1).map((n, i) => (
               <button key={i} type="button" onClick={() => setPath(path.slice(0, i + 1))} aria-current={i + 1 === ply ? "step" : undefined}>
-                {moveLabel(i, n.san!)}
+                <Notation>{moveLabel(i, n.san!)}</Notation>
               </button>
             ))}
           </nav>
@@ -155,7 +156,7 @@ export function OpeningTree({
                   <tr key={m.san} onClick={() => setPath([...path, m.san!])} className={m === best ? "is-best" : m === worst ? "is-worst" : undefined}>
                     <td>
                       <button type="button" className="otree-move" onClick={() => setPath([...path, m.san!])}>
-                        {moveLabel(ply, m.san!)}
+                        <Notation>{moveLabel(ply, m.san!)}</Notation>
                       </button>
                       {m === best && <small className="otree-tag otree-tag--best">best for {you ? "you" : who}</small>}
                       {m === worst && <small className="otree-tag otree-tag--worst">worst for {you ? "you" : who}</small>}

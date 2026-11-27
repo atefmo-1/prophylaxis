@@ -4,6 +4,8 @@ The changes a player would notice, newest first. Each links to the study or repo
 
 ## November 27, 2026
 
+- **Moves written like a chess book:** piece symbols instead of letters (♘f3, ♕xd5, e8=♕) in the move list,
+  explanations, practice and Compare. Screen readers still hear "N f3", and copied moves are ordinary notation.
 - **Calmer pages:** the last 7 days read as one sentence, skill areas as a table, Practice leads with the task, and
   fewer boxes inside boxes. The theme switch lives in the player menu.
 - **Lichess players too:** choose chess.com or Lichess on the first screen. Lichess games are reviewed the same

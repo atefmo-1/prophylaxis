@@ -1,5 +1,6 @@
 // Puzzles for a habit: five Lichess puzzles of the tactic behind it, at the player's level. The opponent's move
 // plays first, as on Lichess; then find every move of the solution.
+import { Move as Figurine } from "../components/Notation";
 import { useLibrary } from "../library/Library";
 import { siteOf } from "../lib/player";
 import { useEffect, useMemo, useState } from "react";
@@ -201,7 +202,7 @@ function PuzzleBoard(props: {
                 <>
                   <h2>{status === "opening" ? "Watch your opponent's move…" : `Find the best move for ${solver}.`}</h2>
                   {missed && (
-                    <p className="coach-feedback coach-feedback--no" key={missed}>Not this one: {sanOf(fen, missed)} doesn't work here. Try another move.</p>
+                    <p className="coach-feedback coach-feedback--no" key={missed}>Not this one: <Figurine san={sanOf(fen, missed)} /> doesn't work here. Try another move.</p>
                   )}
                   {ply > 1 && !missed && <p className="coach-feedback coach-feedback--yes">Good. Keep going: what's next?</p>}
                   {hint && (
