@@ -178,6 +178,46 @@ def evaluate(test: list[dict], mapping: dict[str, int]) -> dict:
     return res
 
 
+def _answers(pos: list[dict], half: int) -> list[dict]:
+    """The position right after each mistake (the opponent to move, with a best move), in one half of the games."""
+    idx = {(p["game"], p["ply"]): p for p in pos}
+    out = []
+    for p in pos:
+        if p["game"] % 2 == half and p["loss"] >= MISTAKE:
+            q = idx.get((p["game"], p["ply"] + 1))
+            if q and q["best"]:
+                out.append(q)
+    return out
+
+
+def _ece(pairs: list[tuple[float, bool]]) -> float:
+    bins = [(0, 0.1), (0.1, 0.2), (0.2, 0.35), (0.35, 0.5), (0.5, 0.7), (0.7, 0.9), (0.9, 1.01)]
+    total = 0.0
+    for lo, hi in bins:
+        part = [x for x in pairs if lo <= x[0] < hi]
+        if part:
+            total += len(part) / len(pairs) * abs(sum(x[0] for x in part) / len(part) - sum(x[1] for x in part) / len(part))
+    return total
+
+
+def answer_calibration(pos: list[dict], mapping: dict[str, int]) -> dict:
+    """After one of your mistakes, does Maia (at the opponent's rating) give their best answer an honest chance? The
+    site says how findable that answer was. Calibration is reported on each half and on both; recalibrating was tried
+    (isotonic, and Platt on the logit) and didn't carry over from one half to the other, so the site uses Maia as is."""
+    at = lambda p: p["by"][str(mapping.get(band_of(p["me"]), 1500))]["best"]
+    pairs = {half: [(at(q), q["played"] == q["best"]) for q in _answers(pos, half)] for half in (0, 1)}
+    both = pairs[0] + pairs[1]
+    bins = [(0, 0.1), (0.1, 0.2), (0.2, 0.35), (0.35, 0.5), (0.5, 0.7), (0.7, 0.8), (0.8, 0.9), (0.9, 0.95), (0.95, 1.01)]
+    table = []
+    for lo, hi in bins:
+        part = [x for x in both if lo <= x[0] < hi]
+        if part:
+            table.append({"bin": f"{lo:.2f}-{min(hi, 1):.2f}", "n": len(part), "maia_says": sum(p for p, _ in part) / len(part),
+                          "players_found": sum(y for _, y in part) / len(part)})
+    return {"positions": len(both), "error_even": _ece(pairs[0]), "error_odd": _ece(pairs[1]), "error_both": _ece(both),
+            "found": sum(y for _, y in both) / len(both), "calibration": table}
+
+
 def main() -> dict:
     games = engine_pass(_games())
     pos = [p for p in positions(games) if p["played"]]
@@ -188,7 +228,8 @@ def main() -> dict:
     result = {"games": len(games), "positions": len(pos), "grid": GRID,
               "mapping": {b: mapping[b] for b, _, _ in BANDS if b in mapping},
               "band_positions": {b: sum(band_of(p["me"]) == b for p in pos) for b, _, _ in BANDS},
-              "test": evaluate(test, mapping)}
+              "test": evaluate(test, mapping),
+              "answers": answer_calibration(pos, mapping)}
     RESULTS.mkdir(exist_ok=True)
     (RESULTS / "maia.json").write_text(json.dumps(result, indent=1) + "\n")
     print(json.dumps(result, indent=1))

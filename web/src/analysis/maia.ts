@@ -13,8 +13,9 @@
 // list, written from the side to move's view. web/scripts/check-maia.ts compares all of it with the authors' code.
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
-import { makeSquare } from "chessops/util";
-import type { Role, Square } from "chessops/types";
+import { parseSan } from "chessops/san";
+import { makeSquare, roleToChar } from "chessops/util";
+import type { NormalMove, Role, Square } from "chessops/types";
 import type { GameReview, Move, MoveClass } from "../types";
 
 export const HISTORY = 8;
@@ -70,6 +71,18 @@ export function legalUcis(fen: string): string[] {
     }
   }
   return [...out];
+}
+
+/** A SAN move in UCI as the engine writes it (castling as the king's two-square move), or undefined. */
+export function sanToEngineUci(fen: string, san: string): string | undefined {
+  const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+  const move = parseSan(pos, san) as NormalMove | undefined;
+  if (!move) return undefined;
+  const piece = pos.board.get(move.from);
+  const target = pos.board.get(move.to);
+  const castle = piece?.role === "king" && target?.role === "rook" && target.color === piece.color;
+  const to = castle ? (((move.from & ~7) + (move.to > move.from ? 6 : 2)) as Square) : move.to;
+  return makeSquare(move.from) + makeSquare(to) + (move.promotion ? roleToChar(move.promotion) : "");
 }
 
 /** Chance of each legal move, from the model's logits for that position. */
@@ -172,7 +185,7 @@ export async function loadHumanModel(base: string): Promise<HumanModel | null> {
     }));
   };
   return {
-    version: `${meta.version}.${meta.chesscom_to_maia.flat().join("-")}`,
+    version: `${meta.version}.${meta.chesscom_to_maia.flat().join("-")}.${ANNOTATION}`,
     map: meta.chesscom_to_maia,
     get failed() {
       return failed;
@@ -192,21 +205,34 @@ export async function loadHumanModel(base: string): Promise<HumanModel | null> {
 
 /** The moves a review says something about other players on: your mistakes, misses and blunders. */
 const ASKED: MoveClass[] = ["mistake", "miss", "blunder"];
+/** Bumped when annotateReview stores something new, so stored reviews are annotated again. */
+const ANNOTATION = 2;
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 
-/** The review with Maia's view of each of your mistakes, from the positions it kept: no engine search needed. */
+/**
+ * The review with Maia's view of each of your mistakes, from the positions it kept: no engine search needed. At your
+ * rating: the chance of the best move, of the move you played, and the move played most. At your opponent's rating,
+ * in the position after your move: the chance of their best answer (the engine's reply line).
+ */
 export async function annotateReview(model: HumanModel, review: GameReview): Promise<GameReview> {
   const fens = [review.start_fen, ...review.moves.map((m) => m.fen)];
   const self = maiaRating(review.game.rating, model.map);
   const oppo = maiaRating(review.game.opp_rating, model.map);
+  const history = (i: number) => fens.slice(Math.max(0, i - HISTORY + 1), i + 1);
   const asked = review.moves
-    .map((m, i) => ({ m, i }))
+    .map((m, i) => ({ m, i, reply: m.reply_line.length ? sanToEngineUci(m.fen, m.reply_line[0]) : undefined }))
     .filter(({ m }) => m.mine && ASKED.includes(m.class) && !m.decided && m.best_uci && m.best_uci !== m.uci);
-  const chances = await model.predict(asked.map(({ i }) => ({ fens: fens.slice(Math.max(0, i - HISTORY + 1), i + 1), self, oppo })));
+  const replies = asked.filter((a) => a.reply);
+  const chances = await model.predict([
+    ...asked.map(({ i }) => ({ fens: history(i), self, oppo })),
+    ...replies.map(({ i }) => ({ fens: history(i + 1), self: oppo, oppo: self })),
+  ]);
+  const punish = new Map(replies.map((a, k) => [a.i, chances[asked.length + k].get(a.reply!) ?? 0]));
   const human = new Map(asked.map(({ m, i }, k) => {
     const p = chances[k];
     const top = [...p.entries()].reduce((a, b) => (b[1] > a[1] ? b : a));
-    return [i, { best: r3(p.get(m.best_uci!) ?? 0), played: r3(p.get(m.uci) ?? 0), top: top[0], top_p: r3(top[1]), rating: self }];
+    const reply = punish.has(i) ? { reply: r3(punish.get(i)!), reply_rating: oppo } : {};
+    return [i, { best: r3(p.get(m.best_uci!) ?? 0), played: r3(p.get(m.uci) ?? 0), top: top[0], top_p: r3(top[1]), rating: self, ...reply }];
   }));
   const moves: Move[] = review.moves.map((m, i) => {
     const h = human.get(i);

@@ -188,9 +188,10 @@ export interface Move {
   tags: MoveTag[];
   decided: boolean;
   retry: { accept: string[]; wins: { [uci: string]: number } } | null;
-  /** Maia-3's view of one of your mistakes, at your rating (analysis/maia.ts): the chance a player at your level
-   *  plays the best move, the move you played, and the move they play most. */
-  human?: { best: number; played: number; top: string; top_p: number; rating: number };
+  /** Maia-3's view of one of your mistakes (analysis/maia.ts). At your rating: the chance a player plays the best
+   *  move, the move you played, and the move played most. `reply`: the chance a player at your opponent's rating
+   *  finds their best answer to your move (reply_line[0]), when there is one. Ratings are on Maia's scale. */
+  human?: { best: number; played: number; top: string; top_p: number; rating: number; reply?: number; reply_rating?: number };
 }
 
 export interface GameReview {

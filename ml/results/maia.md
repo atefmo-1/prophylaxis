@@ -110,6 +110,41 @@ carry SPDX headers. `maia3.json` records the checkpoint's sha256, the export dat
 rebuilds the file. The app's player menu links "Source code and licences", and the README's Licence section explains
 the combination.
 
+## Your opponent's answer
+
+After each of the 2,963 mistakes in all 284 games, the opponent found Stockfish's best answer 38% of the time. Maia's
+chance for that answer, at the opponent's mapped rating, against how often they found it:
+
+| Maia's chance for the best answer | Positions | Maia says | Players found it |
+|---|---:|---:|---:|
+| Under 10% | 566 | 5% | 4% |
+| 10-20% | 425 | 15% | 12% |
+| 20-35% | 508 | 27% | 29% |
+| 35-50% | 409 | 42% | 44% |
+| 50-70% | 461 | 60% | 57% |
+| 70-80% | 236 | 75% | 73% |
+| 80-90% | 202 | 85% | 76% |
+| 90-95% | 83 | 93% | 83% |
+| Over 95% | 73 | 98% | 95% |
+
+Calibration error is 2.5 points: 1.9 on the even games and 3.3 on the odd ones. Maia runs about 8 points high between
+80% and 95%, which moves "about N in 10" by one at most. Two recalibrations were fitted on one half and tested on the
+other, isotonic and Platt (logistic on the logit). Neither carried over: isotonic went from 3.3 to 3.7 points on the
+odd games, and Platt fitted on the odd games took the even ones from 1.9 to 3.5. So the site uses Maia's chances as
+they are.
+
+## Difficulty in the review
+
+- **Key moments.** The costliest mistake is always one, since the game turned on it. The other picks are the costliest of
+  the mistakes whose better move at least 15% of players at your rating find; harder ones come in only if there are
+  too few. The quiz asks them easiest first.
+- **Practice.** New positions whose answer under 15% of players at your rating find come after the rest.
+- **Hard position, fast move.** A mistake in a position where under 15% of players at your rating find the best
+  move, played in under 10 seconds with at least 2 minutes left, says so: "Positions this hard are the ones worth
+  slowing down for." It isn't counted as a habit.
+- **Your opponent's answer.** On your mistakes and blunders, the review says how findable your opponent's best answer
+  was at their rating, and whether they found it.
+
 ## What shipped
 
 - **The sentences.** On each of your mistakes, misses and blunders, the review now says how many players at your

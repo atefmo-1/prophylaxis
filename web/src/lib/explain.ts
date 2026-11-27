@@ -76,16 +76,22 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
 
 const NICE = [7, 10, 15, 20, 30, 50, 100];
 
-/** "about 3 in 10 players at your rating find it", from Maia's chance for the move at your rating. Maia's chances
- *  are honest on chess.com beginners (ml/results/maia.md), so these are fair statements about players at your
- *  rating; they say nothing about you. */
-export function findable(p: number): { text: string; hard: boolean } {
-  if (p >= 0.95) return { text: "almost every player at your rating finds", hard: false };
-  if (p >= 0.15) return { text: `about ${Math.round(p * 10)} in 10 players at your rating find`, hard: false };
-  if (p < 0.01) return { text: "fewer than 1 in 100 players at your rating find", hard: true };
+/** "about 3 in 10 players at your rating find it", from Maia's chance for the move at that rating. Maia's chances
+ *  are honest on chess.com beginners (ml/results/maia.md), so these are fair statements about players at that
+ *  rating; they say nothing about this one player. Under 15% counts as hard. */
+export function findable(p: number, whose: "your" | "their" = "your"): { text: string; hard: boolean } {
+  const at = `at ${whose} rating`;
+  if (p >= 0.95) return { text: `almost every player ${at} finds`, hard: false };
+  if (p >= HARD) return { text: `about ${Math.round(p * 10)} in 10 players ${at} find`, hard: false };
+  if (p < 0.01) return { text: `fewer than 1 in 100 players ${at} find`, hard: true };
   const m = NICE.reduce((a, b) => (Math.abs(Math.log(b * p)) < Math.abs(Math.log(a * p)) ? b : a));
-  return { text: `only about 1 in ${m} players at your rating find`, hard: true };
+  return { text: `only about 1 in ${m} players ${at} find`, hard: true };
 }
+
+export const HARD = 0.15;
+/** A move this quick in a hard position, with this much left on the clock, gets a word about taking time. */
+const FAST_S = 10;
+const FAST_MIN_CLOCK_S = 120;
 
 /** After a practice try: how findable the answer was at your rating, as a sentence. */
 export function findableLine(p: number): string {
@@ -109,6 +115,37 @@ function commonMistake(move: Move): string | null {
   if (!h || h.top !== move.uci) return null;
   const n = Math.round(h.played * 10);
   return n >= 3 ? `It's a common mistake: about ${n} in 10 players at your rating play it here too.` : null;
+}
+
+// Tags that say your move let the opponent win something with their answer.
+const ALLOWED = new Set([
+  "hanging_piece", "allowed_fork", "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece",
+  "allowed_mate", "back_rank_mate", "lost_material", "lost_pawn",
+]);
+
+/** How findable your opponent's best answer to your mistake was at their rating, and whether they found it. Only
+ *  when that answer is what punishes the move: a tag says it allowed something, and names no other move. */
+function opponentAnswer(move: Move, next: Move | undefined): string | null {
+  const h = move.human;
+  const answer = move.reply_line[0];
+  if (h?.reply === undefined || !answer || !next || move.class === "miss") return null;
+  const allowed = move.tags.filter((t) => ALLOWED.has(t.tag));
+  if (!allowed.length || allowed.some((t) => t.detail.move !== undefined && t.detail.move !== answer)) return null;
+  const f = findable(h.reply, "their");
+  if (next.san === answer) {
+    return f.hard ? `Your opponent found ${answer}, which ${f.text}.` : `Your opponent found ${answer}: ${f.text} it.`;
+  }
+  return f.hard ? `Their best answer was ${answer}, which ${f.text}.` : `Their best answer was ${answer}: ${f.text} it.`;
+}
+
+/** A quick move in a position that's hard at your rating, with time to spare (the clock tags cover the rest). */
+function fastInHardPosition(move: Move): string | null {
+  const h = move.human;
+  if (!h || h.best >= HARD || move.time_spent === null || move.clock === null) return null;
+  if (move.time_spent >= FAST_S || move.clock < FAST_MIN_CLOCK_S) return null;
+  if (move.tags.some((t) => t.tag === "rushed" || t.tag === "time_pressure")) return null;
+  const s = Math.max(1, Math.round(move.time_spent));
+  return `You spent ${s} second${s === 1 ? "" : "s"} on it. Positions this hard are the ones worth slowing down for.`;
 }
 
 export interface Explanation {
@@ -156,8 +193,9 @@ export function explain(review: GameReview, i: number): Explanation {
     const sentence = tagSentence(tag, move);
     if (sentence) lines.push(sentence);
   }
-  const common = move.mine ? commonMistake(move) : null;
-  if (common) lines.push(common);
+  if (move.mine) {
+    for (const line of [commonMistake(move), fastInHardPosition(move), opponentAnswer(move, review.moves[i + 1])]) if (line) lines.push(line);
+  }
   // A forced mate on the board after this move, stated once (the mate tags already cover short mates).
   if (move.eval_mate !== null && !move.tags.some((t) => t.tag === "allowed_mate")) {
     // eval_mate is from white's side: positive means white mates

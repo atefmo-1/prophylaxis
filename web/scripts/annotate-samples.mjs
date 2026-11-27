@@ -27,8 +27,9 @@ for (const file of ["reviews.json", "rival-reviews.json"]) {
   const moves = out.flatMap((s) => s.review.moves.filter((m) => m.human));
   const common = moves.filter((m) => m.human.top === m.uci).length;
   const hard = moves.filter((m) => m.human.best < 0.15).length;
+  const replies = moves.filter((m) => m.human.reply !== undefined).length;
   writeFileSync(path, JSON.stringify(out));
   console.log(`${file}: ${out.length} games, ${moves.length} mistakes annotated (${common} the most common move at that rating, ` +
-    `${hard} with a best move under 15% of players find), version ${out[0].human}`);
+    `${hard} with a best move under 15% of players find, ${replies} with the opponent's answer), version ${out[0].human}`);
 }
 await browser.close();

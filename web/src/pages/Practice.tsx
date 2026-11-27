@@ -5,7 +5,7 @@ import { ClassIcon } from "../components/ClassIcon";
 import { IconNext } from "../components/Icons";
 import { NotEnough } from "../components/Progress";
 import { useOverview, usePractice } from "../data";
-import { findableLine, tagSentence } from "../lib/explain";
+import { findableLine, HARD, tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
 import { gradeOf, loadPractice, recordAttempt } from "../lib/practice";
 import { hasPuzzles } from "../lib/puzzles";
@@ -42,7 +42,9 @@ function buildSession(pool: PracticePosition[], tag: string | null, rank: Map<st
     .map((i) => pool.find((p) => p.game === i.game && p.ply === i.ply))
     .filter((p): p is PracticePosition => !!p && matches(p));
   const best = (p: PracticePosition) => Math.min(...p.tags.map((t) => rank.get(t.tag) ?? 99), 99);
-  const fresh = pool.filter((p) => !seen.has(p.id) && matches(p)).sort((a, b) => best(a) - best(b));
+  // New positions: ones most players at your rating would find before hard ones (Maia), then by habit.
+  const hard = (p: PracticePosition) => Number(p.findable !== null && p.findable < HARD);
+  const fresh = pool.filter((p) => !seen.has(p.id) && matches(p)).sort((a, b) => hard(a) - hard(b) || best(a) - best(b));
   return [...due, ...fresh].slice(0, SESSION);
 }
 
