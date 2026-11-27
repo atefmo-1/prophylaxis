@@ -1,6 +1,8 @@
 import { useCallback, useRef } from "react";
 
-const SELECTED = ':scope > [aria-pressed="true"], :scope > [aria-selected="true"]';
+// aria-pressed / aria-selected for plain buttons; data-state for Radix's toggle groups ("on") and tabs ("active").
+const SELECTED =
+  ':scope > [aria-pressed="true"], :scope > [aria-selected="true"], :scope > [data-state="on"], :scope > [data-state="active"]';
 
 /**
  * A sliding pill for a segmented control. Attach the returned ref to the group; it draws one
@@ -42,7 +44,7 @@ export function usePill<T extends HTMLElement>() {
     place();
 
     const watch = new MutationObserver(place);
-    watch.observe(el, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-pressed", "aria-selected"] });
+    watch.observe(el, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-pressed", "aria-selected", "data-state"] });
     // Font loading and wrapping change the buttons' sizes without touching their attributes.
     const sizes = new ResizeObserver(place);
     sizes.observe(el);

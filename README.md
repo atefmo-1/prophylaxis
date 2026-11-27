@@ -89,7 +89,7 @@ chess.com or Lichess API ──► your browser: Stockfish 19 Lite (WebAssembly,
 | Statistics across games: intervals, habits, skills, practice positions | `web/src/analysis/stats.ts` |
 | The opening tree | `web/src/lib/openingTree.ts`, `web/src/components/OpeningTree.tsx` |
 | Comparing with another player, and the tips for beating them | `web/src/library/compare.ts`, `web/src/library/Comparison.tsx`, `web/src/lib/tips.ts` |
-| Pages (React + Vite + TypeScript, chessground board) | `web/src/` |
+| Pages (React + Vite + TypeScript, chessground board; Radix Tabs and ToggleGroup for keyboard behaviour, styled by the site) | `web/src/` |
 
 ### The Python pipeline: the reference
 

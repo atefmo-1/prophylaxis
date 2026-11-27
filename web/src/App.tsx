@@ -1,3 +1,4 @@
+import { Segmented } from "./components/Segmented";
 import { nameOf, profileUrl, siteName } from "./lib/player";
 import { useEffect, useRef, useState } from "react";
 import { HoldButton } from "./components/HoldButton";
@@ -6,7 +7,6 @@ import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
 import { canChooseCounting, countPage, counting, setCounting } from "./lib/analytics";
 import { REPO, timeLeft } from "./lib/format";
-import { usePill } from "./lib/motion";
 import { useTheme, type ThemeChoice } from "./lib/theme";
 import { ComparisonProvider, useCurrentComparison } from "./library/Comparison";
 import { LibraryProvider, useLibrary, useLibraryStatus } from "./library/Library";
@@ -37,16 +37,7 @@ const THEMES: { value: ThemeChoice; label: string }[] = [
 
 function ThemeSwitch() {
   const [choice, setChoice] = useTheme();
-  const pill = usePill<HTMLDivElement>();
-  return (
-    <div className="theme" ref={pill} role="group" aria-label="Colour theme">
-      {THEMES.map((t) => (
-        <button key={t.value} type="button" aria-pressed={choice === t.value} onClick={() => setChoice(t.value)}>
-          {t.label}
-        </button>
-      ))}
-    </div>
-  );
+  return <Segmented className="theme" label="Colour theme" value={choice} onChange={setChoice} choices={THEMES} />;
 }
 
 /** Anonymous usage counts on or off for this browser (lib/analytics.ts). */
@@ -77,6 +68,15 @@ function PlayerMenu({ player }: { player: string }) {
   const rating = player_?.rating ?? null;
   const menu = useRef<HTMLDetailsElement>(null);
   const close = () => menu.current?.removeAttribute("open");
+  // A click or tap anywhere else closes the menu, as people expect of one.
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const el = menu.current;
+      if (el?.open && !el.contains(e.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, []);
   return (
     <details
       className="me"

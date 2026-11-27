@@ -277,7 +277,10 @@
 }
 
 .panel-tabs button:hover:not(:disabled) { color: var(--c-ink); }
-.panel-tabs button[aria-selected="true"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 1px 2px var(--c-shade), inset 0 0 0 1px var(--c-hair); }
+/* Radix Tabs' root wraps the tabs and the panel; the panel keeps its place in the column. */
+.panel-tabs-root { display: contents; }
+
+.panel-tabs button[aria-selected="true"], .panel-tabs button[data-state="active"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 1px 2px var(--c-shade), inset 0 0 0 1px var(--c-hair); }
 .panel-tabs button:disabled { opacity: 0.4; cursor: default; }
 
 .panel-body {

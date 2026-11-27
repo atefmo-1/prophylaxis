@@ -95,7 +95,7 @@
   cursor: pointer;
 }
 
-.site-switch button[aria-pressed="true"] {
+.site-switch button[aria-pressed="true"], .site-switch button[data-state="on"] {
   background: var(--c-accent);
   color: var(--c-on-accent);
 }

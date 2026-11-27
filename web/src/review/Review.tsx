@@ -1,4 +1,6 @@
 // The game review: board first, coach panel beside it. Opens on a summary, then key moments as retry puzzles.
+import * as Tabs from "@radix-ui/react-tabs";
+import { usePill } from "../lib/motion";
 import { Notation } from "../components/Notation";
 import { gameSite, nameOf } from "../lib/player";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -6,7 +8,6 @@ import { Board, type Arrow, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { IconFirst, IconLast, IconNext, IconPrev } from "../components/Icons";
 import { FirstReview } from "../components/Progress";
-import { PillGroup } from "../components/PillGroup";
 import { Roll } from "../components/Roll";
 import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
@@ -188,6 +189,8 @@ export function ReviewView({
   const [mode, setMode] = useState<Mode>(
     initialPly !== null ? { kind: "moves" } : openOnMoments ? { kind: "moments", step: 0 } : { kind: "summary" },
   );
+  const tab = mode.kind === "moments" || mode.kind === "done" ? "moments" : mode.kind;
+  const pill = usePill<HTMLDivElement>();
   const [index, setIndex] = useState(
     initialPly !== null ? Math.min(n - 1, Math.max(-1, initialPly - 1)) : openOnMoments ? moments[0] - 1 : -1,
   );
@@ -215,7 +218,9 @@ export function ReviewView({
   const solving = useRef(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.metaKey || e.ctrlKey || solving.current || (e.target as HTMLElement).closest("input, textarea")) return;
+      // Not while typing, and not on tabs or a choice group, whose own arrow keys move between their buttons.
+      const own = (e.target as HTMLElement).closest('input, textarea, [role="tablist"], [role="group"]');
+      if (e.altKey || e.metaKey || e.ctrlKey || e.defaultPrevented || solving.current || own) return;
       const map: Record<string, number> = { ArrowLeft: index - 1, ArrowRight: index + 1, Home: -1, End: n - 1 };
       if (!(e.key in map)) return;
       e.preventDefault();
@@ -336,28 +341,26 @@ export function ReviewView({
         </div>
 
         <section className="rv-panel" aria-label="Review">
+          <Tabs.Root
+            value={tab}
+            onValueChange={(v) => {
+              if (v === "summary") setMode({ kind: "summary" });
+              else if (v === "moments") startMoments(0);
+              else stepMoves(index);
+            }}
+            className="panel-tabs-root"
+          >
           <header className="panel-head">
-            <PillGroup className="panel-tabs" role="tablist" aria-label="Review mode">
-              <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "summary"} onClick={() => setMode({ kind: "summary" })}>
-                Summary
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-controls="review-panel"
-                aria-selected={mode.kind === "moments" || mode.kind === "done"}
-                onClick={() => moments.length && startMoments(0)}
-                disabled={!moments.length}
-              >
+            <Tabs.List ref={pill} className="panel-tabs" aria-label="Review mode">
+              <Tabs.Trigger value="summary">Summary</Tabs.Trigger>
+              <Tabs.Trigger value="moments" disabled={!moments.length}>
                 Key moments
-              </button>
-              <button type="button" role="tab" aria-controls="review-panel" aria-selected={mode.kind === "moves"} onClick={() => stepMoves(index)}>
-                Moves
-              </button>
-            </PillGroup>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="moves">Moves</Tabs.Trigger>
+            </Tabs.List>
           </header>
 
-          <div className="panel-body" id="review-panel" role="tabpanel">
+          <Tabs.Content value={tab} className="panel-body">
             {mode.kind === "summary" && <Summary review={review} onStart={startMoments} onMoves={() => stepMoves(-1)} />}
 
             {mode.kind === "moments" && moment && beforeFen && (
@@ -403,7 +406,8 @@ export function ReviewView({
             {mode.kind === "moves" && <MoveNote review={review} index={index} />}
 
             {mode.kind !== "summary" && <Scoresheet moves={review.moves} index={index} onSelect={stepMoves} />}
-          </div>
+          </Tabs.Content>
+          </Tabs.Root>
 
           <footer className="panel-foot">
             <Graph review={review} index={index} onSelect={stepMoves} />

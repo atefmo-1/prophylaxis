@@ -1,4 +1,5 @@
 // The first screen: one question, your username on chess.com or Lichess. Everything after it runs in this browser.
+import { Segmented } from "../components/Segmented";
 import { Move as Figurine, Notation } from "../components/Notation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
@@ -65,21 +66,16 @@ export function Start() {
           <form className="start-form" onSubmit={submit}>
             <div className="start-label-row">
               <label htmlFor="username">Your {SITE_NAMES[site]} username</label>
-              <div className="site-switch" role="group" aria-label="Where you play">
-                {(["chesscom", "lichess"] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    aria-pressed={site === s}
-                    onClick={() => {
-                      setSite(s);
-                      setError(null);
-                    }}
-                  >
-                    {SITE_NAMES[s]}
-                  </button>
-                ))}
-              </div>
+              <Segmented
+                className="site-switch"
+                label="Where you play"
+                value={site}
+                onChange={(s) => {
+                  setSite(s);
+                  setError(null);
+                }}
+                choices={(["chesscom", "lichess"] as const).map((s) => ({ value: s, label: SITE_NAMES[s] }))}
+              />
             </div>
             <div className="start-row">
               <input

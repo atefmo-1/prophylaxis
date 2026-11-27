@@ -543,7 +543,7 @@
 .seg button:disabled { opacity: 0.35; cursor: default; }
 .seg button:disabled:hover { color: var(--c-ink-3); }
 
-.seg button[aria-pressed="true"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 1px 2px var(--c-shade), inset 0 0 0 1px var(--c-hair); }
+.seg button[aria-pressed="true"], .seg button[data-state="on"] { background: var(--c-panel); color: var(--c-ink); box-shadow: 0 1px 2px var(--c-shade), inset 0 0 0 1px var(--c-hair); }
 
 .table-scroll {
   overflow-x: auto;

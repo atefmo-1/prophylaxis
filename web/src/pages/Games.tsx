@@ -1,4 +1,5 @@
 // Every game, newest first: result, accuracy, blunders and the habit that cost the most.
+import { Segmented } from "../components/Segmented";
 import { useState } from "react";
 import { useGames, useOverview } from "../data";
 import { RESULT_META, accuracy, day, plural, timeLeft } from "../lib/format";
@@ -7,7 +8,6 @@ import { href } from "../router";
 import type { Color, Result } from "../types";
 import "./pages.css";
 import { LoadError } from "../components/LoadError";
-import { PillGroup } from "../components/PillGroup";
 
 const RESULTS: { label: string; value: Result | "all" }[] = [
   { label: "All", value: "all" },
@@ -55,26 +55,13 @@ export function Games() {
       </header>
 
       <div className="filters">
-        <PillGroup className="seg" role="group" aria-label="Result">
-          {RESULTS.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              aria-pressed={result === f.value}
-              disabled={f.value !== "all" && !games.data.some((g) => g.result === f.value)}
-              onClick={() => setResult(f.value)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </PillGroup>
-        <PillGroup className="seg" role="group" aria-label="Colour">
-          {COLORS.map((f) => (
-            <button key={f.value} type="button" aria-pressed={color === f.value} onClick={() => setColor(f.value)}>
-              {f.label}
-            </button>
-          ))}
-        </PillGroup>
+        <Segmented
+          label="Result"
+          value={result}
+          onChange={setResult}
+          choices={RESULTS.map((f) => ({ ...f, disabled: f.value !== "all" && !games.data.some((g) => g.result === f.value) }))}
+        />
+        <Segmented label="Colour" value={color} onChange={setColor} choices={COLORS} />
         <span className="filters-count num">{plural(rows.length, "game")}</span>
       </div>
 

@@ -1,5 +1,6 @@
 // An opening explorer for one player's own games: the board at the current position, the moves played from it with
 // how they turned out, and the games that got there. Click a move to go deeper.
+import { Segmented } from "./Segmented";
 import { Notation } from "./Notation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StoredGame } from "../analysis/stats";
@@ -11,7 +12,11 @@ import type { Color } from "../types";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
 import { Board } from "./Board";
-import { PillGroup } from "./PillGroup";
+
+const SIDES: { value: Color; label: string }[] = [
+  { value: "white", label: "As white" },
+  { value: "black", label: "As black" },
+];
 import "./openingTree.css";
 
 const MIN_FOR_VERDICT = 3; // games before a move is called a good or bad choice
@@ -92,13 +97,7 @@ export function OpeningTree({
   if (tree.games === 0)
     return (
       <div className="otree-empty">
-        <PillGroup className="seg" role="group" aria-label="Colour">
-          {(["white", "black"] as Color[]).map((c) => (
-            <button key={c} type="button" aria-pressed={color === c} onClick={() => pick(c)}>
-              As {c}
-            </button>
-          ))}
-        </PillGroup>
+        <Segmented label="Colour" value={color} onChange={pick} choices={SIDES} />
         <p className="muted">No reviewed games with {color} yet.</p>
       </div>
     );
@@ -110,13 +109,7 @@ export function OpeningTree({
       </div>
       <div className="otree-side" ref={side}>
         <div className="otree-top">
-          <PillGroup className="seg" role="group" aria-label="Colour">
-            {(["white", "black"] as Color[]).map((c) => (
-              <button key={c} type="button" aria-pressed={color === c} onClick={() => pick(c)}>
-                As {c}
-              </button>
-            ))}
-          </PillGroup>
+          <Segmented label="Colour" value={color} onChange={pick} choices={SIDES} />
           <span className="muted num">{plural(tree.games, "game")}</span>
         </div>
 
