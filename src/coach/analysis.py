@@ -14,7 +14,7 @@ GREAT_MIN_GAP = 20.0     # win % between the only good move and the next best
 GREAT_MIN_WIN = 25.0     # ignore "only moves" in positions that were already lost
 BAD = ("mistake", "blunder")
 ALLOWED_TAGS = {
-    "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate", "ignored_threat",
+    "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate", "ignored_threat", "lost_pawn",
 }
 
 
@@ -161,6 +161,8 @@ def analyse_game(
             tags = motifs.detect(before, move, lines_before, lines_after, win_loss, clock_before, time_spent)
             threat = motifs.ignored_threat(before, move, lines_after, threats.get(ply), win_loss)
             if threat:
+                # The threat sentence already says what it wins: don't name the same pawn twice.
+                tags = [(t, d) for t, d in tags if not (t == "lost_pawn" and d["move"] == threat[1]["move"])]
                 clock = next((i for i, (t, _) in enumerate(tags) if t in ("time_pressure", "rushed")), len(tags))
                 tags.insert(clock, threat)
             tag_rows.extend((row["id"], ply, tag, json.dumps(detail)) for tag, detail in tags)

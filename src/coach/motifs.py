@@ -19,8 +19,8 @@ RUSHED_MIN_CLOCK_S = 120
 THREAT_PLIES = 4         # a threat wins its material within this many moves of the threatening one
 
 TAGS = [
-    "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material",
-    "allowed_stalemate", "missed_free_piece", "missed_fork", "missed_mate", "missed_tactic",
+    "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "lost_pawn",
+    "allowed_stalemate", "missed_free_piece", "missed_fork", "missed_mate", "missed_tactic", "missed_pawn",
     "ignored_threat", "time_pressure", "rushed",
 ]
 
@@ -115,6 +115,27 @@ def _piece_name(board: chess.Board, square: chess.Square) -> str:
     return chess.piece_name(piece.piece_type) if piece else "piece"
 
 
+def _takes_pawn(board: chess.Board, move: chess.Move) -> bool:
+    victim = board.piece_at(move.to_square)
+    return board.is_en_passant(move) or (victim is not None and victim.color != board.turn and victim.piece_type == chess.PAWN)
+
+
+def _pawn_taken(after: chess.Board, reply: list[str], me: chess.Color, start: int, within: int = 3) -> str | None:
+    """In the first moves of the opponent's best reply, the capture that wins one of your pawns: you are a pawn down
+    after it and still after your answer (a trade, where you take back, doesn't count). Its SAN, or None."""
+    board = after.copy(stack=False)
+    for i, uci in enumerate(reply[:within]):
+        move = chess.Move.from_uci(uci)
+        if move not in board.legal_moves:
+            return None
+        takes = board.turn != me and _takes_pawn(board, move)
+        san = board.san(move)
+        board.push(move)
+        if takes and material(play(board, reply[i + 1 :], 1), me) - start == -1:
+            return san
+    return None
+
+
 def detect(
     before: chess.Board,
     move: chess.Move,
@@ -174,6 +195,8 @@ def detect(
                     }))
                 else:
                     tags.append(("lost_material", {"amount": -gain_played}))
+        elif gain_played == -1 and gain_best >= 0 and (by := _pawn_taken(after, reply_pv, me, start)):
+            tags.append(("lost_pawn", {"move": by}))
 
     # What the move missed
     if win_loss >= MISSED_MIN_LOSS and best_pv:
@@ -204,6 +227,8 @@ def detect(
                     }))
                 else:
                     tags.append(("missed_tactic", {"amount": gain_best - gain_played}))
+        elif gain_best == 1 and gain_played <= 0 and _takes_pawn(before, best):
+            tags.append(("missed_pawn", {"move": before.san(best)}))
 
     # When it happened
     if win_loss >= ALLOWED_MIN_LOSS and clock_before is not None:

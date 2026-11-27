@@ -65,6 +65,14 @@ pressure.
 3. **Pawn-level and slower material.** Name one-pawn losses and misses, and look 20 plies deep for material. Up to
    21% of mistakes, but only about half the labels were right in the hand-check. Each needs a fact-check (does the
    line really win that pawn, and is it the reason?) before the site says it.
+   *Built (analysis version 8), pawns only:* `python -m causes.pawns` tries three stricter rules on the census.
+   "Lost a pawn" (the reply wins a pawn within two moves and you don't win it back, and the best move kept
+   material level) was right in 16 of 16 examples once it named the capture that wins the pawn rather than the
+   first move of a trade. "Missed a pawn" (the best move takes a pawn and its line ends a pawn up) was right in 12 of
+   12. "Lost material later" (beyond the 9-ply horizon) was right in only about 4 of 12, because long lines often end
+   partway through an exchange, so it doesn't ship. Together with the threat check, about 55% of beginner mistakes
+   now get a reason, up from 35%. That figure is slightly generous, because the census counted threats before the
+   "threat still stands" test was added.
 4. **No templated reason for the rest.** About a quarter of all mistakes (slips and no-concrete-reason) have no fact
    to state. Show the better move and its line, and say nothing more. A free model would guess here, and these are
    the mistakes where a wrong guess is easiest to believe. A human-move model (Maia) could later say "most players

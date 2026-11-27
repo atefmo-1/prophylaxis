@@ -99,6 +99,29 @@ function isBackRankMate(pos: Position, line: string[]): boolean {
 
 const name = (pos: Position, sq: Square) => pos.board.get(sq)?.role ?? "piece";
 
+function takesPawn(pos: Position, move: NormalMove): boolean {
+  const victim = pos.board.get(move.to);
+  const enPassant = pos.board.get(move.from)?.role === "pawn" && move.to === pos.epSquare;
+  return enPassant || (!!victim && victim.color !== pos.turn && victim.role === "pawn");
+}
+
+/**
+ * In the first moves of the opponent's best reply, the capture that wins one of your pawns: you are a pawn down after
+ * it and still after your answer (a trade, where you take back, doesn't count). Its SAN, or null.
+ */
+function pawnTaken(after: Position, reply: string[], me: Color, start: number, within = 3): string | null {
+  const p = after.clone();
+  for (let i = 0; i < Math.min(within, reply.length); i++) {
+    const m = toMove(p, reply[i]);
+    if (!m || !p.isLegal(m)) return null;
+    const takes = p.turn !== me && takesPawn(p, m);
+    const san = makeSan(p, m);
+    p.play(m);
+    if (takes && material(play(p, reply.slice(i + 1), 1), me) - start === -1) return san;
+  }
+  return null;
+}
+
 export function detect(
   before: Position,
   move: CMove,
@@ -137,6 +160,9 @@ export function detect(
         if (targets.length) tags.push(["allowed_fork", { by: name(p, reply.to), targets: targets.map((t) => name(p, t)) }]);
         else tags.push(["lost_material", { amount: -gainPlayed }]);
       }
+    } else if (gainPlayed === -1 && gainBest >= 0) {
+      const by = pawnTaken(after, replyPv, me, start);
+      if (by) tags.push(["lost_pawn", { move: by }]);
     }
   }
 
@@ -162,6 +188,8 @@ export function detect(
         if (targets.length) tags.push(["missed_fork", { by: name(p, best.to), targets: targets.map((t) => name(p, t)) }]);
         else tags.push(["missed_tactic", { amount: gainBest - gainPlayed }]);
       }
+    } else if (gainBest === 1 && gainPlayed <= 0 && takesPawn(before, best)) {
+      tags.push(["missed_pawn", { move: makeSan(before, best) }]);
     }
   }
 

@@ -24,6 +24,8 @@ const AGAINST: Record<string, { title: string; how: string }> = {
   allowed_skewer: { title: "Line up their big pieces", how: "When their king or queen sits on a line with another piece behind, attack along it." },
   allowed_discovered_attack: { title: "Set up discovered attacks", how: "Put a piece in front of your bishop, rook or queen, then move it with a threat." },
   trapped_piece: { title: "Trap their wandering pieces", how: "Pieces that go deep into your side often have no way back: take away their squares." },
+  lost_pawn: { title: "Pick up their loose pawns", how: "They often leave pawns undefended: count attackers and defenders on them." },
+  missed_pawn: { title: "They miss chances", how: "Play actively: they often don't punish a slip. Still check your pieces are safe." },
   ignored_threat: { title: "Make threats", how: "They often don't see what you're threatening: a direct threat can win material." },
   allowed_mate: { title: "Keep looking for mate", how: "Check every check: they miss mating threats against their own king." },
   back_rank_mate: { title: "Aim at their back rank", how: "If their king is stuck behind its pawns, a rook or queen on the back row can mate." },

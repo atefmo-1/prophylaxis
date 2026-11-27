@@ -38,6 +38,10 @@ export function tagSentence(tag: MoveTag, move: Move): string | null {
       const what = Number(d.amount) === 1 ? "a pawn" : `about ${str(d.amount)} points of material`;
       return `Your opponent already threatened ${move}, winning ${what}, and your move didn't stop it.`;
     }
+    case "lost_pawn":
+      return `It let your opponent win a pawn with ${str(d.move)}.`;
+    case "missed_pawn":
+      return `${str(d.move)} would have won a pawn.`;
     case "lost_material":
       return `It let your opponent win about ${str(d.amount)} points of material (a pawn is 1, a knight 3).`;
     case "allowed_stalemate":

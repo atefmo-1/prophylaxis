@@ -38,6 +38,12 @@ export const TAG_INFO: Record<string, TagInfo> = {
     "what": "Your opponent already threatened to win material or give mate, and your move didn't stop it.",
     "fix": "Before you move, ask what your opponent would play if it were their turn. Deal with that first."
   },
+  "lost_pawn": {
+    "kind": "allowed",
+    "title": "Dropping pawns",
+    "what": "Your move let your opponent win a pawn.",
+    "fix": "Pawns count too: before you move, check which of your pawns are attacked and whether they are defended."
+  },
   "allowed_stalemate": {
     "kind": "allowed",
     "title": "Stalemating won games",
@@ -61,6 +67,12 @@ export const TAG_INFO: Record<string, TagInfo> = {
     "title": "Missing checkmates",
     "what": "You had a forced checkmate and played something else.",
     "fix": "Look at every check you have before considering any other move."
+  },
+  "missed_pawn": {
+    "kind": "missed",
+    "title": "Missing free pawns",
+    "what": "You could win a pawn and played something else.",
+    "fix": "Start every move by asking what you can capture, pawns included, and whether it is defended."
   },
   "missed_tactic": {
     "kind": "missed",

@@ -20,7 +20,7 @@ export const RETRY_NODES = 400_000;
 const BAD: MoveClass[] = ["mistake", "miss", "blunder"];
 const ALLOWED = new Set([
   "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate",
-  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece", "ignored_threat",
+  "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece", "ignored_threat", "lost_pawn",
 ]);
 const DRAWS = new Set(["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
 const RETRY_TOLERANCE = 3;
@@ -233,6 +233,8 @@ export async function buildReview(
       if (tactics) found = await refineTags(tactics, found, before, uci, lb, la).catch(() => found);
       const threat = ignoredThreat(before, move, la, threats.get(ply), loss);
       if (threat) {
+        // The threat sentence already says what it wins: don't name the same pawn twice.
+        found = found.filter(([t, d]) => !(t === "lost_pawn" && d.move === threat[1].move));
         const clock = found.findIndex(([t]) => t === "time_pressure" || t === "rushed");
         found.splice(clock < 0 ? found.length : clock, 0, threat);
       }

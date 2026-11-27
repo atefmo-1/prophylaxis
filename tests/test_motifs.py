@@ -179,3 +179,32 @@ def test_no_threat_test_from_check_or_for_small_losses():
     assert threat_for(in_check, "e1e2", line(["e4f3"], cp=-300), ["e4f3"]) is None
     small = threat_for("4k3/8/8/8/4p3/5N2/7P/4K3 w - - 0 1", "h2h3", line(["e4f3"], cp=-300), ["e4f3"], win_loss=5)
     assert small is None
+
+
+def test_lost_pawn():
+    # h3 leaves the e4 pawn to the f6 knight.
+    tags = tags_for(
+        "4k3/8/5n2/8/4P3/8/7P/4K3 w - - 0 1", "h2h3",
+        before=[line(["e4e5", "f6d5"], cp=0)],
+        after=[line(["f6e4", "e1e2"], cp=-200)],
+    )
+    assert tags["lost_pawn"] == {"move": "Nxe4"}
+
+
+def test_lost_pawn_names_the_capture_that_wins_it_not_a_trade():
+    # c3 is answered by dxc3+ Kxc3, an even trade; the pawn that is lost is f2, to Bxf2.
+    tags = tags_for(
+        "6k1/8/8/8/3p3b/8/1KP2P2/8 w - - 0 1", "c2c3",
+        before=[line(["f2f3", "g8f7"], cp=0)],
+        after=[line(["d4c3", "b2c3", "h4f2"], cp=-200)],
+    )
+    assert tags["lost_pawn"] == {"move": "Bxf2"}
+
+
+def test_missed_pawn():
+    tags = tags_for(
+        "4k3/8/8/4p3/8/5N2/8/4K3 w - - 0 1", "e1d2",
+        before=[line(["f3e5", "e8e7"], cp=150)],
+        after=[line(["e8d7"], cp=0)],
+    )
+    assert tags["missed_pawn"] == {"move": "Nxe5"}

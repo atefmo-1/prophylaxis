@@ -26,8 +26,8 @@ const tidyOpening = (name: string) => name.replace("Caro Kann", "Caro-Kann");
 /** Bump when grading or tagging changes: every browser then reviews its player's games again (2: tactic classifier; 3: Brilliant and Book;
  * 4: only-move recaptures count as Great, as on chess.com; 5: Excellent also means under 0.3 pawns given up;
  * 6: short engine lines are carried on, so a reason two moves past where Stockfish stopped is found;
- * 7: threats your opponent already had before your move). */
-export const ANALYSIS_VERSION = 7;
+ * 7: threats your opponent already had before your move; 8: pawns won and missed). */
+export const ANALYSIS_VERSION = 8;
 const MISTAKES: MoveClass[] = ["mistake", "miss", "blunder"];
 const CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const HABIT_WINDOW = 10;
