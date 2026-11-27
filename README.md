@@ -57,7 +57,7 @@ Your name in the top bar opens a menu to switch to another player, open your che
 
 It reviews each game the moment it ends, beside the board on chess.com.
 
-1. **Install it.** Build it with `npm --prefix web install && npm --prefix web run build:extension`, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick `web/dist-extension`. Pin it to the toolbar.
+1. **Install it.** Download `prophylaxis-extension-0.1.0.zip` from the [latest release](https://github.com/atefmo-1/prophylaxis/releases/latest) and unzip it. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder. Pin it to the toolbar. (Or build it yourself: `npm --prefix web install && npm --prefix web run build:extension`, then load `web/dist-extension`.)
 2. **Set it up.** Click the toolbar icon to open the side panel. The first time, it asks for your chess.com username (and suggests the one you use on the site, if you've opened it).
 3. **Play.** When a game ends, the side panel opens and replays the game while Stockfish reads it (about 20 to 30 seconds), then shows the review. If Chrome doesn't open it by itself, click anywhere on the chess.com page. Keep the panel open and it follows every game you finish.
 4. **The site and the extension share.** Games the extension reviewed appear on the site straight away, without being analysed again, and the site tells the extension your habits, so a review in the panel says which habit a mistake belongs to. If you open the site with the extension installed, it offers to continue as the extension's player.
