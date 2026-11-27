@@ -11,6 +11,7 @@ import { useLibraryStatus } from "./Library";
 import { reviewGame } from "./reviewer";
 import { remember } from "./compared";
 import { loadGames, saveGame } from "./store";
+import { countEvent } from "../lib/analytics";
 
 /** Games compared on each side: enough for the ranges to separate real differences, about 2–3 minutes on a laptop. */
 export const COMPARE_GAMES = 30;
@@ -94,6 +95,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       const who = rival ? SAMPLE_RIVAL : await findPlayer(name);
       if (!live()) return;
       setPlayer(who);
+      countEvent(rival ? "sample/compare-started" : "compare-started");
       if (!rival && owner) remember(owner, who);
       const shipped = rival ? await rivalReviews() : [];
       const have = [...shipped, ...(await loadGames(who.toLowerCase()).catch(() => [] as StoredGame[]))];

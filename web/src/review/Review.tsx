@@ -9,6 +9,8 @@ import { Roll } from "../components/Roll";
 import { useGame, useGames } from "../data";
 import { useLibrary } from "../library/Library";
 import { keyMoments, read } from "../lib/coach";
+import { Vote } from "../components/Vote";
+import { countEvent } from "../lib/analytics";
 import { chancesAround, explain, findableLine, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, timeControl } from "../lib/format";
 import { gradeOf, recordAttempt } from "../lib/practice";
@@ -233,6 +235,7 @@ export function ReviewView({
     if (momentPly === null) return;
     setAttempts((a) => ({ ...a, [momentPly]: { ...a[momentPly], status, tries: a[momentPly]?.tries ?? [], last: uci } }));
     recordAttempt(g.id, momentPly, gradeOf(status === "found", !attempt.tries.length && !attempt.hinted));
+    countEvent(status === "found" ? "key-moment-found" : "key-moment-shown");
   };
 
   const onRetryMove = (orig: string, dest: string) => {
@@ -536,6 +539,7 @@ function MomentCard({
             )
           )}
           <HabitLine review={review} tags={m.tags} />
+          <Vote id={`${g.id}-${m.ply}`} kind={tag?.tag ?? "no_reason"} />
           <div className="coach-actions">
             {m.reply_line[0] && (
               <button type="button" className="btn" aria-pressed={threat} onClick={onThreat}>
@@ -580,6 +584,7 @@ function MoveNote({ review, index }: { review: ReviewData; index: number }) {
             <p key={l}>{l}</p>
           ))}
           {m.mine && BAD.includes(m.class) && <HabitLine review={review} tags={m.tags} />}
+          {m.mine && BAD.includes(m.class) && <Vote id={`${review.game.id}-${m.ply}`} kind={mainTag(m.tags)?.tag ?? "no_reason"} />}
         </>
       )}
       {index === review.moves.length - 1 && <p className="coach-end">Game over: {review.game.ending === "Resigned" ? "lost by resignation" : review.game.ending.charAt(0).toLowerCase() + review.game.ending.slice(1)}.</p>}

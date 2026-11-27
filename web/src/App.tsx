@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HoldButton } from "./components/HoldButton";
 import { Mark } from "./components/Mark";
 import { ComparePill, pausedLabel, ProgressPill } from "./components/Progress";
 import { useOverview } from "./data";
+import { canChooseCounting, countPage, counting, setCounting } from "./lib/analytics";
 import { REPO, timeLeft } from "./lib/format";
 import { usePill } from "./lib/motion";
 import { useTheme, type ThemeChoice } from "./lib/theme";
@@ -44,6 +45,25 @@ function ThemeSwitch() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Anonymous usage counts on or off for this browser (lib/analytics.ts). */
+function CountingSwitch() {
+  const [on, setOn] = useState(counting);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setCounting(!on);
+        setOn(!on);
+      }}
+    >
+      {on ? "Stop counting my visits" : "Count my visits again"}
+      <span className="me-note">
+        {on ? "Pages opened and a few actions are counted anonymously: never your username or games." : "Nothing is counted from this browser."}
+      </span>
+    </button>
   );
 }
 
@@ -90,6 +110,11 @@ function PlayerMenu({ player }: { player: string }) {
             Profile on chess.com
           </a>
         )}
+        <a href={`${REPO}/issues/new`} target="_blank" rel="noreferrer" onClick={close}>
+          Send feedback
+          <span className="me-note">An idea, a wrong explanation, a bug: on GitHub.</span>
+        </a>
+        {canChooseCounting() && <CountingSwitch />}
         <a href={`${REPO}#licence`} target="_blank" rel="noreferrer" onClick={close}>
           Source code and licences
           <span className="me-note">Free software: GPL-3.0, with Maia-3 (CSSLab) under AGPL-3.0.</span>
@@ -168,13 +193,22 @@ export function App() {
   );
 }
 
+// The page names counted (lib/analytics.ts): which page, never which game or player.
+const PAGE_NAMES: Record<Route["name"], string> = {
+  latest: "review", game: "review", patterns: "habits", games: "games", practice: "practice", puzzles: "puzzles",
+  openings: "openings", compare: "compare",
+};
+
 function Shell() {
   const route = useRoute();
-  const { player } = useLibrary();
+  const { player, isSample } = useLibrary();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [route.name, route.name === "game" ? route.id : null]);
+
+  const page = !player ? "/start" : `${isSample ? "/sample" : ""}/${PAGE_NAMES[route.name]}`;
+  useEffect(() => countPage(page), [page]);
 
   return (
     <div className="shell">

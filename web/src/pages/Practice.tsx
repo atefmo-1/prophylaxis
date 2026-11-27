@@ -5,6 +5,7 @@ import { ClassIcon } from "../components/ClassIcon";
 import { IconNext } from "../components/Icons";
 import { NotEnough } from "../components/Progress";
 import { useOverview, usePractice } from "../data";
+import { countEvent } from "../lib/analytics";
 import { findableLine, HARD, tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
 import { gradeOf, loadPractice, recordAttempt } from "../lib/practice";
@@ -180,6 +181,7 @@ function Session({
     else setAttempt((a) => ({ ...a, tries: [...a.tries, uci] }));
   };
   const next = () => {
+    if (step + 1 === session.length) countEvent("practice-session-done");
     setStep((s) => s + 1);
     setAttempt(fresh);
   };

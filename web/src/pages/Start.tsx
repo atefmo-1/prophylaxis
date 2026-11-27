@@ -48,8 +48,8 @@ export function Start() {
         <div className="start-copy">
           <h1>Find the move that lost the game. Then the habit behind it.</h1>
           <p className="start-lede">
-            Prophylaxis reviews your chess.com games with Stockfish, right here in your browser. Free, with no account
-            and nothing uploaded.
+            Prophylaxis reviews your chess.com games with Stockfish, right here in your browser. Free, with no account,
+            and your games never leave your browser.
           </p>
           {known && (
             <div className="start-known">

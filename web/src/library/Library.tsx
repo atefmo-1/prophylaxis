@@ -12,6 +12,7 @@ import { getDevice, inView, pliesOf, type Device } from "./device";
 import { forgetCompared } from "./compared";
 import { getHuman, getTactics, reviewGame, withHuman } from "./reviewer";
 import { forget, loadGames, saveGame } from "./store";
+import { countEvent } from "../lib/analytics";
 
 const PLAYER_KEY = "prophylaxis.player";
 /**
@@ -252,6 +253,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     // What's left: the rest of this game, then every game after it.
     const etaFrom = (i: number, percent: number) =>
       dev.estimate(plies[i]) * (1 - percent / 100) + plies.slice(i + 1).reduce((a, p) => a + dev.estimate(p), 0);
+    // A player's very first review, counted once (lib/analytics.ts; no name is sent).
+    let first = who !== SAMPLE && !have.some((s) => s.version === ANALYSIS_VERSION);
     for (let i = 0; i < todo.length && live(); i++) {
       const game = todo[i];
       const color: Color = game.white.username.toLowerCase() === who.toLowerCase() ? "white" : "black";
@@ -281,6 +284,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         if (!live()) return;
         await saveGame(who.toLowerCase(), entry);
         setStored((s) => [...s.filter((x) => x.review.game.id !== entry.review.game.id), entry]);
+        if (first) {
+          countEvent("first-review-done");
+          first = false;
+        }
       } catch {
         // A game the analysis can't read (a broken PGN, a variant that slipped through) is skipped; so is one
         // stopped because the player changed.
@@ -384,6 +391,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     const name = await findPlayer(username);
     writePlayer(name);
     setPlayer(name);
+    countEvent("player-entered");
   }, []);
 
   // Another budget's worth of older games, once the current ones are done.
@@ -398,6 +406,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const startSample = useCallback(() => {
     writePlayer(SAMPLE);
     setPlayer(SAMPLE);
+    countEvent("sample-opened");
   }, []);
 
   const leave = useCallback(() => {
