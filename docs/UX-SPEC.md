@@ -127,7 +127,7 @@ Every number links to the games and positions behind it. chess.com Insights does
 ## 5. Practice (new)
 
 - A queue of your own mistake positions: retries you failed, plus positions from your top habits.
-- The same retry interaction as the review (§3.2). Spaced repetition: a miss comes back tomorrow, a hit in 3 days, then a week ([Noctie](https://noctie.ai/) shows this deck model works).
+- The same retry interaction as the review (§3.2). Spaced repetition with FSRS-5 (src/lib/fsrs.ts): found first time, found with tries or a hint, and missed are three grades; a position comes back when recall is expected to fall to 90%. A miss comes back tomorrow, a first-time find after 3 days and then longer ([Noctie](https://noctie.ai/) shows this deck model works).
 - **One session-sized goal:** *"Today: 5 positions, about 4 minutes."* No library.
 - Progress is stored in the browser, so it works on a static site.
 

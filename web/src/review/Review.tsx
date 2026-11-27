@@ -11,7 +11,7 @@ import { useLibrary } from "../library/Library";
 import { keyMoments, read } from "../lib/coach";
 import { chancesAround, explain, tagSentence } from "../lib/explain";
 import { CLASS_META, dayTime, moveLabel, timeControl } from "../lib/format";
-import { recordAttempt } from "../lib/practice";
+import { gradeOf, recordAttempt } from "../lib/practice";
 import { dragToUci, isCheck, legalDests, pieceAt, playUci, sanOf, uciOfSan } from "../lib/rules";
 import { tacticArrows } from "../lib/shapes";
 import { href, replacePly } from "../router";
@@ -24,7 +24,7 @@ const BAD: MoveClass[] = ["inaccuracy", "mistake", "miss", "blunder"];
 const SUMMARY_CLASSES: MoveClass[] = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 
 type Mode = { kind: "summary" } | { kind: "moments"; step: number } | { kind: "moves" } | { kind: "done" };
-type Attempt = { status: "trying" | "found" | "shown" | "skipped"; tries: string[]; last: string | null };
+type Attempt = { status: "trying" | "found" | "shown" | "skipped"; tries: string[]; last: string | null; hinted?: boolean };
 
 /** The tag that best explains a move: what it allowed beats what it missed beats the clock. */
 function mainTag(tags: MoveTag[]): MoveTag | undefined {
@@ -231,8 +231,8 @@ export function ReviewView({
 
   const finishMoment = (status: Attempt["status"], uci: string | null) => {
     if (momentPly === null) return;
-    setAttempts((a) => ({ ...a, [momentPly]: { status, tries: a[momentPly]?.tries ?? [], last: uci } }));
-    recordAttempt(g.id, momentPly, status === "found");
+    setAttempts((a) => ({ ...a, [momentPly]: { ...a[momentPly], status, tries: a[momentPly]?.tries ?? [], last: uci } }));
+    recordAttempt(g.id, momentPly, gradeOf(status === "found", !attempt.tries.length && !attempt.hinted));
   };
 
   const onRetryMove = (orig: string, dest: string) => {
@@ -241,7 +241,7 @@ export function ReviewView({
     if (moment.retry.accept.includes(uci)) {
       finishMoment("found", uci);
     } else {
-      setAttempts((a) => ({ ...a, [momentPly!]: { status: "trying", tries: [...(a[momentPly!]?.tries ?? []), uci], last: uci } }));
+      setAttempts((a) => ({ ...a, [momentPly!]: { ...a[momentPly!], status: "trying", tries: [...(a[momentPly!]?.tries ?? []), uci], last: uci } }));
     }
   };
 
@@ -358,7 +358,7 @@ export function ReviewView({
                 attempt={attempt}
                 beforeFen={beforeFen}
                 threat={threat}
-                onHint={() => setAttempts((a) => ({ ...a, [momentPly!]: { ...attempt, last: "hint" } }))}
+                onHint={() => setAttempts((a) => ({ ...a, [momentPly!]: { ...attempt, last: "hint", hinted: true } }))}
                 onShow={() => finishMoment("shown", moment.best_uci)}
                 onSkip={() => {
                   finishMoment("skipped", null);

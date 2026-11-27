@@ -284,7 +284,7 @@ A player's own games are the **test** data. Training data comes from Lichess's o
 
 - Source: your own `mistake`/`blunder` moves where the best move is clear (a big gap between MultiPV 1 and 2), ranked by the weakness ranking.
 - Format: "find the best move" from your real position, in a board UI. On a wrong answer, show the grounded explanation.
-- Scheduling: SM-2 spaced repetition (the `drills` table). Positions you miss come back sooner.
+- Scheduling: FSRS-5 spaced repetition (web/src/lib/fsrs.ts, checked against ts-fsrs). Positions you miss come back sooner.
 - Also mix in Lichess puzzles with the same motif for variety.
 - **Closes the loop:** drill accuracy per motif is shown next to in-game blunder rate per motif, to answer "is training actually transferring?"
 

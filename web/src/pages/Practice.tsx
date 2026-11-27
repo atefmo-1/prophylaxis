@@ -7,7 +7,7 @@ import { NotEnough } from "../components/Progress";
 import { useOverview, usePractice } from "../data";
 import { tagSentence } from "../lib/explain";
 import { CLASS_META, day, moveLabel } from "../lib/format";
-import { loadPractice, recordAttempt } from "../lib/practice";
+import { gradeOf, loadPractice, recordAttempt } from "../lib/practice";
 import { hasPuzzles } from "../lib/puzzles";
 import { tacticArrows } from "../lib/shapes";
 import { dragToUci, legalDests, pieceAt, sanOf } from "../lib/rules";
@@ -21,12 +21,15 @@ import { LoadError } from "../components/LoadError";
 const SESSION = 5;
 const DAY = 24 * 60 * 60 * 1000;
 
-/** When a position comes back, from its schedule: "back tomorrow", "back in 3 days", "back in a week". */
+/** When a position comes back, from its schedule: "back tomorrow", "back in 4 days", "back in about 2 months". */
 function backIn(game: string, ply: number): string {
   const item = loadPractice().find((i) => i.game === game && i.ply === ply);
   if (!item) return "";
   const days = Math.max(1, Math.round((item.due - Date.now()) / DAY));
-  return days === 1 ? "back tomorrow" : days === 7 ? "back in a week" : days === 21 ? "back in 3 weeks" : `back in ${days} days`;
+  if (days === 1) return "back tomorrow";
+  if (days === 7) return "back in a week";
+  if (days >= 45) return `back in about ${Math.round(days / 30)} months`;
+  return `back in ${days} days`;
 }
 
 function buildSession(pool: PracticePosition[], tag: string | null, rank: Map<string, number>): PracticePosition[] {
@@ -130,8 +133,8 @@ function Session({
             {found === 0
               ? "These are the positions that cost you games, so missing them at first is normal. Each one comes back tomorrow."
               : found === session.length
-                ? "Every one found. Each comes back later, after a longer gap every time you find it."
-                : "The ones you missed come back tomorrow; the ones you found come back later, after a longer gap every time."}
+                ? "Every one found. Each comes back just before you'd be likely to forget it: later if you found it first time, sooner if it took a few tries."
+                : "The ones you missed come back tomorrow. The ones you found come back just before you'd be likely to forget them: later if you found it first time, sooner if it took a few tries."}
           </p>
         </header>
         <ol className="session-recap">
@@ -167,7 +170,7 @@ function Session({
   const finish = (status: "found" | "shown", uci: string | null) => {
     setAttempt((a) => ({ ...a, status, found: uci }));
     setResults((r) => [...r, status === "found"]);
-    recordAttempt(p.game, p.ply, status === "found");
+    recordAttempt(p.game, p.ply, gradeOf(status === "found", !attempt.tries.length && !attempt.hint));
   };
   const onMove = (orig: string, dest: string) => {
     const uci = dragToUci(p.fen, orig, dest);
@@ -181,7 +184,7 @@ function Session({
   // Skipping counts as a miss, so the position comes back tomorrow.
   const skip = () => {
     setResults((r) => [...r, false]);
-    recordAttempt(p.game, p.ply, false);
+    recordAttempt(p.game, p.ply, gradeOf(false, false));
     next();
   };
 
