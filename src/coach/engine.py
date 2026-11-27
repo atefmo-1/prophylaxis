@@ -48,7 +48,33 @@ def _analyse(epd: str, nodes: int, opened: list, lock: threading.Lock) -> tuple[
             continue
         score = info["score"].white()
         lines.append({"cp": score.score(), "mate": score.mate(), "pv": [m.uci() for m in info["pv"]]})
+    if lines:
+        lines[0]["pv"] = _extend(board, lines[0]["pv"], nodes, opened, lock)
     return epd, lines
+
+
+EXTEND_PLIES = 12  # a main line shorter than this is carried on
+EXTEND_ROUNDS = 4
+
+
+def _extend(board: chess.Board, pv: list[str], nodes: int, opened: list, lock: threading.Lock) -> list[str]:
+    """Stockfish cuts a line short when its search ends on a hash hit, and motifs read material off the line, so a
+    two-move line hides the piece that falls on move three. Carry it on from where it stops, keeping the first score.
+    (The site does this only around moves that lose 5%+, the ones that get a reason; here every position is cached.)"""
+    end = board.copy(stack=False)
+    for uci in pv:
+        end.push_uci(uci)
+    out = list(pv)
+    for _ in range(EXTEND_ROUNDS):
+        if len(out) >= EXTEND_PLIES or is_terminal(end):
+            break
+        more = _engine(opened, lock).analyse(end, chess.engine.Limit(nodes=nodes // 4)).get("pv", [])
+        if not more:
+            break
+        for m in more:
+            end.push(m)
+        out += [m.uci() for m in more]
+    return out
 
 
 def engine_name() -> str:

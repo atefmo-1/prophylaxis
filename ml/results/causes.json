@@ -1,0 +1,85 @@
+{
+ "nodes": 300000,
+ "mistake_bar": 10.0,
+ "sample": {
+  "games": 36,
+  "mistakes": 92,
+  "buckets": {
+   "none": 68,
+   "named": 15,
+   "generic": 9
+  },
+  "ignored_threat_all": 15,
+  "rushed_all": 24,
+  "time_pressure_all": 0,
+  "unexplained": {
+   "n": 68,
+   "primary": {
+    "unknown": 19,
+    "pawn": 16,
+    "slip": 16,
+    "threat": 8,
+    "slow_material": 7,
+    "king": 2
+   },
+   "any": {
+    "slip": 24,
+    "pawn": 19,
+    "slow_material": 9,
+    "threat": 8,
+    "king": 3,
+    "endgame": 1
+   },
+   "phase": {
+    "opening": 16,
+    "middlegame": 51,
+    "endgame": 1
+   },
+   "blunders": 14
+  }
+ },
+ "chesscom": {
+  "games": 284,
+  "mistakes": 2967,
+  "buckets": {
+   "none": 1768,
+   "named": 713,
+   "generic": 486
+  },
+  "ignored_threat_all": 455,
+  "rushed_all": 577,
+  "time_pressure_all": 109,
+  "unexplained": {
+   "n": 1768,
+   "primary": {
+    "unknown": 485,
+    "pawn": 409,
+    "slip": 322,
+    "slow_material": 210,
+    "threat": 175,
+    "endgame": 93,
+    "king": 55,
+    "missed_long_mate": 10,
+    "promotion": 5,
+    "mate_attack": 4
+   },
+   "any": {
+    "slip": 584,
+    "pawn": 508,
+    "endgame": 361,
+    "slow_material": 241,
+    "threat": 175,
+    "king": 90,
+    "promotion": 12,
+    "missed_long_mate": 10,
+    "mate_attack": 4
+   },
+   "phase": {
+    "opening": 602,
+    "middlegame": 805,
+    "endgame": 361
+   },
+   "blunders": 716
+  }
+ }
+}

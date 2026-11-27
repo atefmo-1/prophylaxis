@@ -24,6 +24,31 @@ const ALLOWED = new Set([
 ]);
 const DRAWS = new Set(["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
 const RETRY_TOLERANCE = 3;
+export const EXTEND_PLIES = 12; // a main line shorter than this is carried on (see extendLine)
+const EXTEND_NODES = NODES / 4;
+const EXTEND_ROUNDS = 4;
+const EXTEND_MIN_LOSS = 5; // the smallest loss motifs.ts gives a reason for (a missed chance)
+
+/** A line with its moves carried on from where Stockfish stopped, keeping the first search's score. */
+export async function extendLine(engine: Analyser, fen: string, line: Line, lane: number): Promise<Line> {
+  const end = startingPosition(new Map([["FEN", fen]])).unwrap();
+  const pv: string[] = [];
+  const play = (ucis: string[]) => {
+    for (const u of ucis) {
+      const m = toMove(end, u);
+      if (!m || !end.isLegal(m)) return false;
+      end.play(m);
+      pv.push(u);
+    }
+    return true;
+  };
+  if (!play(line.pv)) return line;
+  for (let round = 0; round < EXTEND_ROUNDS && pv.length < EXTEND_PLIES && !terminal(end); round++) {
+    const more = (await engine.analyse(fenOf(end), 1, EXTEND_NODES, lane))[0]?.pv ?? [];
+    if (!more.length || !play(more)) break;
+  }
+  return { ...line, pv };
+}
 
 export interface ChessComGame {
   url: string;
@@ -135,6 +160,23 @@ export async function buildReview(
   );
   const cpWhite = positions.map((p) =>
     terminal(p) ? (p.isCheckmate() ? (p.turn === "white" ? -100_000 : 100_000) : 0) : lineCpWhite(linesAt(p)![0] ?? { cp: 0, mate: null }),
+  );
+
+  // Stockfish cuts a line short when its search ends on a hash hit, and the reasons (motifs.ts) read material off
+  // the line, so a 2-move line hides the piece that falls on move 3. Around every move that loses enough to get a
+  // reason, carry a short main line on from where it stops, on the lane that read the position.
+  const near = new Set<string>();
+  for (let ply = 1; ply <= n; ply++) {
+    const white = positions[ply - 1].turn === "white";
+    if (pov(winWhite[ply - 1], white) - pov(winWhite[ply], white) < EXTEND_MIN_LOSS) continue;
+    for (const p of [positions[ply - 1], positions[ply]]) if (!terminal(p)) near.add(epd(fenOf(p)));
+  }
+  await Promise.all(
+    todo.map(async (fen, i) => {
+      const found = lines.get(epd(fen));
+      if (!near.has(epd(fen)) || !found?.[0] || found[0].pv.length >= EXTEND_PLIES) return;
+      lines.set(epd(fen), [await extendLine(engine, fen, found[0], laneOf(i)), ...found.slice(1)]);
+    }),
   );
 
   // Grade every move
