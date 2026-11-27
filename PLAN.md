@@ -349,22 +349,30 @@ prophylaxis/
 
 Each phase ends with something usable.
 
-**Status (2026-10-24):** phases 0–3, drills (7), the Chrome extension (8) and the ML tactic classifier (5) are built; see README and [ml/REPORT.md](ml/REPORT.md). The classifier (v2: position plus engine line) is also evaluated on 10,324 real blunders from low-rated Lichess games, labelled by Lichess's own tagger, and drives habit-matched practice puzzles; a hand check is optional. Remaining: LLM wording (4) and the coach chat agent (6).
+**Status (2026-11-27):** the product runs entirely in the browser for any chess.com player; the Python pipeline in
+`src/coach/` stays as the reference. Built: ingest and engine (1), rule-based motifs (2), the site (3, as a static
+React app instead of FastAPI), the tactic model (5), drills on an FSRS schedule (7), the Chrome extension (8) and,
+from the stretch list (9), a human-move model: Maia-3 rather than Maia-2. Not built: LLM wording (4) and the coach
+agent (6); templated explanations now give a reason for most mistakes, and an evaluation of them with real players
+comes first. Changes by date: [CHANGELOG.md](CHANGELOG.md).
 
-Earlier status: phases 0–3 are built. Sync, engine analysis, grading, rule-based tactic tags, stats with intervals, static export, and the dashboard (game review, patterns, all games) all work. The dashboard reads exported JSON, so it deploys as a static site. Engine-backed explanations are templated from engine facts; LLM wording (phase 4) is next.
+Measured along the way: accuracy against chess.com's ([ml/results/accuracy.md](ml/results/accuracy.md)), the tactic
+model on real beginner blunders ([ml/REPORT.md](ml/REPORT.md)), Maia's calibration on chess.com beginners
+([ml/results/maia.md](ml/results/maia.md)), why mistakes go unexplained ([reports/](reports/)), and why the site
+doesn't estimate a rating per game ([ml/rating/REPORT.md](ml/rating/REPORT.md)).
 
-| # | Phase | Deliverable | Done when |
-|---|---|---|---|
-| 0 | **Setup** | git, `uv`, Python 3.12, Stockfish, skeleton package, pytest | `coach --help` runs, `stockfish` responds |
-| 1 | **Ingest + engine** | `coach sync`, `coach analyze` | All games in DB, every move has an eval and class; accuracy correlates with chess.com's on the validation games |
-| 2 | **Rule-based motifs + report** | `coach report` | Report lists top weaknesses with counts, intervals, and example positions; motif rules pass unit tests |
-| 3 | **API + dashboard** | FastAPI + React overview, game review, stats | You can click through any game with an eval graph and move classes |
-| 4 | **Grounded explanations** | Explanations in game review | Hallucination check passes on ≥95% of golden-set positions |
-| 5 | **ML: motif classifier** | Trained model + eval report | Beats the rule baseline on your hand-labeled blunders (or the report says clearly why not) |
-| 6 | **Coach agent** | Chat panel | Correctly answers 20 scripted questions about your games |
-| 7 | **Drills** | Spaced-repetition trainer | Daily drill set drawn from your mistakes |
-| 8 | **Chrome extension** | Side panel on finished games | Shows the review on finished games only; does nothing on `/play` |
-| 9 | **Stretch** | Blunder-risk model, Maia-2, scheduled auto-sync | — |
+| # | Phase | Deliverable | Done when | Status |
+|---|---|---|---|---|
+| 0 | **Setup** | git, `uv`, Python 3.12, Stockfish, skeleton package, pytest | `coach --help` runs, `stockfish` responds | Done |
+| 1 | **Ingest + engine** | `coach sync`, `coach analyze` | All games in DB, every move has an eval and class; accuracy correlates with chess.com's on the validation games | Done: r on 218 games, see above |
+| 2 | **Rule-based motifs + report** | `coach report` | Report lists top weaknesses with counts, intervals, and example positions; motif rules pass unit tests | Done |
+| 3 | **API + dashboard** | FastAPI + React overview, game review, stats | You can click through any game with an eval graph and move classes | Done, as a static site |
+| 4 | **Grounded explanations** | Explanations in game review | Hallucination check passes on ≥95% of golden-set positions | Not started |
+| 5 | **ML: motif classifier** | Trained model + eval report | Beats the rule baseline on your hand-labeled blunders (or the report says clearly why not) | Done: beats the rules on real beginner blunders |
+| 6 | **Coach agent** | Chat panel | Correctly answers 20 scripted questions about your games | Not started |
+| 7 | **Drills** | Spaced-repetition trainer | Daily drill set drawn from your mistakes | Done, with FSRS |
+| 8 | **Chrome extension** | Side panel on finished games | Shows the review on finished games only; does nothing on `/play` | Done; not yet on the Chrome Web Store |
+| 9 | **Stretch** | Blunder-risk model, Maia-2, scheduled auto-sync | — | Maia-3 done; blunder risk covered by Maia; auto-sync on each visit and by the extension |
 
 **Suggested order if time is short:** 0 → 1 → 2 gives a useful product. 5 is the ML centerpiece. 3, 4, and 6 make it look like a real app.
 

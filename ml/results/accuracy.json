@@ -1,0 +1,78 @@
+{
+ "nodes": 300000,
+ "overall": {
+  "player_games": 436,
+  "games": 218,
+  "pearson": 0.708,
+  "spearman": 0.749,
+  "mean_difference": 1.53,
+  "mean_absolute_difference": 7.58,
+  "within_5_points": 0.438,
+  "pearson_95": [
+   0.638,
+   0.771
+  ],
+  "spearman_95": [
+   0.687,
+   0.804
+  ]
+ },
+ "by_rating": {
+  "Under 600": {
+   "player_games": 85,
+   "games": 47,
+   "pearson": 0.615,
+   "spearman": 0.593,
+   "mean_difference": 3.26,
+   "mean_absolute_difference": 9.33,
+   "within_5_points": 0.294
+  },
+  "600 to 999": {
+   "player_games": 91,
+   "games": 52,
+   "pearson": 0.745,
+   "spearman": 0.777,
+   "mean_difference": 3.86,
+   "mean_absolute_difference": 7.96,
+   "within_5_points": 0.363
+  },
+  "1000 to 1399": {
+   "player_games": 50,
+   "games": 28,
+   "pearson": 0.469,
+   "spearman": 0.524,
+   "mean_difference": -1.79,
+   "mean_absolute_difference": 8.58,
+   "within_5_points": 0.36
+  },
+  "1400 and up": {
+   "player_games": 210,
+   "games": 107,
+   "pearson": 0.635,
+   "spearman": 0.742,
+   "mean_difference": 0.62,
+   "mean_absolute_difference": 6.47,
+   "within_5_points": 0.548
+  }
+ },
+ "by_time_class": {
+  "blitz": {
+   "player_games": 194,
+   "games": 97,
+   "pearson": 0.718,
+   "spearman": 0.76,
+   "mean_difference": 1.07,
+   "mean_absolute_difference": 7.23,
+   "within_5_points": 0.515
+  },
+  "rapid": {
+   "player_games": 242,
+   "games": 121,
+   "pearson": 0.685,
+   "spearman": 0.717,
+   "mean_difference": 1.9,
+   "mean_absolute_difference": 7.86,
+   "within_5_points": 0.376
+  }
+ }
+}

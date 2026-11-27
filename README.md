@@ -2,7 +2,11 @@
 
 In chess, *prophylaxis* means seeing a problem coming and stopping it before it happens. This does that for your own habits.
 
+[![Checks and deploy](https://github.com/atefmo-1/prophylaxis/actions/workflows/pages.yml/badge.svg)](https://github.com/atefmo-1/prophylaxis/actions/workflows/pages.yml)
+
 **Try it: [atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Enter your chess.com username; nothing to install, no account. Or open [the sample player](https://atefmo-1.github.io/prophylaxis/?demo) straight away.
+
+![A tour of Prophylaxis with the sample player: a game review and its key moment, the #1 habit, the opening tree and a comparison with a rival](docs/media/tour.gif)
 
 A free chess coach for anyone who plays on chess.com. It covers what chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across all your games to rank the habits that cost you the most.
 
@@ -11,10 +15,27 @@ A free chess coach for anyone who plays on chess.com. It covers what chess.com p
 - **Practice:** five positions at a time from your own mistakes, spaced out so the ones you miss come back sooner, plus Lichess puzzles of the tactic behind each tactic habit, at your level.
 - **Openings:** your first ten moves across all your games, merged into one tree, with how each line turned out.
 - **Compare:** you against any chess.com player. Their last 30 rated games in your time control are reviewed in your browser like yours, then shown side by side with yours, with tips for beating them drawn from their numbers (their costliest habits, where and when they go wrong, how they convert, their openings), each with its evidence.
+- **How hard was it, at your rating?** On each mistake, how many players at your rating find the better move, whether your move is a common mistake at your level, and how many players at your opponent's rating would have found the punishing answer. From Maia-3, a model of how people play at each rating, checked against real chess.com games.
 - **Honest numbers:** with a few dozen games, rates are shown with a 90% interval, not as falsely exact percentages, and Compare gives either side the edge only when the gap is clear.
-- **Private:** everything runs in your browser. Your analysis is kept there and never uploaded; there is no server.
+- **Private:** everything runs in your browser. Your games, your username and your analysis stay there; there is no server.
 
 Only finished games are analysed. It never helps during a live game (chess.com Fair Play policy).
+
+## What's been measured
+
+Every number the site shows rests on a test, and so do the things it doesn't show. Each study keeps its data out of the repo and publishes counts only.
+
+| Question | Answer | Details |
+|---|---|---|
+| Does its accuracy agree with chess.com's? | Mostly. Rank correlation 0.75 (95% interval 0.69 to 0.80) and Pearson 0.71 on 436 player-games from 218 random chess.com games; 7.6 points apart on average, with no real bias. An earlier r = 0.85 came from only 17 games. | [ml/results/accuracy.md](ml/results/accuracy.md) |
+| Does the tactic model name tactics the rules can't? | Yes. On 10,324 real blunders from Lichess players rated 1300 or less, labelled by Lichess's own tagger: discovered attacks F1 0.89, skewers 0.83, trapped pieces 0.78, where the rules score 0; forks 0.91 against the rules' 0.81. | [ml/REPORT.md](ml/REPORT.md) |
+| Is "about 3 in 10 players at your rating find this" true? | Yes, within 0.9 percentage points, on 11,230 moves from held-out chess.com games where the players average under 1000. | [ml/results/maia.md](ml/results/maia.md) |
+| Does the browser give the same answers as the reference? | Yes, checked in CI on every push: grading against the Python pipeline, Maia's board encoding (84 of 84 positions identical) and chances against PyTorch, and the practice scheduler against the reference FSRS (0 of 320 intervals differ). | [web/scripts/](web/scripts/) |
+| Why do some mistakes get no reason? | A census of beginner mistakes found the causes; threat, pawn and longer-line checks took the share given a reason from about 35% to about 55%. | [reports/](reports/) |
+| Can one game place a player's rating? | No: on 529 games the best model missed by about 300 points, so the site doesn't estimate one. | [ml/rating/REPORT.md](ml/rating/REPORT.md) |
+| Does the site meet basic accessibility rules? | axe-core finds no WCAG 2.1 A or AA problem on any page, light or dark, desktop or phone; board coordinates are measured separately (4.6:1 or better). | [web/scripts/check-a11y.mjs](web/scripts/check-a11y.mjs) |
+
+**Still to test:** whether players accept the explanations (a "Was this explanation right?" question is built, and asks once anonymous counting is switched on), and a second person's labels for the tactic check, which so far rests on the owner's answers to 46 blunders.
 
 ## How to use it
 
@@ -68,7 +89,7 @@ chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, one
 
 ### The Python pipeline: the reference
 
-`src/coach/` is the original pipeline, kept as the reference and the lab: full Stockfish 19 at 1 million nodes, SQLite, and the same grading, tactic rules and statistics. The browser's grading is checked against it on shared positions (`web/scripts/check-grading.ts`), and its statistics are a port of `stats.py`. Our accuracy also correlates with chess.com's own (r = 0.85 on the 17 games where chess.com computed one, in the pipeline's validation set).
+`src/coach/` is the original pipeline, kept as the reference and the lab: full Stockfish 19 at 1 million nodes, SQLite, and the same grading, tactic rules and statistics. The browser's grading is checked against it on shared positions (`web/scripts/check-grading.ts`), and its statistics are a port of `stats.py`. Its accuracy formula, which the site shares, agrees with chess.com's: rank correlation 0.75 on 436 player-games ([ml/results/accuracy.md](ml/results/accuracy.md)).
 
 ```bash
 uv run coach sync --username <chess.com username>   # download games into data/chess.db
@@ -81,7 +102,7 @@ Needs [uv](https://docs.astral.sh/uv/) and Stockfish on your `PATH` (or `STOCKFI
 
 ### The tactic classifier: `ml/`
 
-A small ResNet (a convolutional network) that names the tactic behind a mistake (fork, pin, skewer, discovered attack, trapped piece, back-rank mate and more) from the position and Stockfish's line. It is built from 4.8 million Lichess puzzles (CC0; 80% for training, the rest held out) and checked on 10,000 real games between Lichess players rated 1300 or less. On held-out puzzles its macro F1 over 15 themes is 0.91, against 0.27 for the hand-written rules, which can name only 5 of them. On real beginner blunders it names discovered attacks (F1 0.89), skewers (0.83) and trapped pieces (0.78), which the rules couldn't name at all. It scored 0.81 on pins too, but a check by a person accepted only about a third of its pins, so the site doesn't name them. The rules still win on mates and still decide whether material was really lost; the model names what they leave generic, and only for themes where it beat them on both puzzles and real games. The name then drives the habit, the arrows on the board and the practice puzzles. It ships quantised to 0.98 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
+A small ResNet (a convolutional network) that names the tactic behind a mistake (fork, pin, skewer, discovered attack, trapped piece, back-rank mate and more) from the position and Stockfish's line. It is built from 4.8 million Lichess puzzles (CC0; 80% for training, the rest held out) and checked on 10,000 real games between Lichess players rated 1300 or less. On held-out puzzles its macro F1 over 15 themes is 0.91, against 0.80 for a gradient-boosted baseline on 84 handcrafted features (the hand-written rules score 0.27, but they only try 5 of the 15 themes). On real beginner blunders it names discovered attacks (F1 0.89), skewers (0.83) and trapped pieces (0.78), which the rules couldn't name at all. It scored 0.81 on pins too, but a check by a person accepted only about a third of its pins, so the site doesn't name them. The rules still win on mates and still decide whether material was really lost; the model names what they leave generic, and only for themes where it beat them on both puzzles and real games. The name then drives the habit, the arrows on the board and the practice puzzles. It ships quantised to 0.98 MB. Data, split, metrics and limits: [ml/REPORT.md](ml/REPORT.md).
 
 ```bash
 cd ml && uv run tactics all   # download, build the splits, train LightGBM and the CNN, export, score
@@ -115,6 +136,7 @@ node web/scripts/check-grading.ts                            # Brilliant and Boo
 node web/scripts/check-maia.ts tests/fixtures/maia.json      # Maia's encoding matches the authors' code; the shipped model matches PyTorch
 node web/scripts/check-review.mjs                            # the review in Chrome with the sample player: summary, key moment, wrong and right tries (dev server running)
 node web/scripts/check-pages.mjs                             # every page at desktop and phone size, plus a practice solve (dev server running)
+node web/scripts/check-a11y.mjs                              # axe-core WCAG 2.1 AA on every page, light and dark, desktop and phone, plus board coordinates (dev server running)
 node web/scripts/check-start.mjs <username>                  # the site end to end in Chrome, for any player
 node web/scripts/check-device.mjs <username> [laptop|phone]   # engines, time budget, time left, pausing, as a laptop or a slow phone
 node web/scripts/check-extension.mjs <username> <gameId>     # the extension's post-game review
