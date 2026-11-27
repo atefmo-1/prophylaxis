@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.4.0  # immutable releases since v8: no moving major tag
       - run: uv sync --group dev
       - run: uv run ruff check src tests
       - run: uv run pytest -q
