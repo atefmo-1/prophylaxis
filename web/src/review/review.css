@@ -75,12 +75,15 @@
 }
 
 .rv .board coords coord {
-  color: var(--sq-dark) !important;
+  color: var(--coord-on-light) !important;
 }
 
 .rv .board coords coord:nth-child(even) {
-  color: var(--sq-light) !important;
+  color: var(--coord-on-dark) !important;
 }
+/* Seen from White, the first coordinate of each row sits on a dark square: swap. */
+.rv .board .orientation-white coords coord:nth-child(odd) { color: var(--coord-on-dark) !important; }
+.rv .board .orientation-white coords coord:nth-child(even) { color: var(--coord-on-light) !important; }
 
 /* File letters sit in the bottom-right corner of their square, as on chess.com (chessground's default overhangs the board). */
 .rv .board coords.files {
@@ -505,6 +508,16 @@
   padding-top: 10px;
   border-top: 1px solid var(--c-line);
   color: var(--c-ink-2);
+}
+
+/* "Was this explanation right?" (components/Vote.tsx) */
+.vote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  color: var(--c-ink-3);
+  font-size: 14px;
 }
 
 .link-btn {

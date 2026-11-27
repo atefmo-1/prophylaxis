@@ -37,8 +37,11 @@
   font-size: 11px;
 }
 
-.otree-board .board coords coord { color: var(--sq-dark) !important; }
-.otree-board .board coords coord:nth-child(even) { color: var(--sq-light) !important; }
+.otree-board .board coords coord { color: var(--coord-on-light) !important; }
+.otree-board .board coords coord:nth-child(even) { color: var(--coord-on-dark) !important; }
+/* Seen from White, the first coordinate of each row sits on a dark square: swap. */
+.otree-board .board .orientation-white coords coord:nth-child(odd) { color: var(--coord-on-dark) !important; }
+.otree-board .board .orientation-white coords coord:nth-child(even) { color: var(--coord-on-light) !important; }
 
 /* File letters in the bottom-right corner of their square, as in the review. */
 .otree-board .board coords.files {

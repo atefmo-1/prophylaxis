@@ -101,8 +101,11 @@
   font-size: 10px;
 }
 
-.focus .board coords coord { color: var(--sq-dark) !important; }
-.focus .board coords coord:nth-child(even) { color: var(--sq-light) !important; }
+.focus .board coords coord { color: var(--coord-on-light) !important; }
+.focus .board coords coord:nth-child(even) { color: var(--coord-on-dark) !important; }
+/* Seen from White, the first coordinate of each row sits on a dark square: swap. */
+.focus .board .orientation-white coords coord:nth-child(odd) { color: var(--coord-on-dark) !important; }
+.focus .board .orientation-white coords coord:nth-child(even) { color: var(--coord-on-light) !important; }
 
 .focus .board coords.files {
   left: 0;

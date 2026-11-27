@@ -21,6 +21,9 @@
   --c-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --sq-light: #f0d9b5;
   --sq-dark: #b58863;
+  /* Board coordinates, each readable on its own square (WCAG AA, 4.5:1 at 11px): 6.2:1 and 4.6:1. */
+  --coord-on-light: #6b4423;
+  --coord-on-dark: #3a2410;
   --c-line-strong: #3a4352;
   --c-panel-edge: rgb(255 255 255 / 0.07);
   --c-current-ink: #ffffff;
