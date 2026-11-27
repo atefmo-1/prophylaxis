@@ -61,8 +61,48 @@
 
 .start-form label {
   display: block;
-  margin-bottom: 8px;
   font-weight: 600;
+}
+
+.start-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  max-width: 520px;
+  margin-bottom: 8px;
+}
+
+/* Which site the username is on: two choices, the chosen one filled. */
+.site-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-line-strong);
+}
+
+.site-switch button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--c-ink-2);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.site-switch button[aria-pressed="true"] {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+.site-switch button:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
 }
 
 .start-row {

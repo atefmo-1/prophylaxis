@@ -1,4 +1,5 @@
 // The game review: board first, coach panel beside it. Opens on a summary, then key moments as retry puzzles.
+import { gameSite, nameOf } from "../lib/player";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Board, type Arrow, type Movable } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
@@ -155,7 +156,7 @@ export function Review({ id, ply }: { id: string | null; ply: number | null }) {
   const position = list.findIndex((g) => g.id === review.data.game.id);
   const newer = position > 0 ? list[position - 1].id : null;
   const older = position >= 0 && position < list.length - 1 ? list[position + 1].id : null;
-  return <ReviewView key={review.data.game.id} review={review.data} player={player ?? "You"} initialPly={ply} newer={newer} older={older} />;
+  return <ReviewView key={review.data.game.id} review={review.data} player={player ? nameOf(player) : "You"} initialPly={ply} newer={newer} older={older} />;
 }
 
 /** The review for one game's data. Also used by the Chrome extension's side panel. */
@@ -419,9 +420,9 @@ export function ReviewView({
             </div>
             <p className="panel-games">
               {newer ? <a href={href({ name: "game", id: newer, ply: null })}>Newer game</a> : <span />}
-              {g.url.startsWith("https://www.chess.com/") ? (
+              {gameSite(g.url) ? (
                 <a href={g.url} target="_blank" rel="noreferrer">
-                  Open on chess.com
+                  Open on {gameSite(g.url)}
                 </a>
               ) : (
                 <span />

@@ -13,6 +13,8 @@ export interface MonthRecord {
   fetched: number;
   /** Fetched after the month ended, so it can't change any more (older records lack it and are fetched once more). */
   complete?: boolean;
+  /** Lichess only: the most games ever asked for, so a later request for more fetches them all again. */
+  asked?: number;
 }
 
 let opening: Promise<IDBDatabase> | null = null;

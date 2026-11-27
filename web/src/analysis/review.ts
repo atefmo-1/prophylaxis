@@ -14,6 +14,7 @@ import { bookPlies, type OpeningBook } from "./book";
 import { BOOK_MAX_LOSS, classify, gameAccuracy, isBrilliant, lineCpWhite, lineWinWhite, moveAccuracy, phase, pov, type Line } from "./grading";
 import { ALLOWED_MIN_LOSS, detect, ignoredThreat, passed, toMove } from "./motifs";
 import { refineTags, type TacticModel } from "./tactics";
+import { isPlayer } from "../lib/player";
 
 export const NODES = 400_000;
 export const RETRY_NODES = 400_000;
@@ -22,7 +23,7 @@ const ALLOWED = new Set([
   "hanging_piece", "allowed_fork", "allowed_mate", "back_rank_mate", "lost_material", "allowed_stalemate",
   "allowed_discovered_attack", "allowed_pin", "allowed_skewer", "trapped_piece", "ignored_threat", "lost_pawn",
 ]);
-const DRAWS = new Set(["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
+const DRAWS = new Set(["drawn", "agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]);
 const RETRY_TOLERANCE = 3;
 export const EXTEND_PLIES = 12; // a main line shorter than this is carried on (see extendLine)
 const EXTEND_NODES = NODES / 4;
@@ -98,7 +99,7 @@ export function openingParts(ecoUrl: string | undefined): { name: string; family
 
 /** What the statistics need about a game beyond its review. */
 export function gameFacts(game: ChessComGame, username: string): GameFacts {
-  const mine = game.white.username.toLowerCase() === username.toLowerCase() ? game.white : game.black;
+  const mine = isPlayer(game.white.username, username) ? game.white : game.black;
   const theirs = mine === game.white ? game.black : game.white;
   const eco = game.eco ?? parsePgn(game.pgn)[0]?.headers.get("ECOUrl");
   return { time_class: game.time_class ?? "rapid", family: openingParts(eco).family, my_code: mine.result, opp_code: theirs.result, end_time: game.end_time };
@@ -114,7 +115,7 @@ export async function buildReview(
 ): Promise<GameReview> {
   const parsed = parsePgn(game.pgn)[0];
   if (!parsed) throw new Error("Couldn't read this game's moves.");
-  const myColor: Color = game.white.username.toLowerCase() === username.toLowerCase() ? "white" : "black";
+  const myColor: Color = isPlayer(game.white.username, username) ? "white" : "black";
   const me = game[myColor];
   const opp = game[myColor === "white" ? "black" : "white"];
 

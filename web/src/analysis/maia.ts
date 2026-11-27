@@ -96,6 +96,9 @@ export function legalChances(logits: Float32Array, offset: number, fen: string):
   return new Map(ucis.map((u, i) => [u, e[i] / sum]));
 }
 
+/** Lichess ratings as they are, not below the lowest rating the chess.com map gives. */
+const LICHESS_MAP: [number, number][] = [[700, 700]];
+
 /** A chess.com rating on Maia's scale, from the map fitted on chess.com beginners (ml/results/maia.md): linear
  *  between its points, flat below the first, and the last point's offset above it. */
 export function maiaRating(rating: number, map: [number, number][]): number {
@@ -216,8 +219,11 @@ const r3 = (x: number) => Math.round(x * 1000) / 1000;
  */
 export async function annotateReview(model: HumanModel, review: GameReview): Promise<GameReview> {
   const fens = [review.start_fen, ...review.moves.map((m) => m.fen)];
-  const self = maiaRating(review.game.rating, model.map);
-  const oppo = maiaRating(review.game.opp_rating, model.map);
+  // Maia learned from Lichess games, so a Lichess rating is already on its scale (from the map's lowest point up).
+  // (No lib/player import: scripts/check-maia.ts loads this file in Node, which needs explicit file extensions.)
+  const map = review.game.url.startsWith("https://lichess.org/") ? LICHESS_MAP : model.map;
+  const self = maiaRating(review.game.rating, map);
+  const oppo = maiaRating(review.game.opp_rating, map);
   const history = (i: number) => fens.slice(Math.max(0, i - HISTORY + 1), i + 1);
   const asked = review.moves
     .map((m, i) => ({ m, i, reply: m.reply_line.length ? sanToEngineUci(m.fen, m.reply_line[0]) : undefined }))

@@ -1,4 +1,4 @@
-// The player's library: which chess.com player this browser follows, their analysed games, and the background work
+// The player's library: which chess.com or Lichess player this browser follows, their analysed games, and the background work
 // that finds new games and analyses them with Stockfish, newest first, on as many engines as the device can spare
 // (device.ts). Every page reads from here.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -7,7 +7,8 @@ import { retagReview } from "../analysis/tactics";
 import { ANALYSIS_VERSION, gameList, overview as buildOverview, practicePositions, type StoredGame } from "../analysis/stats";
 import type { Color, GameSummary, Overview, PracticePosition } from "../types";
 import { habitsToExtension, helloExtension, reviewsFromExtension } from "./bridge";
-import { fetchGames, findPlayer, gameId } from "./chesscom";
+import { fetchGames, findPlayer, gameId } from "./games";
+import { isPlayer, siteOf, type Site } from "../lib/player";
 import { getDevice, inView, pliesOf, type Device } from "./device";
 import { forgetCompared } from "./compared";
 import { getHuman, getTactics, reviewGame, withHuman } from "./reviewer";
@@ -17,7 +18,7 @@ import { countEvent } from "../lib/analytics";
 const PLAYER_KEY = "prophylaxis.player";
 /**
  * The sample player: made-up beginner games played by weak engine settings (scripts/make_sample.py), so anyone can
- * look around without a chess.com account. Their reviews ship with the site, already done.
+ * look around without an account. Their reviews ship with the site, already done.
  */
 export const SAMPLE = "sample-player";
 const sampleFile = (name: string) => `${import.meta.env.BASE_URL}sample/${name}`;
@@ -120,7 +121,7 @@ interface LibraryValue {
   paused: Paused;
   pause: () => void;
   resume: () => void;
-  start: (username: string) => Promise<void>;
+  start: (username: string, site: Site) => Promise<void>;
   startSample: () => void;
   leave: () => void;
   forgetPlayer: () => Promise<void>;
@@ -232,7 +233,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         have = have.map((x) => fresh.get(x.review.game.id) ?? x);
       }
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
-      const ready = getDevice(); // a second's speed check the first time, while chess.com answers
+      const ready = getDevice(); // a second's speed check the first time, while the games arrive
       const all = who === SAMPLE ? await sampleGames() : await fetchGames(who, MONTHS, MAX_GAMES);
       dev = device.current = await ready;
       if (paused.current) dev.pool.pause();
@@ -257,7 +258,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     let first = who !== SAMPLE && !have.some((s) => s.version === ANALYSIS_VERSION);
     for (let i = 0; i < todo.length && live(); i++) {
       const game = todo[i];
-      const color: Color = game.white.username.toLowerCase() === who.toLowerCase() ? "white" : "black";
+      const color: Color = isPlayer(game.white.username, who) ? "white" : "black";
       const current: Current = { id: gameId(game), opponent: game[color === "white" ? "black" : "white"].username, color, plies: plies[i], percent: 0, fen: null, wins: [], eta: dev.estimate(plies[i]) };
       const show = () => {
         current.eta = dev.estimate(plies[i]) * (1 - current.percent / 100);
@@ -371,7 +372,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     });
   }, [player, sync, setPaused]);
 
-  // Coming back to the tab after a while: check chess.com for games played since.
+  // Coming back to the tab after a while: look for games played since.
   const storedRef = useRef(stored);
   storedRef.current = stored;
   const statusRef = useRef(status);
@@ -387,8 +388,8 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [player, loaded, sync]);
 
-  const start = useCallback(async (username: string) => {
-    const name = await findPlayer(username);
+  const start = useCallback(async (username: string, site: Site) => {
+    const name = await findPlayer(username, site);
     writePlayer(name);
     setPlayer(name);
     countEvent("player-entered");
@@ -431,15 +432,17 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     return { overview: buildOverview(stored, player ?? "", method), games: gameList(stored), practice: practicePositions(stored) };
   }, [stored, player]);
 
-  // Tell the extension, if it's installed, which player this is and their habits, for its own reviews.
+  // Tell the extension, if it's installed, which player this is and their habits, for its own reviews. It watches
+  // chess.com only, so a Lichess player isn't sent.
+  const watched = !!player && player !== SAMPLE && siteOf(player) === "chesscom";
   useEffect(() => {
-    if (!player || player === SAMPLE) return;
-    helloExtension(player);
-  }, [player]);
+    if (!watched) return;
+    helloExtension(player!);
+  }, [player, watched]);
   useEffect(() => {
-    if (!player || player === SAMPLE || derived.overview.empty || !derived.overview.weaknesses.length) return;
-    habitsToExtension(player, derived.overview.weaknesses);
-  }, [player, derived.overview]);
+    if (!watched || derived.overview.empty || !derived.overview.weaknesses.length) return;
+    habitsToExtension(player!, derived.overview.weaknesses);
+  }, [player, watched, derived.overview]);
 
   const value = useMemo<LibraryValue>(
     () => ({ player, loaded, stored, ...derived, isSample: player === SAMPLE, more, reviewMore, paused: pausedNow, pause, resume, start, startSample, leave, forgetPlayer }),

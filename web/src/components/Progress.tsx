@@ -1,5 +1,6 @@
 // How the background review is going: a compact line in the top bar, and a full view for when there's nothing to
 // show yet (your first game replays on the board as Stockfish reads it).
+import { nameOf, siteName } from "../lib/player";
 import { timeLeft } from "../lib/format";
 import { useCurrentComparison } from "../library/Comparison";
 import { useLibrary, useLibraryStatus } from "../library/Library";
@@ -12,9 +13,9 @@ import "./progress.css";
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function ProgressPill() {
-  const { pause, resume } = useLibrary();
+  const { pause, resume, player } = useLibrary();
   const status = useLibraryStatus();
-  if (status.kind === "checking") return <span className="pill">Checking chess.com for new games…</span>;
+  if (status.kind === "checking") return <span className="pill">Checking {siteName(player ?? "")} for new games…</span>;
   if (status.kind === "error")
     return (
       <span className="pill pill--error" title={status.message}>
@@ -62,14 +63,14 @@ export function FirstReview() {
   if (status.kind !== "analysing" || !status.current)
     return status.kind === "checking" ? (
       <div className="first">
-        <h1>Loading your games from chess.com…</h1>
+        <h1>Loading your games from {siteName(player ?? "")}…</h1>
         <p className="first-line">This takes a few seconds.</p>
       </div>
     ) : (
       <div className="first">
         <h1>No games to review yet</h1>
         <p className="first-line">
-          {player} has no finished standard chess games on chess.com in the last two years. Play one, then come back.
+          {nameOf(player ?? "")} has no finished standard chess games on {siteName(player ?? "")} in the last two years. Play one, then come back.
         </p>
       </div>
     );
@@ -99,7 +100,7 @@ export function FirstReview() {
       </svg>
       <Steps
         steps={[
-          { label: status.total > 1 ? `Loaded ${status.total} games from chess.com` : "Loaded your game from chess.com", done: 1 },
+          { label: status.total > 1 ? `Loaded ${status.total} games from ${siteName(player ?? "")}` : `Loaded your game from ${siteName(player ?? "")}`, done: 1 },
           { label: "Read every position", detail: `Position ${Math.min(wins.length, plies)} of ${plies}`, done: Math.min(c.percent / 85, 1) },
           { label: "Find better moves for your mistakes", done: c.percent < 85 ? 0 : Math.min((c.percent - 85) / 15, 0.99) },
           { label: "Open your review", done: 0 },
@@ -167,7 +168,7 @@ export function NotEnough({ title, when }: { title: string; when: string }) {
 export function ComparePill() {
   const { status, player, target } = useCurrentComparison();
   if (!target || (status.kind !== "reviewing" && status.kind !== "loading")) return null;
-  const name = player ?? target;
+  const name = nameOf(player ?? target);
   return (
     <a className="pill pill--link" href={href({ name: "compare", player: target })}>
       <span aria-live="polite">

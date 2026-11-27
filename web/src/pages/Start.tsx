@@ -1,4 +1,4 @@
-// The first screen: one question, your chess.com username. Everything after it runs in this browser.
+// The first screen: one question, your username on chess.com or Lichess. Everything after it runs in this browser.
 import { useEffect, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
@@ -6,7 +6,8 @@ import { CLASS_META, moveLabel, REPO } from "../lib/format";
 import { sanOf, uciOfSan } from "../lib/rules";
 import type { MoveClass } from "../types";
 import { helloExtension } from "../library/bridge";
-import { PlayerNotFound } from "../library/chesscom";
+import { PlayerNotFound } from "../library/games";
+import { SITE_NAMES, type Site } from "../lib/player";
 import { useLibrary } from "../library/Library";
 import { DEMO } from "./startDemo";
 import "./start.css";
@@ -17,6 +18,7 @@ const cls = (i: number) => DEMO.moves[i].cls as MoveClass;
 export function Start() {
   const { start, startSample } = useLibrary();
   const [name, setName] = useState("");
+  const [site, setSite] = useState<Site>("chesscom");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // The Chrome extension, when installed, already knows the player: offer to continue as them.
@@ -26,20 +28,20 @@ export function Start() {
     helloExtension(null).then((hello) => setKnown(hello?.username ?? null));
   }, []);
 
-  const go = async (username: string) => {
+  const go = async (username: string, on: Site) => {
     setBusy(true);
     setError(null);
     try {
-      await start(username);
+      await start(username, on);
     } catch (err) {
-      setError(err instanceof PlayerNotFound ? err.message : `Couldn't reach chess.com: ${(err as Error).message}`);
+      setError(err instanceof PlayerNotFound ? err.message : `Couldn't reach ${SITE_NAMES[on]}: ${(err as Error).message}`);
       setBusy(false);
     }
   };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (name.trim()) go(name);
+    if (name.trim()) go(name, site);
   };
 
   return (
@@ -48,19 +50,36 @@ export function Start() {
         <div className="start-copy">
           <h1>Find the move that lost the game. Then the habit behind it.</h1>
           <p className="start-lede">
-            Prophylaxis reviews your chess.com games with Stockfish, right here in your browser. Free, with no account,
-            and your games never leave your browser.
+            Prophylaxis reviews your chess.com or Lichess games with Stockfish, right here in your browser. Free, with no
+            account, and your games never leave your browser.
           </p>
           {known && (
             <div className="start-known">
               <p>Your Prophylaxis extension knows you as {known}.</p>
-              <button type="button" className="start-go" disabled={busy} onClick={() => go(known)}>
+              <button type="button" className="start-go" disabled={busy} onClick={() => go(known, "chesscom")}>
                 Continue as {known}
               </button>
             </div>
           )}
           <form className="start-form" onSubmit={submit}>
-            <label htmlFor="username">Your chess.com username</label>
+            <div className="start-label-row">
+              <label htmlFor="username">Your {SITE_NAMES[site]} username</label>
+              <div className="site-switch" role="group" aria-label="Where you play">
+                {(["chesscom", "lichess"] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={site === s}
+                    onClick={() => {
+                      setSite(s);
+                      setError(null);
+                    }}
+                  >
+                    {SITE_NAMES[s]}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="start-row">
               <input
                 id="username"
@@ -69,7 +88,7 @@ export function Start() {
                 autoComplete="username"
                 autoCapitalize="none"
                 spellCheck={false}
-                placeholder="e.g. magnuscarlsen"
+                placeholder={site === "lichess" ? "e.g. DrNykterstein" : "e.g. magnuscarlsen"}
                 aria-invalid={!!error}
                 aria-describedby={error ? "username-error" : undefined}
               />
@@ -125,7 +144,7 @@ export function Start() {
       </section>
 
       <p className="start-note">
-        Your games are already public on chess.com. Your analysis stays in this browser, and you can delete it at any time.
+        Your games are already public on chess.com and Lichess. Your analysis stays in this browser, and you can delete it at any time.
         It reviews finished games only, never one in progress. The optional{" "}
         <a href={`${REPO}#the-chrome-extension-optional`}>Chrome extension</a> opens each review beside the board when a
         game ends. <a href={REPO}>Open source</a>.

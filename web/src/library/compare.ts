@@ -1,11 +1,12 @@
-// Comparing the player with another chess.com player: that player's latest games in the same time control,
+// Comparing the player with another player on the same site: that player's latest games in the same time control,
 // reviewed in this browser exactly like the player's own (and kept under their name, so the next comparison is
 // instant), then the same statistics for both.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NODES, type ChessComGame } from "../analysis/review";
 import { ANALYSIS_VERSION, overview as buildOverview, type StoredGame } from "../analysis/stats";
 import type { Overview } from "../types";
-import { fetchGames, findPlayer, gameId } from "./chesscom";
+import { fetchGames, findPlayer, gameId } from "./games";
+import { nameOf, siteName, siteOf } from "../lib/player";
 import { getDevice, inView, pliesOf } from "./device";
 import { useLibraryStatus } from "./Library";
 import { reviewGame } from "./reviewer";
@@ -91,8 +92,9 @@ export function useComparison(name: string | null, timeClass: string | null, sam
     if (!name || !timeClass) return void setStatus({ kind: "idle" });
     const rival = sample && name.toLowerCase() === SAMPLE_RIVAL;
     (async () => {
-      setStatus({ kind: "loading", step: rival ? "Loading the sample rival…" : "Finding the player on chess.com…" });
-      const who = rival ? SAMPLE_RIVAL : await findPlayer(name);
+      setStatus({ kind: "loading", step: rival ? "Loading the sample rival…" : `Finding the player on ${siteName(owner ?? "")}…` });
+      // The other player is looked for on the player's own site.
+      const who = rival ? SAMPLE_RIVAL : await findPlayer(name, siteOf(owner ?? ""));
       if (!live()) return;
       setPlayer(who);
       countEvent(rival ? "sample/compare-started" : "compare-started");
@@ -101,7 +103,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       const have = [...shipped, ...(await loadGames(who.toLowerCase()).catch(() => [] as StoredGame[]))];
       if (!live()) return;
       setStored(have);
-      setStatus({ kind: "loading", step: `Loading ${who}'s games…` });
+      setStatus({ kind: "loading", step: `Loading ${nameOf(who)}'s games…` });
       const games = (rival ? await rivalGames() : await fetchGames(who, MONTHS, 300))
         .filter((g) => g.time_class === timeClass && (g as ChessComGame & { rated?: boolean }).rated !== false)
         .slice(0, COMPARE_GAMES);
@@ -109,7 +111,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
       const done = new Set(have.filter((s) => s.version === ANALYSIS_VERSION).map((s) => s.review.game.id));
       setChosen(games.map(gameId));
       setTodo(games.filter((g) => !done.has(gameId(g))));
-      if (!games.length) setStatus({ kind: "error", message: `${who} has no rated ${timeClass} games in the last year.` });
+      if (!games.length) setStatus({ kind: "error", message: `${nameOf(who)} has no rated ${timeClass} games in the last year.` });
     })().catch((e: Error) => live() && setStatus({ kind: "error", message: e.message }));
   }, [name, timeClass, sample, owner]);
 

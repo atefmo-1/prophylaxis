@@ -1,5 +1,7 @@
 // Puzzles for a habit: five Lichess puzzles of the tactic behind it, at the player's level. The opponent's move
 // plays first, as on Lichess; then find every move of the solution.
+import { useLibrary } from "../library/Library";
+import { siteOf } from "../lib/player";
 import { useEffect, useMemo, useState } from "react";
 import { TAG_INFO } from "../analysis/catalog";
 import { Board, type Movable } from "../components/Board";
@@ -17,7 +19,11 @@ const OPPONENT_DELAY = 500;
 
 export function Puzzles({ tag }: { tag: string | null }) {
   const overview = useOverview();
-  const rating = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
+  const { player } = useLibrary();
+  const played = overview.status === "ready" && !overview.data.empty ? overview.data.player.rating : null;
+  // Puzzle levels start from a chess.com rating (lib/puzzles.ts startLevel); Lichess game ratings already run about
+  // 300 points higher at this level, so they're brought down to match.
+  const rating = played !== null && player && siteOf(player) === "lichess" ? played - 300 : played;
   const [round, setRound] = useState(0);
   const [session, setSession] = useState<{ puzzles: Puzzle[]; level: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -165,7 +171,7 @@ function PuzzleBoard(props: {
       <div className="rv-grid">
         <div className="rv-top strip">
           <span className="strip-name">Lichess puzzle, rated {puzzle.rating}</span>
-          <span className="strip-acc" title="Lichess puzzle ratings run a few hundred points above chess.com game ratings">your puzzle level {level}</span>
+          <span className="strip-acc" title="Lichess puzzle ratings run a few hundred points above chess.com game ratings, and a little above Lichess game ratings">your puzzle level {level}</span>
         </div>
         <div className="rv-eval" />
         <div className="rv-board">

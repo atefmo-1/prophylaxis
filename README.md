@@ -4,17 +4,17 @@ In chess, *prophylaxis* means seeing a problem coming and stopping it before it 
 
 [![Checks and deploy](https://github.com/atefmo-1/prophylaxis/actions/workflows/pages.yml/badge.svg)](https://github.com/atefmo-1/prophylaxis/actions/workflows/pages.yml)
 
-**Try it: [atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Enter your chess.com username; nothing to install, no account. Or open [the sample player](https://atefmo-1.github.io/prophylaxis/?demo) straight away.
+**Try it: [atefmo-1.github.io/prophylaxis](https://atefmo-1.github.io/prophylaxis/)**. Enter your chess.com or Lichess username; nothing to install, no account. Or open [the sample player](https://atefmo-1.github.io/prophylaxis/?demo) straight away.
 
 ![A tour of Prophylaxis with the sample player: a game review and its key moment, the #1 habit, the opening tree and a comparison with a rival](docs/media/tour.gif)
 
-A free chess coach for anyone who plays on chess.com. It covers what chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across all your games to rank the habits that cost you the most.
+A free chess coach for anyone who plays on chess.com or Lichess. It covers what chess.com puts behind its paywall (game review, move grades, advanced stats), and it also looks across all your games to rank the habits that cost you the most.
 
 - **Game review:** opens on a chess.com-style report card, then walks you through your key moments as puzzles ("find a better move"), accepting any move that holds your position. Every move is graded on chess.com's scale (brilliant, great, best … book … miss, blunder) with a scoresheet, eval bar, winning-chances graph and a plain-English explanation.
 - **Habits:** your #1 habit with a position from your own games, six skill areas, and every habit ranked by how much winning chance it costs you in an average game, each with practice from your own positions or puzzles of its tactic.
 - **Practice:** five positions at a time from your own mistakes, spaced out so the ones you miss come back sooner, plus Lichess puzzles of the tactic behind each tactic habit, at your level.
 - **Openings:** your first ten moves across all your games, merged into one tree, with how each line turned out.
-- **Compare:** you against any chess.com player. Their last 30 rated games in your time control are reviewed in your browser like yours, then shown side by side with yours, with tips for beating them drawn from their numbers (their costliest habits, where and when they go wrong, how they convert, their openings), each with its evidence.
+- **Compare:** you against any player on your site. Their last 30 rated games in your time control are reviewed in your browser like yours, then shown side by side with yours, with tips for beating them drawn from their numbers (their costliest habits, where and when they go wrong, how they convert, their openings), each with its evidence.
 - **How hard was it, at your rating?** On each mistake, how many players at your rating find the better move, whether your move is a common mistake at your level, and how many players at your opponent's rating would have found the punishing answer. From Maia-3, a model of how people play at each rating, checked against real chess.com games.
 - **Honest numbers:** with a few dozen games, rates are shown with a 90% interval, not as falsely exact percentages, and Compare gives either side the edge only when the gap is clear.
 - **Private:** everything runs in your browser. Your games, your username and your analysis stay there; there is no server.
@@ -33,6 +33,7 @@ Every number the site shows rests on a test, and so do the things it doesn't sho
 | Does the browser give the same answers as the reference? | Yes, checked in CI on every push: grading against the Python pipeline, Maia's board encoding (84 of 84 positions identical) and chances against PyTorch, and the practice scheduler against the reference FSRS (0 of 320 intervals differ). | [web/scripts/](web/scripts/) |
 | Why do some mistakes get no reason? | A census of beginner mistakes found the causes; threat, pawn and longer-line checks took the share given a reason from about 35% to about 55%. | [reports/](reports/) |
 | Can one game place a player's rating? | No: on 529 games the best model missed by about 300 points, so the site doesn't estimate one. | [ml/rating/REPORT.md](ml/rating/REPORT.md) |
+| Is it fast on a phone? | Lighthouse (mobile, live site): performance 98 on the landing page and 92 with the sample player, and 100 for accessibility, best practices and SEO. A first visit downloads about 0.2 MB; the engines and models load only when a review needs them. | [Lighthouse](https://developer.chrome.com/docs/lighthouse) |
 | Does the site meet basic accessibility rules? | axe-core finds no WCAG 2.1 A or AA problem on any page, light or dark, desktop or phone; board coordinates are measured separately (4.6:1 or better). | [web/scripts/check-a11y.mjs](web/scripts/check-a11y.mjs) |
 
 **Still to test:** whether players accept the explanations (a "Was this explanation right?" question is built, and asks once anonymous counting is switched on), and a second person's labels for the tactic check, which so far rests on the owner's answers to 46 blunders.
@@ -41,17 +42,17 @@ Every number the site shows rests on a test, and so do the things it doesn't sho
 
 ### The site
 
-1. Open [the site](https://atefmo-1.github.io/prophylaxis/) on any device and enter your chess.com username.
-2. Your games load from chess.com's public archive and Stockfish starts reading them, in your browser, on as many cores as your device can spare. Your latest game is reviewed first, in seconds on a laptop; your other recent games follow in the background, newest first, while you read. The first visit reviews as many games as your device gets through in about five minutes (at least 5, so Habits has something to show), and **Games** offers to review more. The top bar shows the progress and a pause button, with the time left on a wide screen (on a phone, both are in the player menu, which always shows the time left), and reviewing pauses by itself when the battery is low and not charging. Close the tab and it picks up where it left off next time, then checks for new games whenever you come back.
+1. Open [the site](https://atefmo-1.github.io/prophylaxis/) on any device, choose chess.com or Lichess, and enter your username.
+2. Your games load from the site's public API and Stockfish starts reading them, in your browser, on as many cores as your device can spare. Your latest game is reviewed first, in seconds on a laptop; your other recent games follow in the background, newest first, while you read. The first visit reviews as many games as your device gets through in about five minutes (at least 5, so Habits has something to show), and **Games** offers to review more. The top bar shows the progress and a pause button, with the time left on a wide screen (on a phone, both are in the player menu, which always shows the time left), and reviewing pauses by itself when the battery is low and not charging. Close the tab and it picks up where it left off next time, then checks for new games whenever you come back.
 3. Use the six pages:
    - **Review** opens on your latest game. The **Summary** tab is the report card. **Review the key moment** (or **Review N key moments**) turns your worst moves into puzzles: drag a piece to find a better move, or press Tab to reach the board and type it; **Hint**, **Show the answer** and **Skip** are there when you're stuck. The **Moves** tab steps through the game with an explanation for every move (arrow keys, the buttons under the graph, or **Next mistake**).
    - **Habits** shows your #1 habit with a real position, then skill areas and every habit ranked by what it costs. It fills in once 5 games are reviewed.
    - **Practice** gives you five positions at a time from your own mistakes, with **Skip** for ones you'd rather leave. They are scheduled with FSRS, the spaced-repetition model behind Anki: a position comes back when you're expected to have about a 90% chance of still finding the move. Ones you miss come back the next day; ones you find first time come back later than ones that took a few tries or a hint, and the gap grows each time you find it. Each tactic habit also has **Puzzles**: Lichess puzzles of that tactic that start near your level, get harder as you solve them and easier when you miss.
    - **Games** lists every reviewed game; filter by result and colour. Older games not reviewed yet can be added from here with **Review N more games**.
    - **Openings** merges your first ten moves into one tree: click a move to follow it, **Back** to step back.
-   - **Compare** takes any chess.com username (or one of the players you've met most), reviews their last 30 rated games in your main time control (about 2–3 minutes on a laptop, after your own games are done; the comparison appears after 10, and it keeps going while you look at other pages), and shows the two of you side by side, how to beat them, and their opening tree. Their reviews stay in your browser, so comparing again is instant, and deleting your data deletes them too, unless another player in this browser compared with them.
+   - **Compare** takes any username on your site (or one of the players you've met most), reviews their last 30 rated games in your main time control (about 2–3 minutes on a laptop, after your own games are done; the comparison appears after 10, and it keeps going while you look at other pages), and shows the two of you side by side, how to beat them, and their opening tree. Their reviews stay in your browser, so comparing again is instant, and deleting your data deletes them too, unless another player in this browser compared with them.
 
-Your name in the top bar opens a menu to switch to another player, open your chess.com profile, or delete your reviews from this browser.
+Your name in the top bar opens a menu to switch to another player, open your chess.com or Lichess profile, or delete your reviews from this browser.
 
 ### The Chrome extension (optional)
 
@@ -65,18 +66,19 @@ It reviews each game the moment it ends, beside the board on chess.com.
 ## How it works
 
 ```
-chess.com public API ──► your browser: Stockfish 19 Lite (WebAssembly, one Web Worker per spare core)
-                                       └─► grading: win %, accuracy, move classes
-                                       └─► tactic rules: hung pieces, forks, missed mates, clock
-                                       └─► tactic classifier (ONNX, onnxruntime-web, its own Web Worker): names pins, skewers, …
-                                       └─► Maia-3 (ONNX, its own Web Worker): how many players at your rating find the better move
-                                       └─► stats: Jeffreys intervals, habit ranking
-                                       └─► saved in IndexedDB ──► Review · Habits · Practice · Games · Openings · Compare
+chess.com or Lichess API ──► your browser: Stockfish 19 Lite (WebAssembly, one Web Worker per spare core)
+                                          └─► grading: win %, accuracy, move classes
+                                          └─► tactic rules: hung pieces, forks, missed mates, clock
+                                          └─► tactic classifier (ONNX, onnxruntime-web, its own Web Worker): names pins, skewers, …
+                                          └─► Maia-3 (ONNX, its own Web Worker): how many players at your rating find the better move
+                                          └─► stats: Jeffreys intervals, habit ranking
+                                          └─► saved in IndexedDB ──► Review · Habits · Practice · Games · Openings · Compare
 ```
 
 | Part | Where |
 |---|---|
 | Reading games from chess.com (CORS is open; one request at a time; a past month is fetched once more after it ends, then kept) | `web/src/library/chesscom.ts` |
+| Reading games from Lichess (CORS is open; the games export, as NDJSON, turned into chess.com's shape; later visits ask only for newer games). A Lichess player is kept as `lichess:name`, so the two sites never share stored games | `web/src/library/lichess.ts`, `web/src/lib/player.ts` |
 | Background review queue, newest first, within a time budget; pausing; the browser store | `web/src/library/Library.tsx`, `web/src/library/store.ts` |
 | How many engines this device runs, a one-second speed check, time estimates; the engines sharing a game | `web/src/library/device.ts`, `web/src/analysis/pool.ts` |
 | One game: engine lines, grades, tactic tags, puzzles for each mistake | `web/src/analysis/review.ts`, `motifs.ts`, `grading.ts` |

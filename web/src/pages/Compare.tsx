@@ -1,5 +1,6 @@
-// You against another chess.com player: their latest games in your time control, reviewed in this browser like
+// You against another player on your site: their latest games in your time control, reviewed in this browser like
 // yours, side by side with your own, with tips for playing them drawn from their numbers.
+import { gameSite, nameOf, siteName } from "../lib/player";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { OpeningTree } from "../components/OpeningTree";
@@ -43,7 +44,7 @@ function EdgeCell({ edge, name }: { edge: Edge; name: string }) {
   return <td className={`cmp-edge cmp-edge--${edge}`}>{edge === "you" ? "You" : edge === "them" ? name : "Even"}</td>;
 }
 
-function Picker({ suggestions, initial }: { suggestions: string[]; initial: string }) {
+function Picker({ suggestions, initial, site }: { suggestions: string[]; initial: string; site: string }) {
   const [value, setValue] = useState(initial);
   const go = (name: string) => {
     if (name.trim()) window.location.hash = href({ name: "compare", player: name.trim() }).replace(/^.*#/, "#");
@@ -55,7 +56,7 @@ function Picker({ suggestions, initial }: { suggestions: string[]; initial: stri
   return (
     <div className="cmp-picker">
       <form className="cmp-form" onSubmit={submit}>
-        <label htmlFor="cmp-name">A chess.com username</label>
+        <label htmlFor="cmp-name">A {site} username</label>
         <div className="cmp-row">
           <input id="cmp-name" value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. a friend or a rival" autoComplete="off" spellCheck={false} />
           <button type="submit" className="pbtn pbtn--primary">
@@ -226,7 +227,7 @@ export function Compare({ player }: { player: string | null }) {
   for (const g of lib.games) counts.set(g.opponent, (counts.get(g.opponent) ?? 0) + 1);
   // The sample player's opponents are made up; it compares with the sample rival, which ships with the site.
   const suggestions = lib.isSample ? [SAMPLE_RIVAL] : [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([n]) => n);
-  const name = them ?? shown ?? "";
+  const name = nameOf(them ?? shown ?? "");
   const vs = lib.games.filter((g) => g.opponent.toLowerCase() === name.toLowerCase());
   const h2h = { win: vs.filter((g) => g.result === "win").length, loss: vs.filter((g) => g.result === "loss").length, draw: vs.filter((g) => g.result === "draw").length };
   const enough = theirs.length >= COMPARE_MIN && overview && own?.overview;
@@ -236,11 +237,11 @@ export function Compare({ player }: { player: string | null }) {
       <header className="page-top">
         <h1>Compare</h1>
         <p>
-          Any chess.com player against you: their last {COMPARE_GAMES} rated {tc} games get reviewed in your browser, with tips for playing them.
+          Any {siteName(lib.player ?? "")} player against you: their last {COMPARE_GAMES} rated {tc} games get reviewed in your browser, with tips for playing them.
         </p>
       </header>
 
-      <Picker key={shown ?? ""} suggestions={suggestions} initial={shown ?? ""} />
+      <Picker key={shown ?? ""} suggestions={suggestions} initial={shown ?? ""} site={siteName(lib.player ?? "")} />
 
       {shown && (
         <div className="cmp-status" role="status">
@@ -280,7 +281,7 @@ export function Compare({ player }: { player: string | null }) {
         <section className="block" aria-labelledby="their-openings-title">
           <h2 id="their-openings-title">{name}'s openings</h2>
           <p className="block-lede">What they play, scored from their side.</p>
-          <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => (g.url.startsWith("https://www.chess.com/") ? g.url : null)} />
+          <OpeningTree stored={latest(theirs, tc!)} who={name} gameLink={(g) => (gameSite(g.url) ? g.url : null)} />
         </section>
       )}
     </div>

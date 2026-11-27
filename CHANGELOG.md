@@ -4,6 +4,9 @@ The changes a player would notice, newest first. Each links to the study or repo
 
 ## November 27, 2026
 
+- **Lichess players too:** choose chess.com or Lichess on the first screen. Lichess games are reviewed the same
+  way, Compare looks players up on your own site, and Maia reads Lichess ratings as they are (it learned from
+  Lichess games). The Chrome extension stays chess.com-only.
 - **Your last 7 days** at the top of Habits: games played, how many showed your #1 habit against the week before,
   and the practice you did.
 - **Readable board coordinates** on every board, and a check of every page against WCAG 2.1 AA.

@@ -1,3 +1,4 @@
+import { nameOf, profileUrl, siteName } from "./lib/player";
 import { useEffect, useRef, useState } from "react";
 import { HoldButton } from "./components/HoldButton";
 import { Mark } from "./components/Mark";
@@ -87,7 +88,7 @@ function PlayerMenu({ player }: { player: string }) {
       }}
     >
       <summary>
-        {isSample ? "Sample player" : player} {rating !== null && (
+        {isSample ? "Sample player" : nameOf(player)} {rating !== null && (
           <span className="num" title={`${player_!.rating_time_class} rating`}>
             {rating}
           </span>
@@ -106,8 +107,8 @@ function PlayerMenu({ player }: { player: string }) {
           </button>
         )}
         {!isSample && (
-          <a href={`https://www.chess.com/member/${player}`} target="_blank" rel="noreferrer" onClick={close}>
-            Profile on chess.com
+          <a href={profileUrl(player)} target="_blank" rel="noreferrer" onClick={close}>
+            Profile on {siteName(player)}
           </a>
         )}
         <a href={`${REPO}/issues/new`} target="_blank" rel="noreferrer" onClick={close}>
@@ -136,7 +137,7 @@ function PlayerMenu({ player }: { player: string }) {
               forgetPlayer();
             }}
           >
-            Hold to delete {player}'s reviews
+            Hold to delete {nameOf(player)}'s reviews
             <span className="me-note">From this browser only. You can review the games again later.</span>
           </HoldButton>
         )}
