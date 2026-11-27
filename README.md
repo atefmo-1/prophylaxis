@@ -65,6 +65,8 @@ It reviews each game the moment it ends, beside the board on chess.com.
 
 ## How it works
 
+The eight main design decisions, each explained as if at a whiteboard, are in [docs/whiteboard.md](docs/whiteboard.md).
+
 ```
 chess.com or Lichess API ──► your browser: Stockfish 19 Lite (WebAssembly, one Web Worker per spare core)
                                           └─► grading: win %, accuracy, move classes
