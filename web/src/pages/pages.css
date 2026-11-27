@@ -63,6 +63,60 @@
 
 /* ---------- #1 habit ---------- */
 
+/* Your last 7 days (Week.tsx): three counts in a row, stacking on a phone. */
+.week {
+  margin-bottom: 20px;
+}
+
+.week h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-ink-2);
+}
+
+.week-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .week-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.week-stats > div {
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--c-panel);
+  box-shadow: 0 0 0 1px var(--c-panel-edge);
+}
+
+.week-stats dt {
+  color: var(--c-ink-3);
+  font-size: 13px;
+}
+
+.week-stats dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  align-items: baseline;
+  margin: 4px 0 0;
+  color: var(--c-ink-2);
+  font-size: 14px;
+}
+
+.week-stats dd b {
+  color: var(--c-ink);
+  font-size: 24px;
+  font-weight: 650;
+}
+
 .focus {
   display: grid;
   grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);

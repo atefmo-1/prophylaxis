@@ -4,6 +4,10 @@ The changes a player would notice, newest first. Each links to the study or repo
 
 ## November 27, 2026
 
+- **Your last 7 days** at the top of Habits: games played, how many showed your #1 habit against the week before,
+  and the practice you did.
+- **Readable board coordinates** on every board, and a check of every page against WCAG 2.1 AA.
+- **"Was this explanation right?"** and a feedback link in the player menu.
 - **How hard was it, at your rating?** On each of your mistakes, the review says how many players at your rating
   find the better move ("about 3 in 10", "only about 1 in 20"), and when the move you played is a common mistake at
   your level. It comes from Maia-3, a model of how people play at each rating, and its numbers were checked against

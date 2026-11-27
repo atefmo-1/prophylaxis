@@ -12,6 +12,7 @@ import "./pages.css";
 import { NotEnough } from "../components/Progress";
 import { SKILL_RECENT } from "../analysis/stats";
 import { LoadError } from "../components/LoadError";
+import { Week } from "./Week";
 
 const MIN_GAMES = 5;
 
@@ -289,6 +290,7 @@ export function Habits() {
           From your {data.player.played} played games.
         </p>
       </header>
+      <Week habit={data.weaknesses[0]} />
       <Focus w={data.weaknesses[0]} />
       <Skills skills={data.skills} played={data.player.played} />
       <AllHabits list={data.weaknesses} />
