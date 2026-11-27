@@ -388,10 +388,11 @@
   gap: 12px;
   width: 100%;
   margin: 0 0 18px;
-  padding: 14px 16px;
+  padding: 12px 0;
   border: 0;
-  border-radius: 14px;
-  background: var(--c-panel-2);
+  border-block: 1px solid var(--c-line);
+  border-radius: 0;
+  background: transparent;
   color: var(--c-ink);
   font: inherit;
   text-align: left;
@@ -399,8 +400,14 @@
   transition: background-color 150ms var(--c-ease);
 }
 
-.turn:hover {
-  background: var(--c-hover);
+.turn:hover .turn-text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.turn:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
 }
 
 .turn-text b {
@@ -663,6 +670,24 @@
 .coach-class--mistake { color: var(--gi-mistake); }
 .coach-class--miss { color: var(--gi-miss); }
 .coach-class--blunder { color: var(--gi-blunder); }
+
+.rv--drill .coach {
+  max-height: none;
+  padding: 22px 20px;
+  border-bottom: 0;
+}
+
+.coach-context {
+  font-size: 14px;
+}
+
+.coach .coach-ask {
+  margin: 2px 0 18px;
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
 
 .coach-habit {
   padding-top: 8px;

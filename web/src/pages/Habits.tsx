@@ -67,7 +67,9 @@ function Focus({ w }: { w: Weakness }) {
           It showed up in <b>{windowLine(w)}</b>.
         </p>
         <p>{w.what}</p>
-        <p className="focus-fix">{w.fix}</p>
+        <p className="focus-fix">
+          <b>What to do:</b> {w.fix}
+        </p>
         <div className="focus-actions">
           {positions > 0 && (
             <a className="pbtn pbtn--primary" href={href({ name: "practice", tag: w.tag })}>
@@ -101,21 +103,34 @@ function Skills({ skills, played }: { skills: Skill[]; played: number }) {
           ? `Your last ${games} games against the ${played - games} before.`
           : `Your ${games} games so far. Once you have more than ${SKILL_RECENT}, each area compares your last ${SKILL_RECENT} with the ones before.`}
       </p>
-      <ul className="skills">
-        {skills.map((s) => (
-          <li key={s.key} className="skill">
-            <h3>{s.title}</h3>
-            <p className="skill-q">{s.question}</p>
-            <p className="skill-value">
-              <b className="num">{formatSkill(s, s.recent)}</b> <span>{SKILL_UNIT[s.key] ?? s.unit}</span>
-            </p>
-            <p className="skill-was">
-              {s.recent !== null && <Direction now={s.recent} was={s.before} better={s.better} />}
-              {s.before !== null && <span className="num">was {formatSkill(s, s.before)}</span>}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <div className="table-scroll">
+        <table className="ptable skills-table">
+          <thead>
+            <tr>
+              <th scope="col">Area</th>
+              <th scope="col" className="num">{played > games ? `Last ${games}` : "Now"}</th>
+              <th scope="col" className="num">Before</th>
+              <th scope="col">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {skills.map((s) => (
+              <tr key={s.key}>
+                <th scope="row">
+                  {s.title}
+                  <small>{s.question}</small>
+                </th>
+                <td className="num">
+                  <b>{formatSkill(s, s.recent)}</b>
+                  <small>{SKILL_UNIT[s.key] ?? s.unit}</small>
+                </td>
+                <td className="num">{s.before !== null ? formatSkill(s, s.before) : "–"}</td>
+                <td>{s.recent !== null && <Direction now={s.recent} was={s.before} better={s.better} />}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

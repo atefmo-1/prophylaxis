@@ -4,6 +4,8 @@ The changes a player would notice, newest first. Each links to the study or repo
 
 ## November 27, 2026
 
+- **Calmer pages:** the last 7 days read as one sentence, skill areas as a table, Practice leads with the task, and
+  fewer boxes inside boxes. The theme switch lives in the player menu.
 - **Lichess players too:** choose chess.com or Lichess on the first screen. Lichess games are reviewed the same
   way, Compare looks players up on your own site, and Maia reads Lichess ratings as they are (it learned from
   Lichess games). The Chrome extension stays chess.com-only.

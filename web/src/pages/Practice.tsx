@@ -238,9 +238,8 @@ function Session({
             <div className="coach" aria-live="polite">
               {trying ? (
                 <>
-                  <h2>
-                    In the game you played {moveLabel(p.ply, p.san, p.color)}. Find a better move for {p.color}.
-                  </h2>
+                  <p className="coach-context">In the game you played {moveLabel(p.ply, p.san, p.color)}.</p>
+                  <h2 className="coach-ask">Find a better move for {p.color}.</h2>
                   {lastTry && (
                     <p className="coach-feedback coach-feedback--no" key={attempt.tries.length}>
                       Not quite: {sanOf(p.fen, lastTry)} leaves your chances at {Math.round(p.wins[lastTry] ?? 0)}%. Try another move.

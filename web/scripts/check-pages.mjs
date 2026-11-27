@@ -38,7 +38,7 @@ await page.evaluate(() => localStorage.removeItem("coach.practice.v1"));
 await page.goto(`${base}/#/practice`, { waitUntil: "networkidle0" });
 await page.reload({ waitUntil: "networkidle0" });
 // The position on screen, found among the sample's reviewed mistakes by its opponent and move.
-const prompt = await page.$eval(".coach h2", (el) => el.textContent);
+const prompt = await page.$eval(".coach", (el) => [...el.querySelectorAll(".coach-context, h2")].map((p) => p.textContent).join(" "));
 const opponent = await page.$eval(".rv-top .strip-name", (el) => el.textContent.replace("From your game vs", "").trim());
 const target = await page.evaluate(
   async (prompt, opponent) => {

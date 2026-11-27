@@ -30,38 +30,27 @@ export function Week({ habit }: { habit: Weakness }) {
     results.draw && `${results.draw} drawn`,
   ].filter(Boolean).join(", ");
 
+  const games = (n: number) => `${n} game${n === 1 ? "" : "s"}`;
+  const practice = tries.length
+    ? `${tries.length} practice position${tries.length === 1 ? "" : "s"}, ${clean} found first time.`
+    : "No practice yet.";
+
   return (
     <section className="week" aria-labelledby="week-title">
-      <h2 id="week-title">Your last 7 days</h2>
-      <dl className="week-stats">
-        <div>
-          <dt>Games</dt>
-          <dd>
-            <b className="num">{week.length}</b>
-            <span>{week.length ? resultLine : `Your last game was ${day(last)}.`}</span>
-          </dd>
-        </div>
-        {week.length > 0 && (
-          <div>
-            <dt>Your #1 habit, {name}</dt>
-            <dd>
-              <b className="num">
-                {week.filter(has).length} of {week.length}
-              </b>
-              <span>
-                {before.length ? `games, against ${before.filter(has).length} of ${before.length} the 7 days before` : "games"}
-              </span>
-            </dd>
-          </div>
+      <p>
+        <b id="week-title">Last 7 days:</b>{" "}
+        {week.length ? (
+          <>
+            <b className="num">{games(week.length)}</b> ({resultLine}). Your #1 habit, {name}, showed up in{" "}
+            <b className="num">{week.filter(has).length}</b> of them
+            {before.length ? `, against ${before.filter(has).length} of ${before.length} the week before` : ""}. {practice}
+          </>
+        ) : (
+          <>
+            no games; your last was {day(last)}. {practice}
+          </>
         )}
-        <div>
-          <dt>Practice</dt>
-          <dd>
-            <b className="num">{tries.length}</b>
-            <span>{tries.length ? `positions, ${clean} found first time` : "positions so far"}</span>
-          </dd>
-        </div>
-      </dl>
+      </p>
     </section>
   );
 }

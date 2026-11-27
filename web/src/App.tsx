@@ -177,7 +177,8 @@ function TopBar({ route }: { route: Route }) {
         )}
         {player && <ProgressPill />}
         {player && route.name !== "compare" && <ComparePill />}
-        <ThemeSwitch />
+        {/* With a player, the theme is in their menu; before one is chosen, it's here. */}
+        {!player && <ThemeSwitch />}
         {player && <PlayerMenu player={player} />}
       </div>
     </header>
