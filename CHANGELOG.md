@@ -2,6 +2,15 @@
 
 The changes a player would notice, newest first. Each links to the study or report behind it.
 
+## November 28, 2026
+
+- **A privacy page** ([privacy.html](https://atefmo-1.github.io/prophylaxis/privacy.html)), linked from the player
+  menu: your games stay on your device, what the anonymous visit counts contain, and how to stop them.
+- **Anonymous visit counts are on** for the website only: never in the Chrome extension, never inside another page,
+  and never with Do Not Track or Global Privacy Control.
+- **The Chrome extension is ready for the Chrome Web Store:** a store package without the development-only match,
+  and the listing, screenshots and privacy answers in [docs/web-store](docs/web-store/README.md).
+
 ## November 27, 2026
 
 - **Better keyboard use:** the review's tabs and every choice group (results, colour, theme, site) move with the

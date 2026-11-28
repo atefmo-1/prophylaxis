@@ -116,6 +116,10 @@ function PlayerMenu({ player }: { player: string }) {
           <span className="me-note">An idea, a wrong explanation, a bug: on GitHub.</span>
         </a>
         {canChooseCounting() && <CountingSwitch />}
+        <a href={`${import.meta.env.BASE_URL}privacy.html`} onClick={close}>
+          Privacy
+          <span className="me-note">Your games stay on this device. What is counted, and how to stop it.</span>
+        </a>
         <a href={`${REPO}#licence`} target="_blank" rel="noreferrer" onClick={close}>
           Source code and licences
           <span className="me-note">Free software: GPL-3.0, with Maia-3 (CSSLab) under AGPL-3.0.</span>

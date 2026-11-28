@@ -20,3 +20,5 @@ web/dist-extension/
 web/public/data/
 .impeccable/critique/
 .impeccable/rebrand/
+web/prophylaxis-extension-*.zip
+web/dist-store/

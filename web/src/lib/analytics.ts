@@ -2,9 +2,10 @@
 // personal data). Nothing about a player is ever sent: no username, no game, no move, no rating. Only which page was
 // opened ("/habits"), a handful of actions ("first-review-done"), and the answer to "Was this explanation right?"
 // with the kind of explanation it was ("vote/no/allowed_fork"). Sent as a plain request from this file, so no
-// third-party script runs on the site. Off when SITE is empty, on localhost, inside another page (the portfolio's
-// live demo promises nothing leaves the browser), with Do Not Track or Global Privacy Control, or after "Stop
-// counting my visits" in the player menu.
+// third-party script runs on the site. Off when SITE is empty, on localhost, in the Chrome extension (its panel
+// reuses the review screen, and the extension promises no analytics), inside another page (the portfolio's live demo
+// promises nothing leaves the browser), with Do Not Track or Global Privacy Control, or after "Stop counting my
+// visits" in the player menu.
 
 /** The GoatCounter site code (https://<SITE>.goatcounter.com). Empty: nothing is counted. */
 const SITE = "atefmo";
@@ -22,6 +23,9 @@ function optedOut(): boolean {
 
 const local = () => ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) || location.hostname.endsWith(".localhost");
 
+/** Only the website counts: not the extension's pages (chrome-extension:) or anything else that isn't a web page. */
+const website = () => location.protocol === "https:" || location.protocol === "http:";
+
 function embedded(): boolean {
   try {
     return window.self !== window.top;
@@ -31,10 +35,10 @@ function embedded(): boolean {
 }
 
 /** Whether anything is counted in this browser. */
-export const counting = () => !!SITE && !local() && !embedded() && !optedOut();
+export const counting = () => !!SITE && website() && !local() && !embedded() && !optedOut();
 
 /** Whether the visitor can turn counting off (or back on) here: it's set up and the browser isn't already saying no. */
-export const canChooseCounting = () => !!SITE && !local() && !embedded();
+export const canChooseCounting = () => !!SITE && website() && !local() && !embedded();
 
 export function setCounting(on: boolean) {
   try {

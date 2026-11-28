@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Prophylaxis</title>
+<meta name="description" content="What the Prophylaxis website and Chrome extension do with your data: your games stay on your device.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg: #ffffff; --ink: #1d2a3f; --ink-2: #3d4759; --ink-3: #5f6777; --line: #e6e8ec; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121821; --ink: #f2ede3; --ink-2: #c4c0b7; --ink-3: #9d9b96; --line: #2a3240; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink-2); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 42rem; margin: 0 auto; padding: 48px max(20px, env(safe-area-inset-right)) 72px max(20px, env(safe-area-inset-left)); }
+  h1, h2 { color: var(--ink); line-height: 1.25; text-wrap: balance; }
+  h1 { font-size: 2rem; margin: 0 0 6px; }
+  h2 { font-size: 1.2rem; margin: 40px 0 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .date { color: var(--ink-3); margin: 0 0 28px; }
+  .lead { color: var(--ink); font-size: 1.1rem; }
+  a { color: var(--ink); }
+  ul { padding-left: 1.2em; }
+  li + li { margin-top: 6px; }
+  strong { color: var(--ink); }
+  .back { display: inline-block; margin-bottom: 28px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Prophylaxis</a>
+  <h1>Privacy</h1>
+  <p class="date">Last updated November 28, 2026. This covers the Prophylaxis website and the Prophylaxis Chrome extension.</p>
+
+  <p class="lead">Prophylaxis has no server and no accounts. Your games, your username and your reviews stay on your device. Nobody else, including the person who made Prophylaxis, can see them.</p>
+
+  <h2>Your games and reviews</h2>
+  <ul>
+    <li>Your browser downloads your games straight from <strong>chess.com</strong>'s or <strong>Lichess</strong>'s public game archive, the same games anyone can see on your profile.</li>
+    <li>The chess engine and the models run on your device. Reviews, habits and practice progress are saved in your browser's own storage on this device.</li>
+    <li>Nothing about your games is ever sent anywhere else. Clearing your browser's site data for Prophylaxis deletes all of it.</li>
+  </ul>
+
+  <h2>The Chrome extension</h2>
+  <ul>
+    <li><strong>What it reads on chess.com:</strong> the address of the page you're on, and whether chess.com's "game over" card is showing, to notice when a game has ended. It never reads the board or your moves from the page. It doesn't help during a game: a game is only reviewed once chess.com has published it in your public archive of finished games. On a finished game it can show a small card in the corner with your review's result.</li>
+    <li><strong>What it downloads:</strong> that finished game, from chess.com's public API (api.chess.com). That is the only place it connects to.</li>
+    <li><strong>What it saves:</strong> your chess.com username and two settings in Chrome's settings storage (Chrome copies these to your other computers if you use Chrome sync), and your last 15 reviews in Chrome's storage on this device. Removing the extension deletes them.</li>
+    <li><strong>Sharing with the website:</strong> when you open the Prophylaxis website (atefmo-1.github.io/prophylaxis), it can pick up reviews the extension already made and send your habits back, so the panel can mention them. This happens inside your browser, between the two, and nothing leaves your computer.</li>
+    <li>The extension counts nothing and contains no analytics.</li>
+  </ul>
+
+  <h2>Anonymous visit counts on the website</h2>
+  <p>To learn whether anyone uses Prophylaxis and which parts help, the website sends anonymous counts to <a href="https://www.goatcounter.com/">GoatCounter</a>, an open-source counter that uses no cookies. Each count says only:</p>
+  <ul>
+    <li>which page was opened, by its name, such as "/habits" (never a game, a username or a rival's name),</li>
+    <li>a few actions, such as "first review done" or "practice session done",</li>
+    <li>your answer to "Was this explanation right?" and the kind of explanation it was,</li>
+    <li>your screen size, and the website you came from (its address only, on your first page).</li>
+  </ul>
+  <p>Like any web request, GoatCounter's server also sees your IP address and browser. It uses them to tell visits apart and to estimate your country and browser, and doesn't store the IP address (<a href="https://www.goatcounter.com/help/privacy">GoatCounter's privacy policy</a>).</p>
+  <p><strong>Turning it off:</strong> choose "Stop counting my visits" in the player menu. Nothing is counted if your browser sends Do Not Track or Global Privacy Control, when Prophylaxis is shown inside another website, or in the Chrome extension.</p>
+
+  <h2>What Prophylaxis never does</h2>
+  <ul>
+    <li>No accounts, no passwords, no ads, no selling or sharing of data.</li>
+    <li>No help during live games. Only finished games are reviewed, in line with chess.com's fair-play rules.</li>
+  </ul>
+
+  <h2>Questions</h2>
+  <p>Open an issue on <a href="https://github.com/atefmo-1/prophylaxis/issues">GitHub</a>. The code is public, so anyone can check that this page is true.</p>
+</main>
+</body>
+</html>
