@@ -5,16 +5,26 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Board, type Arrow } from "../components/Board";
 import { ClassIcon } from "../components/ClassIcon";
 import { CLASS_META, moveLabel, REPO } from "../lib/format";
-import { sanOf, uciOfSan } from "../lib/rules";
+import { uciOfSan } from "../lib/rules";
 import type { MoveClass } from "../types";
 import { helloExtension } from "../library/bridge";
 import { PlayerNotFound } from "../library/games";
 import { SITE_NAMES, type Site } from "../lib/player";
 import { useLibrary } from "../library/Library";
+import { TAG_INFO } from "../analysis/catalog";
+import { AGAINST } from "../lib/tips";
 import { DEMO } from "./startDemo";
 import "./start.css";
 
 const T = DEMO.turn;
+const OPENING_COLOR = "white";
+const wonOf = (r: string[]) => {
+  const w = r.filter((x) => x === "w").length;
+  return w === r.length ? `all ${w}` : `${w} of ${r.length}`;
+};
+const RIVAL_HITS = DEMO.rival.games.filter(Boolean).length;
+const RIVAL_HABIT = TAG_INFO[DEMO.rival.tag].title;
+const RIVAL_TIP = AGAINST[DEMO.rival.tag];
 const cls = (i: number) => DEMO.moves[i].cls as MoveClass;
 
 export function Start() {
@@ -109,20 +119,20 @@ export function Start() {
       </section>
 
       <section className="start-pattern" aria-labelledby="pattern-title">
-        <h2 id="pattern-title">One hanging piece is bad luck. Five games in ten is a habit.</h2>
+        <h2 id="pattern-title">It reads every game, not just the last one.</h2>
+        <p className="start-pattern-sub">What it finds, shown with a sample player's games.</p>
         <div className="start-pattern-grid">
           <div className="frag frag-habit">
             <p className="frag-label">Across your games</p>
-            <p className="frag-title">Left a piece hanging</p>
+            <p className="frag-say">
+              You left a piece hanging in <b>{DEMO.habit.filter(Boolean).length} of your last 10 games</b>.
+            </p>
             <ol className="habit-row" aria-label={`In ${DEMO.habit.filter(Boolean).length} of the last 10 games`}>
               {DEMO.habit.map((hit, i) => (
                 <li key={i} data-hit={hit || undefined} style={{ animationDelay: `${i * 70}ms` }} />
               ))}
             </ol>
-            <p className="frag-foot">
-              <span>Last 10 games, oldest first</span>
-              <b className="num">{DEMO.habit.filter(Boolean).length} of 10</b>
-            </p>
+            <p className="frag-foot">Last 10 games, oldest first. Filled: a piece left hanging.</p>
           </div>
           <div className="frag frag-practice">
             <div className="frag-board" aria-hidden="true">
@@ -132,21 +142,71 @@ export function Start() {
               <p className="frag-label">Before your next game</p>
               <p className="frag-title">Find a better move for {DEMO.color}.</p>
               <p className="frag-text">
-                Practice comes from your own mistakes. Here,{" "}
-                <Notation>{T.accept.map((u) => sanOf(DEMO.moves[T.index - 1].fen, u)).join(", ").replace(/, ([^,]*)$/, " or $1")}</Notation> keep the
-                queen safe.
+                The position before <span className="mv"><Notation>{moveLabel(T.index + 1, DEMO.moves[T.index].san)}</Notation></span> in the game above. Positions
+                you got wrong come back over the next days until you find the move.
               </p>
             </div>
+          </div>
+          <div className="frag frag-openings">
+            <p className="frag-label">In your openings</p>
+            <p className="frag-say">
+              As {OPENING_COLOR} you won{" "}
+              {DEMO.openings.map((o, i) => (
+                <span key={o.name}>
+                  {i > 0 && ", but "}
+                  <b>{wonOf(o.results)}</b> against the {o.name.replace(/ Defense$/, "")}
+                </span>
+              ))}
+              .
+            </p>
+            <ul className="open-rows">
+              {DEMO.openings.map((o) => (
+                <li key={o.name}>
+                  <span className="open-name">{o.name}</span>
+                  <ol className="game-row" aria-label={`${o.results.filter((r) => r === "w").length} wins in ${o.results.length} games`}>
+                    {o.results.map((r, i) => (
+                      <li key={i} data-res={r} />
+                    ))}
+                  </ol>
+                </li>
+              ))}
+            </ul>
+            <p className="frag-foot">Filled: a win</p>
+          </div>
+          <div className="frag frag-rival">
+            <p className="frag-label">Against anyone</p>
+            <p className="frag-say">
+              Look up anyone before you play them. This player was {RIVAL_HABIT.toLowerCase()} in{" "}
+              <b>{RIVAL_HITS} of their last {DEMO.rival.games.length} games</b>.
+            </p>
+            <ol className="habit-row rival-row" aria-label={`In ${RIVAL_HITS} of their last ${DEMO.rival.games.length} games`}>
+              {DEMO.rival.games.map((hit, i) => (
+                <li key={i} data-hit={hit || undefined} />
+              ))}
+            </ol>
+            <p className="frag-foot">Their last {DEMO.rival.games.length} games. Filled: {RIVAL_HABIT.toLowerCase()}.</p>
+            <p className="frag-text">
+              <b>{RIVAL_TIP.title}.</b> {RIVAL_TIP.how.split(";")[0]}.
+            </p>
           </div>
         </div>
       </section>
 
-      <p className="start-note">
-        Your games are already public on chess.com and Lichess. Your analysis stays in this browser, and you can delete it at any time.
-        It reviews finished games only, never one in progress. The optional{" "}
-        <a href={`${REPO}#the-chrome-extension-optional`}>Chrome extension</a> opens each review beside the board when a
-        game ends. <a href={REPO}>Open source</a>.
-      </p>
+      <ul className="start-facts">
+        <li>
+          <b>No account</b>
+          Just the username you play under. Your games are already public on chess.com and Lichess.
+        </li>
+        <li>
+          <b>Nothing leaves your browser</b>
+          Stockfish runs on your computer, and your reviews are saved here until you delete them.{" "}
+          <a href={REPO}>The code is on GitHub</a>.
+        </li>
+        <li>
+          <b>Finished games only</b>
+          It never looks at a game in progress.
+        </li>
+      </ul>
     </div>
   );
 }
@@ -186,8 +246,7 @@ function Replay() {
       </p>
       <div className="replay-stage" aria-hidden="true">
         <header className="replay-head">
-          <span>You vs {DEMO.opponent}</span>
-          <span className="replay-tag">Sample game</span>
+          <span>A sample game</span>
         </header>
         <div className="replay-main">
           <div className="replay-board">

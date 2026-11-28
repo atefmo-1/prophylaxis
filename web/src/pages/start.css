@@ -246,14 +246,6 @@
   font-weight: 500;
 }
 
-.replay-tag {
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: var(--c-panel-2);
-  color: var(--c-ink-3);
-  font-size: 12px;
-}
-
 .replay-main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 132px;
@@ -396,6 +388,12 @@
   text-wrap: balance;
 }
 
+.start-pattern-sub {
+  margin: 10px 0 0;
+  color: var(--c-ink-3);
+  font-size: 15px;
+}
+
 .start-pattern-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
@@ -416,6 +414,22 @@
   font-weight: 500;
 }
 
+.frag-say {
+  max-width: 30ch;
+  margin: 6px 0 0;
+  color: var(--c-ink-2);
+  font-size: 19px;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+.frag-say b {
+  color: var(--c-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .frag-title {
   margin: 4px 0 0;
   font-size: 19px;
@@ -430,16 +444,18 @@
   line-height: 1.5;
 }
 
-.habit-row {
+.habit-row,
+.game-row {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-columns: repeat(10, minmax(0, 28px));
   gap: 6px;
-  margin: 24px 0 0;
+  margin: 20px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.habit-row li {
+.habit-row li,
+.game-row li {
   aspect-ratio: 1;
   border-radius: 6px;
   background: var(--c-panel);
@@ -452,16 +468,53 @@
 }
 
 .frag-foot {
-  display: flex;
-  justify-content: space-between;
   margin: 10px 0 0;
   color: var(--c-ink-3);
   font-size: 13px;
 }
 
-.frag-foot b {
+.frag-text b {
   color: var(--c-ink);
   font-weight: 600;
+}
+
+/* Openings: one row per opening, one square per game, a win filled. */
+.open-rows {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.open-rows .game-row {
+  margin: 0;
+}
+
+.open-rows > li {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--c-ink-2);
+}
+
+.game-row li[data-res="w"] {
+  background: var(--c-ink);
+  box-shadow: none;
+}
+
+.game-row li[data-res="d"] {
+  background: linear-gradient(135deg, var(--c-ink) 50%, var(--c-panel) 50%);
+}
+
+.frag-rival .frag-text {
+  margin-top: 16px;
+}
+
+.frag-text .mv {
+  white-space: nowrap;
 }
 
 .frag-practice {
@@ -475,14 +528,25 @@
   color: var(--c-accent-ink);
 }
 
-.start-note {
-  max-width: 68ch;
-  margin: 56px 0 0;
-  padding-top: 24px;
+.start-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin: 72px 0 0;
+  padding: 24px 0 0;
   border-top: 1px solid var(--c-line);
+  list-style: none;
   color: var(--c-ink-3);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.55;
+}
+
+.start-facts b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--c-ink);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 @media (max-width: 960px) {
@@ -501,6 +565,12 @@
 
   .start-pattern-grid {
     grid-template-columns: 1fr;
+  }
+
+  .start-facts {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 56px;
   }
 }
 
@@ -522,7 +592,16 @@
   }
 
   .frag-practice {
-    grid-template-columns: 112px minmax(0, 1fr);
-    gap: 16px;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .frag-practice .frag-board {
+    width: min(100%, 240px);
+  }
+
+  .open-rows > li {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 }

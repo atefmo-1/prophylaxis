@@ -16,7 +16,7 @@ const MIN_PHASE_MOVES = 30;
 const MAX_TIPS = 6;
 
 // What to do about each of their habits (the tag names are the coach's, written from the mistake-maker's side).
-const AGAINST: Record<string, { title: string; how: string }> = {
+export const AGAINST: Record<string, { title: string; how: string }> = {
   hanging_piece: { title: "Check what they leave undefended", how: "After each of their moves, look for a piece with no defender." },
   lost_material: { title: "Look for loose pieces", how: "Count attackers and defenders on their pieces: they often come up short." },
   allowed_fork: { title: "Look for forks", how: "Check knight jumps and pawn pushes that hit two of their pieces at once." },
