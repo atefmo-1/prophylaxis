@@ -1,0 +1,46 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web Store form · Prophylaxis</title>
+<style>
+:root{--bg:#fff;--ink:#1d2a3f;--ink2:#3d4759;--ink3:#5f6777;--line:#e6e8ec;--panel:#f6f7f9;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121821;--ink:#f2ede3;--ink2:#c4c0b7;--ink3:#9d9b96;--line:#2a3240;--panel:#1a212c;color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--ink2);font:15px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:46rem;margin:0 auto;padding:32px max(16px,env(safe-area-inset-left)) 64px}
+h1{color:var(--ink);font-size:1.6rem;margin:0 0 4px} h2{color:var(--ink);font-size:1.1rem;margin:32px 0 10px}
+.f{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;background:var(--panel)}
+.h{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--ink);font-weight:600}
+pre,code{font:13.5px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:var(--ink2)} pre{margin:8px 0 0} code{display:inline-block;margin-top:6px}
+.f p code{margin:0} p{margin:6px 0 0} .note{color:var(--ink3)}
+button{font:inherit;font-size:13px;padding:5px 12px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.ok{background:var(--ink);color:var(--bg)}
+</style></head><body><main>
+<h1>Chrome Web Store form</h1><p class="note">Each Copy button copies exactly what goes in that field.</p>
+<p class="note">Upload the zip first: <b>New item</b> → drop <code>web/prophylaxis-extension-0.1.0.zip</code>.</p><h2>Store listing</h2><div class="f"><div class="h"><span>Description</span><button data-for="v1">Copy</button></div><pre id="v1">Prophylaxis is a free chess coach for chess.com players. When you finish a game, it reviews it beside the board, on your own computer.
+
+AFTER EVERY GAME
+• The move the game turned on, with your winning chances before and after.
+• Accuracy and move grades for both players.
+• Retry your key moments: find the better move yourself before seeing the answer.
+• What your mistake allowed, and how many players at your rating find the better move (&quot;about 1 in 50&quot;).
+
+ACROSS ALL YOUR GAMES (on the Prophylaxis website)
+• Your #1 habit, such as moving too fast or leaving pieces undefended, with how often it shows up.
+• Practice built from positions you got wrong, brought back on a spaced-repetition schedule.
+• Your opening tree, and a comparison with any other player.
+
+PRIVATE BY DESIGN
+• No account and no server. The Stockfish chess engine runs on your computer.
+• Your games and reviews stay in your browser. Nothing is uploaded.
+• The extension contains no analytics.
+
+FAIR PLAY
+• It never helps during a game. A game is only reviewed once chess.com has published it in your public archive of finished games.
+
+Free and open source (GPL-3.0): https://github.com/atefmo-1/prophylaxis
+Website: https://atefmo-1.github.io/prophylaxis/</pre></div><div class="f"><div class="h"><span>Category</span><button data-for="v2">Copy</button></div><code id="v2">Education</code></div><div class="f"><div class="h"><span>Language</span><button data-for="v3">Copy</button></div><code id="v3">English</code></div><div class="f"><div class="h"><span>Homepage URL</span><button data-for="v4">Copy</button></div><code id="v4">https://atefmo-1.github.io/prophylaxis/</code></div><div class="f"><div class="h"><span>Support URL</span><button data-for="v5">Copy</button></div><code id="v5">https://github.com/atefmo-1/prophylaxis/issues</code></div><div class="f"><div class="h"><span>Images (drag from the Finder window)</span></div><p>Screenshots, in order: <code>screenshot-1.png</code>, <code>screenshot-2.png</code>, <code>screenshot-3.png</code>, <code>screenshot-4.png</code>. Small promo tile: <code>promo-small.png</code>. Store icon: already in the package.</p></div><h2>Privacy practices</h2><div class="f"><div class="h"><span>Single purpose description</span><button data-for="v6">Copy</button></div><pre id="v6">Reviews the chess.com games you finish, in Chrome&#x27;s side panel next to the board, once each game is over.</pre></div><div class="f"><div class="h"><span>storage justification</span><button data-for="v7">Copy</button></div><pre id="v7">Saves your chess.com username, two settings (whether the panel opens by itself, and the Prophylaxis website address), and your last 15 game reviews, on your computer.</pre></div><div class="f"><div class="h"><span>sidePanel justification</span><button data-for="v8">Copy</button></div><pre id="v8">Shows the review of the game you just finished in Chrome&#x27;s side panel, next to the board.</pre></div><div class="f"><div class="h"><span>offscreen justification</span><button data-for="v9">Copy</button></div><pre id="v9">Runs the Stockfish chess engine in Web Workers to analyse a finished game. A service worker can&#x27;t start Web Workers, so the analysis runs in an offscreen document.</pre></div><div class="f"><div class="h"><span>Host permission justification (one box covers all sites)</span><button data-for="v10">Copy</button></div><pre id="v10">api.chess.com: Downloads the game you just finished from chess.com&#x27;s public game archive, which only lists finished games. www.chess.com: Notices when you are on the page of a game that has ended (from the page address and chess.com&#x27;s game-over card), and shows a small card with the review&#x27;s result. It never reads the board or moves from the page. chess.com changes pages without reloading, so the script has to be present on all its pages to notice a game page. atefmo-1.github.io/prophylaxis: Lets the Prophylaxis website, when you open it, pick up the reviews this extension made and send back your habits. This stays inside your browser.</pre></div><div class="f"><div class="h"><span>Are you using remote code?</span><button data-for="v11">Copy</button></div><code id="v11">No, I am not using remote code</code></div><div class="f"><div class="h"><span>Privacy policy URL</span><button data-for="v12">Copy</button></div><code id="v12">https://atefmo-1.github.io/prophylaxis/privacy.html</code></div><div class="f"><div class="h"><span>Data usage</span></div><p>Tick <b>none</b> of the data types. Then tick all <b>three</b> certifications (no selling or transferring, no unrelated use, no creditworthiness).</p></div>
+<h2>Distribution</h2><div class="f"><p>Payments: <b>Free</b>. Visibility: <b>Public</b>. Regions: <b>All regions</b>.</p></div>
+<h2>Account, if asked</h2><div class="f"><p>Verify your contact email under Account → Profile. Trader question: a free hobby project is usually <b>non-trader</b>. Then <b>Submit for review</b>.</p></div>
+</main><script>
+document.addEventListener("click",async e=>{const b=e.target.closest("button[data-for]");if(!b)return;const t=document.getElementById(b.dataset.for).textContent;
+try{await navigator.clipboard.writeText(t)}catch{const r=document.createRange();r.selectNodeContents(document.getElementById(b.dataset.for));getSelection().removeAllRanges();getSelection().addRange(r);document.execCommand("copy")}
+b.textContent="Copied";b.classList.add("ok");setTimeout(()=>{b.textContent="Copy";b.classList.remove("ok")},1500)});
+</script></body></html>
