@@ -371,7 +371,7 @@ doesn't estimate a rating per game ([ml/rating/REPORT.md](ml/rating/REPORT.md)).
 | 5 | **ML: motif classifier** | Trained model + eval report | Beats the rule baseline on your hand-labeled blunders (or the report says clearly why not) | Done: beats the rules on real beginner blunders |
 | 6 | **Coach agent** | Chat panel | Correctly answers 20 scripted questions about your games | Not started |
 | 7 | **Drills** | Spaced-repetition trainer | Daily drill set drawn from your mistakes | Done, with FSRS |
-| 8 | **Chrome extension** | Side panel on finished games | Shows the review on finished games only; does nothing on `/play` | Done; Web Store listing ready in [docs/web-store](docs/web-store/README.md), not yet submitted |
+| 8 | **Chrome extension** | Side panel on finished games | Shows the review on finished games only; does nothing on `/play` | Done; submitted to the Chrome Web Store on 2026-11-28 (item `bgodmljmfmalkipeaobgmeefpmimneom`), pending review |
 | 9 | **Stretch** | Blunder-risk model, Maia-2, scheduled auto-sync | — | Maia-3 done; blunder risk covered by Maia; auto-sync on each visit and by the extension |
 
 **Suggested order if time is short:** 0 → 1 → 2 gives a useful product. 5 is the ML centerpiece. 3, 4, and 6 make it look like a real app.

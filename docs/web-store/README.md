@@ -1,5 +1,8 @@
 # Chrome Web Store listing
 
+**Status:** submitted for review on 2026-11-28. Item ID `bgodmljmfmalkipeaobgmeefpmimneom`; once approved it
+will be at https://chromewebstore.google.com/detail/bgodmljmfmalkipeaobgmeefpmimneom
+
 Everything the Chrome Web Store's forms ask for, ready to paste. The images in this folder come from the sample
 player only (`web/scripts/make-store-images.mjs`).
 
