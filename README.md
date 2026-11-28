@@ -17,7 +17,7 @@ A free chess coach for anyone who plays on chess.com or Lichess. It covers what 
 - **Compare:** you against any player on your site. Their last 30 rated games in your time control are reviewed in your browser like yours, then shown side by side with yours, with tips for beating them drawn from their numbers (their costliest habits, where and when they go wrong, how they convert, their openings), each with its evidence.
 - **How hard was it, at your rating?** On each mistake, how many players at your rating find the better move, whether your move is a common mistake at your level, and how many players at your opponent's rating would have found the punishing answer. From Maia-3, a model of how people play at each rating, checked against real chess.com games.
 - **Honest numbers:** with a few dozen games, rates are shown with a 90% interval, not as falsely exact percentages, and Compare gives either side the edge only when the gap is clear.
-- **Private:** everything runs in your browser. Your games, your username and your analysis stay there; there is no server.
+- **Private:** everything runs in your browser. Your games, your username and your analysis stay there; there is no server. The only thing sent anywhere is an anonymous count of which pages are opened (GoatCounter: no cookies, no username, no games), and "Stop counting my visits" in the player menu, Do Not Track or Global Privacy Control turn it off.
 
 Only finished games are analysed. It never helps during a live game (chess.com Fair Play policy).
 
@@ -36,7 +36,7 @@ Every number the site shows rests on a test, and so do the things it doesn't sho
 | Is it fast on a phone? | Lighthouse (mobile, live site): performance 98 on the landing page and 92 with the sample player, and 100 for accessibility, best practices and SEO. A first visit downloads about 0.2 MB; the engines and models load only when a review needs them. | [Lighthouse](https://developer.chrome.com/docs/lighthouse) |
 | Does the site meet basic accessibility rules? | axe-core finds no WCAG 2.1 A or AA problem on any page, light or dark, desktop or phone; board coordinates are measured separately (4.6:1 or better). | [web/scripts/check-a11y.mjs](web/scripts/check-a11y.mjs) |
 
-**Still to test:** whether players accept the explanations (a "Was this explanation right?" question is built, and asks once anonymous counting is switched on), and a second person's labels for the tactic check, which so far rests on the owner's answers to 46 blunders.
+**Still to test:** whether players accept the explanations (a "Was this explanation right?" question is built, and anonymous counting is now on to collect the answers), and a second person's labels for the tactic check, which so far rests on the owner's answers to 46 blunders.
 
 ## How to use it
 
