@@ -38,7 +38,8 @@ export function PlayerStrip({
   return (
     <div className="strip">
       <span className={`strip-color strip-color--${color}`} role="img" aria-label={`plays ${color}`} />
-      <span className="strip-name">{name}</span>
+      {/* The made-up sample player reads as a name, as it does in the top bar. */}
+      <span className="strip-name">{name === "sample-player" ? "Sample player" : name}</span>
       <span className="strip-rating num">{rating}</span>
       {change != null && change !== 0 && (
         <span className={`strip-change num ${change > 0 ? "up" : "down"}`}>

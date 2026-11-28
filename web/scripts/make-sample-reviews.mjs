@@ -11,7 +11,7 @@ import puppeteer from "puppeteer-core";
 const args = process.argv.slice(2);
 const rival = args.includes("--rival");
 const base = args.find((a) => !a.startsWith("--")) ?? "http://localhost:5173";
-const who = rival ? "sample-rival" : "sample-player";
+const who = rival ? "Sam" : "sample-player";
 const file = rival ? "rival-reviews.json" : "reviews.json";
 const out = resolve(import.meta.dirname, `../public/sample/${file}`);
 if (existsSync(out)) {
@@ -27,7 +27,7 @@ const page = await browser.newPage();
 page.on("pageerror", (e) => console.error("page error:", e.message));
 await page.goto(base, { waitUntil: "networkidle0" });
 await page.evaluate(() => localStorage.setItem("prophylaxis.player", "sample-player"));
-if (rival) await page.goto(`${base}/#/compare/sample-rival`, { waitUntil: "networkidle0" });
+if (rival) await page.goto(`${base}/#/compare/Sam`, { waitUntil: "networkidle0" });
 await page.reload({ waitUntil: "networkidle0" });
 
 const started = Date.now();

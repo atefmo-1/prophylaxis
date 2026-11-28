@@ -17,7 +17,7 @@ const PAGES = [
   ["puzzles", "/?demo", "#/puzzles/hangingPiece"],
   ["games", "/?demo", "#/games"],
   ["openings", "/?demo", "#/openings"],
-  ["compare", "/?demo", "#/compare/sample-rival"],
+  ["compare", "/?demo", "#/compare/Sam"],
 ];
 const SIZES = [["desktop", 1280, 900], ["phone", 390, 844]];
 

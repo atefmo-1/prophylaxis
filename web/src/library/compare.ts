@@ -20,7 +20,7 @@ export const COMPARE_GAMES = 30;
  * The made-up player the sample player compares with (scripts/make_sample.py --rival). Their games and reviews ship
  * with the site, like the sample player's, so anyone can try Compare without an account.
  */
-export const SAMPLE_RIVAL = "sample-rival";
+export const SAMPLE_RIVAL = "Sam"; // the made-up rival the sample player can be compared with
 const sampleFile = (name: string) => `${import.meta.env.BASE_URL}sample/${name}`;
 
 async function rivalGames(): Promise<ChessComGame[]> {
@@ -90,7 +90,7 @@ export function useComparison(name: string | null, timeClass: string | null, sam
     setChosen([]);
     pace.current = { ms: 0, plies: 0 };
     if (!name || !timeClass) return void setStatus({ kind: "idle" });
-    const rival = sample && name.toLowerCase() === SAMPLE_RIVAL;
+    const rival = sample && name.toLowerCase() === SAMPLE_RIVAL.toLowerCase();
     (async () => {
       setStatus({ kind: "loading", step: rival ? "Loading the sample rival…" : `Finding the player on ${siteName(owner ?? "")}…` });
       // The other player is looked for on the player's own site.

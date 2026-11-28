@@ -20,7 +20,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 for (const [name, w, h, mobile] of [["desktop", 1440, 900, false], ["phone", 390, 844, true]]) {
   await page.setViewport({ width: w, height: h, isMobile: mobile, hasTouch: mobile, deviceScaleFactor: mobile ? 2 : 1 });
-  for (const route of ["", "patterns", "games", "practice", "puzzles/hanging_piece", "openings", "compare/sample-rival"]) {
+  for (const route of ["", "patterns", "games", "practice", "puzzles/hanging_piece", "openings", "compare/Sam"]) {
     await page.goto(`${base}/#/${route}`, { waitUntil: "networkidle0" });
     await page.reload({ waitUntil: "networkidle0" });
     await wait(600);

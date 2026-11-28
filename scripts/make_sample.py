@@ -29,6 +29,12 @@ from coach import config
 SAMPLE = Path(__file__).resolve().parents[1] / "web" / "public" / "sample"
 BASE_S = 600
 
+# Made-up first names for the opponents, so the sample reads like real games without naming anyone's account.
+OPPONENTS = {
+    "": "Maya Leo Priya Tom Aisha Ben Chloe Diego Elena Finn Grace Hassan Ines Jack Kenji Lina Marco Nora Omar Paula Quinn Rosa Sven Tara Umar Vera Will Yara Zoe Arjun Bea Caleb Dana Eli Fatima Gus".split(),
+    "r": "Hana Ivan Jade Kofi Lucy Mateo Nadia Otto Pia Raj Sofia Theo Uma Victor Wren Xavi Yusuf Zara Alba Bruno Cleo Dev Emma Felix Gia Hugo Isla Jonah Kira Luca".split(),
+}
+
 # Who is generated: the sample player, or the rival it can be compared with.
 PROFILES = {
     "player": {
@@ -37,7 +43,7 @@ PROFILES = {
     },
     # Quicker and less careful, and loyal to a few openings, so a comparison has something to say.
     "rival": {
-        "name": "sample-rival", "out": "rival-games.json", "games": 30, "seed": 11, "rating": 430, "ids": "r", "opponents": "r",
+        "name": "Sam", "out": "rival-games.json", "games": 30, "seed": 11, "rating": 430, "ids": "r", "opponents": "r",
         "wild": (0.10, 0.10), "think": 0.45,
         "favourites": {chess.WHITE: ["Italian-Game-Two-Knights-Defense", "Kings-Pawn-Opening-Kings-Knight-Variation"],
                        chess.BLACK: ["French-Defense-Advance-Variation", "Caro-Kann-Defense"]},
@@ -167,7 +173,7 @@ def main() -> None:
             slug, moves, (winner, loser_code, winner_code) = play(engine, rng, my_wild, their_wild, my_color, profile["think"], favourites)
 
             opp_rating = rating + rng.randint(-45, 45)
-            names = {my_color: player, not my_color: f"opponent-{profile['opponents']}{i + 1:02d}"}
+            names = {my_color: player, not my_color: OPPONENTS[profile["opponents"]][i]}
             # chess.com's archive gives each player's rating after the game, so the sample does too.
             change = 0 if winner is None else 8 if winner == my_color else -8
             ratings = {my_color: rating + change, not my_color: opp_rating - change}
